@@ -52,7 +52,8 @@ public sealed class RecordingService(
     IStorageProbe storageProbe,
     ICameraRepository cameraRepository,
     CameraProbeService probeService,
-    IRecordingStatusRegistry statusRegistry)
+    IRecordingStatusRegistry statusRegistry,
+    IRecordingSettingsNotifier settingsNotifier)
 {
     private static readonly int[] AllowedRollSeconds = [0, 15, 30, 60];
 
@@ -99,6 +100,7 @@ public sealed class RecordingService(
         };
 
         await settingsStore.SaveAsync(settings, cancellationToken);
+        settingsNotifier.Notify();
         var supported = await GetSupportedEventsAsync(camera, cancellationToken);
 
         return ToView(settings, supported);
@@ -137,6 +139,7 @@ public sealed class RecordingService(
         };
 
         await storageStore.SaveAsync(settings, cancellationToken);
+        settingsNotifier.Notify();
         return new StorageView(settings, await BuildStatusAsync(settings, cancellationToken));
     }
 

@@ -18,6 +18,7 @@ public sealed class RecordingWorker(
     IStorageSettingsStore storageStore,
     ICameraRepository cameraRepository,
     IRecordingStatusRegistry statusRegistry,
+    IRecordingSettingsNotifier settingsNotifier,
     RecordingOptions options,
     IOptions<Go2RtcOptions> go2rtcOptions,
     SegmentIndexer indexer,
@@ -75,7 +76,7 @@ public sealed class RecordingWorker(
 
             try
             {
-                await Task.Delay(Tick, stoppingToken);
+                await settingsNotifier.WaitAsync(Tick, stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -269,18 +270,23 @@ public sealed class RecordingWorker(
     {
         if (!_recorders.TryRemove(cameraId, out var recorder))
         {
+            // Процесса уже нет: состояние записи всё равно снимаем, иначе индикатор REC
+            // в UI останется висеть до перезапуска сервиса.
+            statusRegistry.SetRecording(cameraId, false, clearError ? null : statusRegistry.LastError(cameraId));
             return;
         }
 
-        await recorder.StopAsync(cancellationToken);
+        // Снимаем признак записи сразу: ffmpeg может завершаться несколько секунд,
+        // а индикатор REC в UI не должен висеть после отключения записи.
+        statusRegistry.SetRecording(cameraId, false, clearError ? null : recorder.LastError);
 
-        if (clearError)
+        try
         {
-            statusRegistry.SetRecording(cameraId, false);
+            await recorder.StopAsync(cancellationToken);
         }
-        else
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            statusRegistry.SetRecording(cameraId, false, recorder.LastError);
+            logger.LogWarning(exception, "Ошибка остановки ffmpeg камеры {CameraId}", cameraId);
         }
 
         logger.LogInformation("Запись камеры {CameraId} остановлена", cameraId);

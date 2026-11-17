@@ -185,10 +185,20 @@ export default function LiveGrid({ cameras, onOpenCameraSettings, onOpenArchive 
 
     void load()
     const timer = window.setInterval(() => void load(), 5000)
+    const refreshWhenVisible = () => {
+      if (!document.hidden) {
+        void load()
+      }
+    }
+
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    window.addEventListener('focus', refreshWhenVisible)
 
     return () => {
       cancelled = true
       window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+      window.removeEventListener('focus', refreshWhenVisible)
     }
   }, [])
 

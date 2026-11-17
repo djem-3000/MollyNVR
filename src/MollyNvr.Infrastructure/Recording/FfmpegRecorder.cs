@@ -105,7 +105,7 @@ internal sealed class FfmpegRecorder
         }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(10));
+        timeout.CancelAfter(TimeSpan.FromSeconds(5));
 
         try
         {
@@ -117,7 +117,7 @@ internal sealed class FfmpegRecorder
             {
                 _process.Kill(entireProcessTree: true);
             }
-            catch (InvalidOperationException)
+            catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
             {
                 // процесс уже завершился
             }

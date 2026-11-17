@@ -84,6 +84,9 @@ public static class DependencyInjection
         services.AddSingleton(recordingOptions);
         services.AddSingleton<IStorageProbe, StorageProbe>();
         services.AddSingleton<IRecordingStatusRegistry, RecordingStatusRegistry>();
+        services.AddSingleton<RecordingSettingsNotifier>();
+        services.AddSingleton<IRecordingSettingsNotifier>(serviceProvider =>
+            serviceProvider.GetRequiredService<RecordingSettingsNotifier>());
         services.AddSingleton<IRecordingSettingsStore, RecordingSettingsStore>();
         services.AddSingleton<IStorageSettingsStore, StorageSettingsStore>();
         services.AddSingleton<IRecordingSegmentStore, RecordingSegmentStore>();
