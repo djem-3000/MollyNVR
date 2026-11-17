@@ -1,0 +1,6 @@
+RTSP/1.0 401 Unauthorized
+CSeq: 2
+Date: Mon, Oct 19 2026 09:12:15 GMT
+WWW-Authenticate: Digest realm="BC Streaming Media", nonce="3e5067483fedea957cdb0ae7ed5dc85a"
+
+

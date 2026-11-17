@@ -1,0 +1,11 @@
+.git
+.vs
+.vscode
+**/bin
+**/obj
+**/node_modules
+ui/dist
+data
+docs
+tests
+tools

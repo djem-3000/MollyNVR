@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DeviceInfo version="2.0" xmlns="http://www.isapi.org/ver20/XMLSchema">
+<deviceName>OUTDOOR STATION</deviceName>
+<deviceID>DS-KV9503-WBE1</deviceID>
+<deviceDescription>Video Intercom</deviceDescription>
+<deviceLocation>building</deviceLocation>
+<systemContact>admin</systemContact>
+<model>DS-KV9503-WBE1</model>
+<serialNumber>DS-KV9503-WBE10020240618ENFG0903384</serialNumber>
+<macAddress>bc:9f:ef:00:00:00</macAddress>
+<firmwareVersion>V2.3.13</firmwareVersion>
+<firmwareReleasedDate>build 240618</firmwareReleasedDate>
+<encoderVersion>V1.0</encoderVersion>
+<encoderReleasedDate>build 240618</encoderReleasedDate>
+<deviceType>VIS</deviceType>
+<telecontrolID>0</telecontrolID>
+<supportBeep>true</supportBeep>
+<supportVideoLoss>false</supportVideoLoss>
+</DeviceInfo>

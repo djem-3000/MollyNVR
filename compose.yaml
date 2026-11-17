@@ -1,0 +1,72 @@
+name: mollynvr
+
+services:
+  mollynvr:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: mollynvr:dev
+    container_name: mollynvr
+    # Bridge-сеть с публикацией портов. Причина: host networking в Docker Desktop на Windows
+    # не пробрасывает UDP внутрь контейнера, а WebRTC-медиа (SRTP) идёт по UDP :8555.
+    # Multicast-автопоиск (WS-Discovery/SADP) в bridge недоступен — используется скан подсети
+    # (см. docs/architecture.md §15, риск 1).
+    ports:
+      - "9080:9080"       # UI/API/WHEP (HTTP)
+      - "9443:9443"       # UI/API/WHEP (HTTPS, PWA)
+      - "8555:8555"       # WebRTC (ICE-TCP)
+      - "8555:8555/udp"   # WebRTC (SRTP-медиа)
+    # NVENC/NVDEC для транскода (нужен GPU-совместимый Docker Desktop + драйвер NVIDIA).
+    gpus: all
+    environment:
+      # Драйверные библиотеки NVIDIA целиком (без этого нет libnvidia-encode.so для NVENC).
+      NVIDIA_DRIVER_CAPABILITIES: all
+      # HTTP для отладки/локальной сети и HTTPS для установки PWA на телефон.
+      Kestrel__Endpoints__Https__Url: https://0.0.0.0:9443
+      Kestrel__Endpoints__Https__Certificate__Path: /certs/mollynvr.pem
+      Kestrel__Endpoints__Https__Certificate__KeyPath: /certs/mollynvr-key.pem
+      # LAN-адрес Windows-хоста для ICE-кандидата WebRTC: из контейнера он не виден.
+      # Задайте HOST_LAN_IP в .env (см. .env.example).
+      Go2Rtc__WebRtcCandidates__0: ${HOST_LAN_IP:-192.168.1.151}:8555
+      # Диапазон автопоиска по умолчанию (multicast WS-Discovery/SADP в bridge недоступен).
+      Discovery__DefaultRange: ${DISCOVERY_RANGE:-192.168.1.0/24}
+      # Мост Reolink (Baichuan, порт 9000): HTTP-API и RTSP внутри сети compose.
+      Reolink__ApiBaseUrl: http://reolink:8655
+      Reolink__RtspBaseUrl: rtsp://reolink:8654
+      # Часовой пояс: расписания записи и имена файлов используют локальное время сервера.
+      TZ: ${TZ:-Europe/Moscow}
+      # Запись видео: отдельный том и длина сегмента.
+      Recording__StoragePath: /recordings
+      Recording__SegmentSeconds: ${RECORDING_SEGMENT_SECONDS:-300}
+    volumes:
+      - ./data:/data
+      - ./recordings:/recordings
+      - ./certs:/certs:ro
+    depends_on:
+      - reolink
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - "exec 3<>/dev/tcp/127.0.0.1/9080 && printf 'GET /api/health HTTP/1.0\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '\"status\":\"ok\"'"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Мост Reolink: камеры без HTTP/ONVIF (только Baichuan, порт 9000).
+  # Список камер пишет само приложение в ./data/reolink/config.json; мост
+  # перезапускается при изменении файла (см. docker/reolink/entrypoint.sh).
+  reolink:
+    build:
+      context: .
+      dockerfile: docker/reolink/Dockerfile
+    image: mollynvr-reolink:dev
+    container_name: mollynvr-reolink
+    volumes:
+      - ./data/reolink:/config
+    environment:
+      TZ: ${TZ:-Europe/Moscow}
+    restart: unless-stopped

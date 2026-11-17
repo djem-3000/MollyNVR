@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MollyNvr.Api/MollyNvr.Api.csproj" />
+    <Project Path="src/MollyNvr.Application/MollyNvr.Application.csproj" />
+    <Project Path="src/MollyNvr.Domain/MollyNvr.Domain.csproj" />
+    <Project Path="src/MollyNvr.Infrastructure/MollyNvr.Infrastructure.csproj" />
+    <Project Path="src/MollyNvr.Cameras.Abstractions/MollyNvr.Cameras.Abstractions.csproj" />
+    <Project Path="src/MollyNvr.Cameras.Hikvision/MollyNvr.Cameras.Hikvision.csproj" />
+    <Project Path="src/MollyNvr.Cameras.ONVIF/MollyNvr.Cameras.ONVIF.csproj" />
+    <Project Path="src/MollyNvr.Cameras.Reolink/MollyNvr.Cameras.Reolink.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MollyNvr.Application.Tests/MollyNvr.Application.Tests.csproj" />
+    <Project Path="tests/MollyNvr.Cameras.Tests/MollyNvr.Cameras.Tests.csproj" />
+    <Project Path="tests/MollyNvr.Domain.Tests/MollyNvr.Domain.Tests.csproj" />
+    <Project Path="tests/MollyNvr.Infrastructure.Tests/MollyNvr.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

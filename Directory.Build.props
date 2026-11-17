@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>0.0.1</Version>
+    <InformationalVersion>0.0.1-$([System.DateTime]::Now.ToString("yyyyMMddHHmm"))</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MollyNvr.Domain' Or '$(MSBuildProjectName)' == 'MollyNvr.Application' Or $(MSBuildProjectName.StartsWith('MollyNvr.Cameras.'))">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MollyNvr.Infrastructure\MollyNvr.Infrastructure.csproj" />
+    <ProjectReference Include="..\MollyNvr.Application\MollyNvr.Application.csproj" />
+    <ProjectReference Include="..\MollyNvr.Cameras.Abstractions\MollyNvr.Cameras.Abstractions.csproj" />
+    <ProjectReference Include="..\MollyNvr.Cameras.ONVIF\MollyNvr.Cameras.ONVIF.csproj" />
+    <ProjectReference Include="..\MollyNvr.Cameras.Hikvision\MollyNvr.Cameras.Hikvision.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>e34ec086-a8ab-43d3-8de0-d70dad7f396f</UserSecretsId>
+  </PropertyGroup>
+
+</Project>
