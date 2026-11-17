@@ -106,9 +106,6 @@ export default function StorageSection() {
           <label className="field">
             {t('storage.quota')}
             <span className="storage-quota">
-              <span className="storage-quota-size">
-                {status ? formatBytes(quotaBytes) : '—'}
-              </span>
               <input
                 type="number"
                 min={10}
@@ -116,6 +113,9 @@ export default function StorageSection() {
                 value={quota}
                 onChange={(event) => setQuota(Number(event.target.value))}
               />
+              <span className="storage-quota-size">
+                {status ? formatBytes(quotaBytes) : '—'}
+              </span>
             </span>
           </label>
 
