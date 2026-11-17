@@ -72,6 +72,8 @@ export default function StorageSection() {
   }
 
   const status = view?.status
+  const quotaBytes =
+    status && Number.isFinite(quota) ? (status.totalBytes * Math.min(99, Math.max(0, quota))) / 100 : 0
 
   return (
     <section className="page-section">
@@ -92,36 +94,38 @@ export default function StorageSection() {
           </label>
           <p className="subtitle">{t('storage.path.hint')}</p>
 
-          <div className="storage-row">
-            <label className="field">
-              {t('storage.quota')}
-              <span className="storage-quota">
-                <input
-                  type="number"
-                  min={10}
-                  max={99}
-                  value={quota}
-                  onChange={(event) => setQuota(Number(event.target.value))}
-                />
-                {status ? (
-                  <span className="subtitle">
-                    {` · ${t('storage.volume', {
-                      free: formatBytes(status.freeBytes),
-                      total: formatBytes(status.totalBytes)
-                    })}`}
-                  </span>
-                ) : null}
-              </span>
-            </label>
+          {status ? (
+            <p className="subtitle storage-disk-free">
+              {t('storage.diskFree', {
+                free: formatBytes(status.freeBytes),
+                total: formatBytes(status.totalBytes)
+              })}
+            </p>
+          ) : null}
 
-            <label className="field">
-              {t('storage.mode')}
-              <select value={mode} onChange={(event) => setMode(event.target.value as 'fifo' | 'watermark')}>
-                <option value="fifo">{t('storage.mode.fifo')}</option>
-                <option value="watermark">{t('storage.mode.watermark')}</option>
-              </select>
-            </label>
-          </div>
+          <label className="field">
+            {t('storage.quota')}
+            <span className="storage-quota">
+              <span className="storage-quota-size">
+                {status ? formatBytes(quotaBytes) : '—'}
+              </span>
+              <input
+                type="number"
+                min={10}
+                max={99}
+                value={quota}
+                onChange={(event) => setQuota(Number(event.target.value))}
+              />
+            </span>
+          </label>
+
+          <label className="field storage-mode-field">
+            {t('storage.mode')}
+            <select value={mode} onChange={(event) => setMode(event.target.value as 'fifo' | 'watermark')}>
+              <option value="fifo">{t('storage.mode.fifo')}</option>
+              <option value="watermark">{t('storage.mode.watermark')}</option>
+            </select>
+          </label>
 
           {mode === 'watermark' ? (
             <div className="storage-row">

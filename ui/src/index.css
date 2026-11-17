@@ -3702,3 +3702,18 @@ body.page-scroll {
 .archive-playhead-time.last {
   transform: translateX(-100%);
 }
+
+.storage-disk-free {
+  margin: 0.5rem 0 0;
+}
+
+.storage-quota-size {
+  min-width: 5.5rem;
+  color: #dbe2ec;
+  font-variant-numeric: tabular-nums;
+}
+
+.storage-mode-field {
+  max-width: 24rem;
+  margin-top: 0.5rem;
+}
