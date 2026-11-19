@@ -7,13 +7,13 @@ using MollyNvr.Domain.Streams;
 
 namespace MollyNvr.Infrastructure.Media;
 
-/// <summary>Клиент HTTP API go2rtc (порт IMediaEngine).</summary>
+/// <summary>go2rtc HTTP API client (implements IMediaEngine).</summary>
 public sealed class Go2RtcClient(HttpClient httpClient, ILogger<Go2RtcClient> logger) : IMediaEngine
 {
     public async Task<IReadOnlyList<string>> GetStreamIdsAsync(CancellationToken cancellationToken)
     {
         using var response = await httpClient.GetAsync("api/streams", cancellationToken);
-        EnsureSuccess(response, "получить список потоков");
+                EnsureSuccess(response, "get the stream list");
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
         using var document = JsonDocument.Parse(json);
@@ -27,7 +27,7 @@ public sealed class Go2RtcClient(HttpClient httpClient, ILogger<Go2RtcClient> lo
     {
         if (sourceUrls.Count == 0)
         {
-            throw new ArgumentException("Нужен хотя бы один источник потока.", nameof(sourceUrls));
+                        throw new ArgumentException("At least one stream source is required.", nameof(sourceUrls));
         }
 
         var requestUri = new StringBuilder($"api/streams?name={Uri.EscapeDataString(id.Value)}");
@@ -38,7 +38,7 @@ public sealed class Go2RtcClient(HttpClient httpClient, ILogger<Go2RtcClient> lo
         }
 
         using var response = await httpClient.PutAsync(requestUri.ToString(), content: null, cancellationToken);
-        EnsureSuccess(response, "добавить источник");
+                EnsureSuccess(response, "add the source");
     }
 
     public async Task RemoveStreamAsync(StreamId id, CancellationToken cancellationToken)
@@ -49,7 +49,7 @@ public sealed class Go2RtcClient(HttpClient httpClient, ILogger<Go2RtcClient> lo
             return;
         }
 
-        EnsureSuccess(response, "удалить источник");
+                EnsureSuccess(response, "remove the source");
     }
 
     public async Task<string> NegotiateWebRtcAsync(StreamId id, string sdpOffer, CancellationToken cancellationToken)
@@ -59,8 +59,8 @@ public sealed class Go2RtcClient(HttpClient httpClient, ILogger<Go2RtcClient> lo
 
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogWarning("go2rtc отклонил WebRTC-запрос потока {StreamId}: HTTP {StatusCode}", id.Value, (int)response.StatusCode);
-            throw new MediaEngineException($"Медиа-ядро отклонило WebRTC-запрос (HTTP {(int)response.StatusCode}).");
+                        logger.LogWarning("go2rtc rejected the WebRTC request for stream {StreamId}: HTTP {StatusCode}", id.Value, (int)response.StatusCode);
+                        throw new MediaEngineException($"The media engine rejected the WebRTC request (HTTP {(int)response.StatusCode}).");
         }
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -73,7 +73,7 @@ public sealed class Go2RtcClient(HttpClient httpClient, ILogger<Go2RtcClient> lo
             return;
         }
 
-        logger.LogWarning("Не удалось {Action} в go2rtc: HTTP {StatusCode}", action, (int)response.StatusCode);
-        throw new MediaEngineException($"Медиа-ядро вернуло HTTP {(int)response.StatusCode} при попытке {action}.");
+                logger.LogWarning("Failed to {Action} in go2rtc: HTTP {StatusCode}", action, (int)response.StatusCode);
+                throw new MediaEngineException($"The media engine returned HTTP {(int)response.StatusCode} while trying to {action}.");
     }
 }

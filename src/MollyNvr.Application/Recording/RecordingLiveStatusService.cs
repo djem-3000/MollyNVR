@@ -1,6 +1,6 @@
 namespace MollyNvr.Application.Recording;
 
-/// <summary>Состояние записи камеры для индикатора REC в UI.</summary>
+/// <summary>Camera recording state for the REC indicator in the UI.</summary>
 public sealed record RecordingLiveStatus(
     Guid CameraId,
     DateTimeOffset? StartedAt,
@@ -8,7 +8,7 @@ public sealed record RecordingLiveStatus(
     IReadOnlyList<string> Events);
 
 /// <summary>
-/// Собирает активные записи: режим расписания и открытые события камер.
+/// Collects active recordings: schedule mode and open camera events.
 /// </summary>
 public sealed class RecordingLiveStatusService(
     IRecordingSettingsStore settingsStore,

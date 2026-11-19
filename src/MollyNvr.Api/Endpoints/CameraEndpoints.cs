@@ -7,8 +7,8 @@ using MollyNvr.Cameras.Abstractions;
 namespace MollyNvr.Api.Endpoints;
 
 /// <summary>
-/// Работа с камерами: автопоиск-опрос устройства, снапшот, а также реестр сохранённых камер
-/// (добавление, изменение, удаление).
+/// Camera operations: device discovery probe, snapshot, and the registry of saved cameras
+/// (add, update, delete).
 /// </summary>
 public static class CameraEndpoints
 {
@@ -34,17 +34,17 @@ public static class CameraEndpoints
         return group;
     }
 
-    /// <summary>Список зарегистрированных модулей производителей.</summary>
-    /// <remarks>Ответ: <c>{ "modules": ["hikvision", "onvif"] }</c>.</remarks>
+        /// <summary>List of registered vendor modules.</summary>
+        /// <remarks>Response: <c>{ "modules": ["hikvision", "onvif"] }</c>.</remarks>
     private static IResult ListModules(CameraProbeService service) =>
         Results.Ok(new { modules = service.ModuleKeys });
 
-    /// <summary>Опрашивает камеру и возвращает сведения об устройстве и профили main/sub.</summary>
+        /// <summary>Probes the camera and returns device details and main/sub profiles.</summary>
     /// <remarks>
-    /// Тело — <see cref="CameraRequest"/>. Модуль производителя определяется автоматически (или полем <c>vendor</c>).
-    /// Кодеки профилей уточняются по SDP реального RTSP-потока.
-    /// Ответы: 200 — данные камеры; 400 — некорректные параметры; 401 — неверные учётные данные;
-    /// 422 — устройство не поддерживает операцию; 502 — камера недоступна.
+        /// Body is <see cref="CameraRequest"/>. The vendor module is detected automatically (or from the <c>vendor</c> field).
+        /// Profile codecs are verified against the SDP of the real RTSP stream.
+        /// Responses: 200 — camera details; 400 — invalid parameters; 401 — invalid credentials;
+        /// 422 — the device does not support the operation; 502 — the camera is unreachable.
     /// </remarks>
     private static async Task<IResult> ProbeAsync(
         CameraRequest request,
@@ -66,12 +66,12 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>Возвращает JPEG-снапшот выбранного профиля камеры.</summary>
+        /// <summary>Returns a JPEG snapshot of the selected camera profile.</summary>
     /// <remarks>
-    /// Тело — <see cref="CameraRequest"/> с полем <c>profile</c> (<c>main</c> или <c>sub</c>).
-    /// Сначала используется нативный снапшот камеры, при его отсутствии — кадр из RTSP через медиа-ядро.
-    /// Ответы: 200 — <c>image/jpeg</c>; 400 — некорректные параметры; 401 — неверные учётные данные;
-    /// 422 — операция не поддерживается; 502 — камера недоступна.
+        /// Body is <see cref="CameraRequest"/> with the <c>profile</c> field (<c>main</c> or <c>sub</c>).
+        /// The native camera snapshot is used first; when it is unavailable, a frame from RTSP is taken through the media engine.
+        /// Responses: 200 — <c>image/jpeg</c>; 400 — invalid parameters; 401 — invalid credentials;
+        /// 422 — the operation is not supported; 502 — the camera is unreachable.
     /// </remarks>
     private static async Task<IResult> SnapshotAsync(
         CameraRequest request,
@@ -95,11 +95,11 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>Меняет имя камеры и выбранный субпоток без повторного опроса устройства.</summary>
+        /// <summary>Changes the camera name and the selected substream without probing the device again.</summary>
     /// <remarks>
-    /// Тело — <see cref="CameraSettingsRequest"/>. Пустой <c>subProfileId</c> оставляет прежний выбор.
-    /// Ответы: 200 — настройки сохранены; 400 — неизвестный субпоток;
-    /// 404 — камера не найдена.
+        /// Body is <see cref="CameraSettingsRequest"/>. An empty <c>subProfileId</c> keeps the previous selection.
+        /// Responses: 200 — settings saved; 400 — unknown substream;
+        /// 404 — camera not found.
     /// </remarks>
     private static async Task<IResult> UpdateSettingsAsync(
         Guid id,
@@ -126,13 +126,13 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>Список сохранённых камер с профилями потоков.</summary>
-    /// <remarks>Пароли не возвращаются; в RTSP-URL учётные данные маскируются.</remarks>
+        /// <summary>List of saved cameras with stream profiles.</summary>
+        /// <remarks>Passwords are never returned; credentials in RTSP URLs are masked.</remarks>
     private static async Task<IResult> ListAsync(CameraRegistry registry, CancellationToken cancellationToken) =>
         Results.Ok(await registry.ListAsync(cancellationToken));
 
-    /// <summary>Сохранённая камера по идентификатору.</summary>
-    /// <remarks>Ответы: 200 — камера; 404 — камера не найдена.</remarks>
+        /// <summary>A saved camera by identifier.</summary>
+        /// <remarks>Responses: 200 — camera; 404 — camera not found.</remarks>
     private static async Task<IResult> FindAsync(
         Guid id,
         CameraRegistry registry,
@@ -140,14 +140,14 @@ public static class CameraEndpoints
     {
         var camera = await registry.FindAsync(id, cancellationToken);
         return camera is null
-            ? Results.Problem($"Камера {id} не найдена.", statusCode: StatusCodes.Status404NotFound)
+                        ? Results.Problem($"Camera {id} not found.", statusCode: StatusCodes.Status404NotFound)
             : Results.Ok(camera);
     }
 
-    /// <summary>Возвращает сетевые параметры сохранённой камеры (сейчас — состояние DHCP).</summary>
+        /// <summary>Returns network parameters of a saved camera (currently the DHCP state).</summary>
     /// <remarks>
-    /// Значение <c>dhcpEnabled = null</c> означает, что камера не сообщила параметр.
-    /// Ответы: 200 — параметры (в том числе с неизвестным значением); 404 — камера не найдена.
+        /// A value of <c>dhcpEnabled = null</c> means the camera did not report the parameter.
+        /// Responses: 200 — parameters (including an unknown value); 404 — camera not found.
     /// </remarks>
     private static async Task<IResult> GetNetworkAsync(
         Guid id,
@@ -165,12 +165,12 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>Проверяет подключение и добавляет камеру в реестр.</summary>
+        /// <summary>Verifies the connection and adds the camera to the registry.</summary>
     /// <remarks>
-    /// Тело — <see cref="CameraRegistrationRequest"/>. Перед сохранением выполняется полный опрос камеры,
-    /// профили main/sub сохраняются в БД, потоки регистрируются в медиа-ядре.
-    /// Ответы: 201 — камера добавлена; 400 — некорректные параметры; 401 — неверные учётные данные;
-    /// 422 — устройство не поддерживает операцию; 502 — камера недоступна.
+        /// Body is <see cref="CameraRegistrationRequest"/>. A full camera probe runs before saving,
+        /// main/sub profiles are stored in the database, and streams are registered in the media engine.
+        /// Responses: 201 — camera added; 400 — invalid parameters; 401 — invalid credentials;
+        /// 422 — the device does not support the operation; 502 — the camera is unreachable.
     /// </remarks>
     private static async Task<IResult> AddAsync(
         CameraRegistrationRequest request,
@@ -192,11 +192,11 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>Повторно опрашивает камеру и обновляет её параметры и профили.</summary>
+        /// <summary>Probes the camera again and refreshes its details and profiles.</summary>
     /// <remarks>
-    /// Тело — <see cref="CameraRegistrationRequest"/>. Пустой пароль означает «оставить прежний».
-    /// Ответы: 200 — камера обновлена; 400 — некорректные параметры; 401 — неверные учётные данные;
-    /// 404 — камера не найдена; 422 — устройство не поддерживает операцию; 502 — камера недоступна.
+        /// Body is <see cref="CameraRegistrationRequest"/>. An empty password means "keep the current one".
+        /// Responses: 200 — camera updated; 400 — invalid parameters; 401 — invalid credentials;
+        /// 404 — camera not found; 422 — the device does not support the operation; 502 — the camera is unreachable.
     /// </remarks>
     private static async Task<IResult> UpdateAsync(
         Guid id,
@@ -222,8 +222,8 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>Удаляет камеру из реестра и её потоки из медиа-ядра.</summary>
-    /// <remarks>Ответы: 204 — камера удалена; 404 — камера не найдена.</remarks>
+        /// <summary>Removes the camera from the registry and its streams from the media engine.</summary>
+        /// <remarks>Responses: 204 — camera removed; 404 — camera not found.</remarks>
     private static async Task<IResult> RemoveAsync(
         Guid id,
         CameraRegistry registry,
@@ -240,11 +240,11 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>Включает или выключает камеру (неактивные не показываются в live-сетке).</summary>
+        /// <summary>Enables or disables the camera (inactive cameras are hidden in the live grid).</summary>
     /// <remarks>
-    /// Тело — <see cref="CameraActiveRequest"/>. При выключении потоки камеры снимаются с медиа-ядра,
-    /// при включении — регистрируются заново.
-    /// Ответы: 200 — камера обновлена; 404 — камера не найдена.
+        /// Body is <see cref="CameraActiveRequest"/>. On disable, the camera streams are removed from the media engine,
+        /// on enable they are registered again.
+        /// Responses: 200 — camera updated; 404 — camera not found.
     /// </remarks>
     private static async Task<IResult> SetActiveAsync(
         Guid id,
@@ -262,11 +262,11 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>JPEG-снапшот профиля сохранённой камеры.</summary>
+        /// <summary>JPEG snapshot of a saved camera profile.</summary>
     /// <remarks>
-    /// Профиль задаётся строкой запроса <c>profile</c> (<c>main</c> или <c>sub</c>).
-    /// Ответы: 200 — <c>image/jpeg</c>; 400 — некорректный профиль; 404 — камера не найдена;
-    /// 401/422/502 — ошибки подключения к камере.
+        /// The profile is set by the <c>profile</c> query string (<c>main</c> or <c>sub</c>).
+        /// Responses: 200 — <c>image/jpeg</c>; 400 — invalid profile; 404 — camera not found;
+        /// 401/422/502 — camera connection errors.
     /// </remarks>
     private static async Task<IResult> SavedSnapshotAsync(
         Guid id,
@@ -294,14 +294,14 @@ public static class CameraEndpoints
         }
     }
 
-    /// <summary>WHEP-прокси для сохранённой камеры: субпоток для тайла, основной — для fullscreen.</summary>
+        /// <summary>WHEP proxy for a saved camera: substream for tiles, main stream for fullscreen.</summary>
     /// <remarks>
-    /// Профиль задаётся строкой запроса <c>profile</c> (<c>sub</c> по умолчанию, <c>main</c> для fullscreen).
-    /// Конкретный субпоток можно выбрать строкой запроса <c>profileId</c>; без неё используется
-    /// субпоток, сохранённый в настройках камеры. Тело запроса — SDP offer, ответ — SDP answer go2rtc.
-    /// Поток предварительно регистрируется в медиа-ядре с учётными данными камеры.
-    /// Ответы: 200 — сессия установлена; 400 — пустой offer или неизвестный профиль;
-    /// 404 — камера не найдена; 422 — у камеры нет запрошенного профиля; 502 — ошибка медиа-ядра.
+        /// The profile is set by the <c>profile</c> query string (<c>sub</c> by default, <c>main</c> for fullscreen).
+        /// A specific substream can be selected with the <c>profileId</c> query string; otherwise the substream
+        /// saved in the camera settings is used. The request body is an SDP offer, the response is the go2rtc SDP answer.
+        /// The stream is registered in the media engine with the camera credentials beforehand.
+        /// Responses: 200 — session established; 400 — empty offer or unknown profile;
+        /// 404 — camera not found; 422 — the camera has no requested profile; 502 — media engine error.
     /// </remarks>
     private static async Task<IResult> NegotiateWhepAsync(
         Guid id,
@@ -315,7 +315,7 @@ public static class CameraEndpoints
         var offer = await reader.ReadToEndAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(offer))
         {
-            return Results.BadRequest(new { error = "Тело запроса должно содержать SDP offer." });
+                        return Results.BadRequest(new { error = "The request body must contain an SDP offer." });
         }
 
         try
@@ -346,7 +346,7 @@ public static class CameraEndpoints
     {
         null or "" or "main" => CameraStreamProfileKind.Main,
         "sub" => CameraStreamProfileKind.Sub,
-        var other => throw new ArgumentException($"Неизвестный профиль «{other}»: ожидается main или sub.", nameof(profile)),
+                var other => throw new ArgumentException($"Unknown profile '{other}': expected main or sub.", nameof(profile)),
     };
 
     private static IResult ToProblem(CameraModuleException exception) => exception switch
@@ -357,14 +357,14 @@ public static class CameraEndpoints
     };
 }
 
-/// <summary>Параметры подключения к камере для эндпоинтов <c>/api/cameras</c>.</summary>
-/// <param name="Host">IP-адрес или имя камеры.</param>
-/// <param name="RtspPort">Порт RTSP (по умолчанию 554).</param>
-/// <param name="UserName">Логин учётной записи камеры.</param>
-/// <param name="Password">Пароль учётной записи камеры (наружу не возвращается).</param>
-/// <param name="Vendor">Подсказка модуля производителя (<c>hikvision</c>, <c>onvif</c>); пусто — автоподбор.</param>
-/// <param name="Profile">Профиль потока для снапшота: <c>main</c> или <c>sub</c>.</param>
-/// <param name="ProfileId">Идентификатор конкретного профиля для снапшота; имеет приоритет над <c>profile</c>.</param>
+/// <summary>Camera connection parameters for the <c>/api/cameras</c> endpoints.</summary>
+/// <param name="Host">Camera IP address or host name.</param>
+/// <param name="RtspPort">RTSP port (554 by default).</param>
+/// <param name="UserName">Camera account login.</param>
+/// <param name="Password">Camera account password (never returned to clients).</param>
+/// <param name="Vendor">Vendor module hint (<c>hikvision</c>, <c>onvif</c>); empty — autodetect.</param>
+/// <param name="Profile">Stream profile for the snapshot: <c>main</c> or <c>sub</c>.</param>
+/// <param name="ProfileId">Exact profile identifier for the snapshot; takes precedence over <c>profile</c>.</param>
 public sealed record CameraRequest(
     string? Host,
     int? RtspPort,
@@ -374,19 +374,19 @@ public sealed record CameraRequest(
     string? Profile,
     string? ProfileId = null)
 {
-    /// <summary>Проверяет параметры и создаёт цель опроса.</summary>
+        /// <summary>Validates the parameters and creates the probe target.</summary>
     public CameraTarget ToTarget()
     {
         var address = ParseHost(Host);
 
         if (string.IsNullOrWhiteSpace(UserName))
         {
-            throw new ArgumentException("Укажите логин камеры.", nameof(UserName));
+                        throw new ArgumentException("Specify the camera login.", nameof(UserName));
         }
 
         if (string.IsNullOrEmpty(Password))
         {
-            throw new ArgumentException("Укажите пароль камеры.", nameof(Password));
+                        throw new ArgumentException("Specify the camera password.", nameof(Password));
         }
 
         var endpoint = new CameraEndpoint(address, RtspPort ?? 554);
@@ -397,19 +397,19 @@ public sealed record CameraRequest(
         return new CameraTarget(endpoint, credentials, vendor);
     }
 
-    /// <summary>Профиль потока из поля <c>profile</c> (по умолчанию основной).</summary>
+        /// <summary>Stream profile from the <c>profile</c> field (main by default).</summary>
     public CameraStreamProfileKind ProfileKind() => Profile?.Trim().ToLowerInvariant() switch
     {
         null or "" or "main" => CameraStreamProfileKind.Main,
         "sub" => CameraStreamProfileKind.Sub,
-        var other => throw new ArgumentException($"Неизвестный профиль «{other}»: ожидается main или sub.", nameof(Profile)),
+                var other => throw new ArgumentException($"Unknown profile '{other}': expected main or sub.", nameof(Profile)),
     };
 
     private static IPAddress ParseHost(string? host)
     {
         if (string.IsNullOrWhiteSpace(host))
         {
-            throw new ArgumentException("Укажите IP-адрес или имя камеры.", nameof(Host));
+                        throw new ArgumentException("Specify the camera IP address or host name.", nameof(Host));
         }
 
         if (IPAddress.TryParse(host.Trim(), out var address))
@@ -417,19 +417,19 @@ public sealed record CameraRequest(
             return address;
         }
 
-        throw new ArgumentException($"«{host}» не является IP-адресом камеры.", nameof(Host));
+                throw new ArgumentException($"'{host}' is not a valid camera IP address.", nameof(Host));
     }
 }
 
-/// <summary>Параметры добавления или изменения сохранённой камеры.</summary>
-/// <param name="Name">Отображаемое имя; пусто — имя устройства или «производитель модель».</param>
-/// <param name="Host">IP-адрес камеры.</param>
-/// <param name="RtspPort">Порт RTSP (по умолчанию 554).</param>
-/// <param name="UserName">Логин учётной записи камеры.</param>
-/// <param name="Password">Пароль; при изменении пустой пароль означает «оставить прежний».</param>
-/// <param name="Vendor">Подсказка модуля производителя (<c>hikvision</c>, <c>onvif</c>); пусто — автоподбор.</param>
-/// <param name="SubProfileId">Идентификатор выбранного субпотока; пусто — первый субпоток.</param>
-/// <param name="MainProfileId">Идентификатор основного профиля; пусто — профиль, выбранный модулем.</param>
+/// <summary>Parameters for adding or updating a saved camera.</summary>
+/// <param name="Name">Display name; empty — device name or "vendor model".</param>
+/// <param name="Host">Camera IP address.</param>
+/// <param name="RtspPort">RTSP port (554 by default).</param>
+/// <param name="UserName">Camera account login.</param>
+/// <param name="Password">Password; on update, an empty value means "keep the current one".</param>
+/// <param name="Vendor">Vendor module hint (<c>hikvision</c>, <c>onvif</c>); empty — autodetect.</param>
+/// <param name="SubProfileId">Identifier of the selected substream; empty — the first substream.</param>
+/// <param name="MainProfileId">Identifier of the main profile; empty — the profile chosen by the module.</param>
 public sealed record CameraRegistrationRequest(
     string? Name,
     string? Host,
@@ -440,16 +440,16 @@ public sealed record CameraRegistrationRequest(
     string? SubProfileId = null,
     string? MainProfileId = null)
 {
-    /// <summary>Переносит параметры запроса в сценарий реестра камер.</summary>
+        /// <summary>Maps request parameters to the camera registry scenario.</summary>
     public CameraRegistration ToRegistration() =>
         new(Name, Host, RtspPort, UserName, Password, Vendor, SubProfileId, MainProfileId);
 }
 
-/// <summary>Настройки сохранённой камеры, не требующие повторного опроса устройства.</summary>
-/// <param name="Name">Новое отображаемое имя; пусто — оставить прежнее.</param>
-/// <param name="SubProfileId">Идентификатор субпотока; пусто — оставить прежний.</param>
+/// <summary>Saved camera settings that do not require probing the device again.</summary>
+/// <param name="Name">New display name; empty — keep the current one.</param>
+/// <param name="SubProfileId">Substream identifier; empty — keep the current one.</param>
 public sealed record CameraSettingsRequest(string? Name, string? SubProfileId);
 
-/// <summary>Признак активности сохранённой камеры.</summary>
-/// <param name="Active"><c>true</c> — показывать в live-сетке, <c>false</c> — скрыть.</param>
+/// <summary>Active flag of a saved camera.</summary>
+/// <param name="Active"><c>true</c> — show in the live grid, <c>false</c> — hide.</param>
 public sealed record CameraActiveRequest(bool Active);

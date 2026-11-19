@@ -2,7 +2,7 @@ type Props = {
   type: string
 }
 
-/** Векторные иконки типов обнаружения (24×24, stroke = currentColor). */
+/** Vector icons for detection types (24×24, stroke = currentColor). */
 export default function EventIcon({ type }: Props) {
   return (
     <svg className="event-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">

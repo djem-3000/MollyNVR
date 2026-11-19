@@ -56,7 +56,7 @@ export function extractVideoCodec(sdp: string): string | null {
   return match ? match[1].toUpperCase() : null
 }
 
-/** Фактически выбранный браузером видеокодек (из WebRTC-статистики). */
+/** Video codec actually selected by the browser (from WebRTC statistics). */
 export async function readVideoCodec(connection: RTCPeerConnection): Promise<string | null> {
   const stats = await connection.getStats()
 

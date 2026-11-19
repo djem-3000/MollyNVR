@@ -21,10 +21,10 @@ public class CameraRegistryTests
         var registry = CreateRegistry(repository, media);
 
         var camera = await registry.AddAsync(
-            new CameraRegistration("Крыльцо", "192.168.1.10", null, "admin", "secret", null),
+                        new CameraRegistration("Porch", "192.168.1.10", null, "admin", "secret", null),
             CancellationToken.None);
 
-        Assert.Equal("Крыльцо", camera.Name);
+                Assert.Equal("Porch", camera.Name);
         Assert.Equal("192.168.1.10", camera.Host);
         Assert.Equal(2, camera.Profiles.Count);
         Assert.All(camera.Profiles, static profile => Assert.NotNull(profile.StreamId));
@@ -52,7 +52,7 @@ public class CameraRegistryTests
 
         var camera = await registry.AddAsync(
             new CameraRegistration(
-                "Крыльцо",
+                                "Porch",
                 "192.168.1.10",
                 null,
                 "admin",
@@ -76,7 +76,7 @@ public class CameraRegistryTests
             new CameraRegistration(null, "192.168.1.10", null, "admin", "secret", null),
             CancellationToken.None);
 
-        Assert.Equal("Крыльцо", camera.Name);
+                Assert.Equal("Porch", camera.Name);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class CameraRegistryTests
         var registry = CreateRegistry(new FakeRepository(), new FakeMediaEngine());
 
         await Assert.ThrowsAsync<ArgumentException>(() => registry.AddAsync(
-            new CameraRegistration("Камера", "not-an-ip", null, "admin", "secret", null),
+                        new CameraRegistration("Camera", "not-an-ip", null, "admin", "secret", null),
             CancellationToken.None));
     }
 
@@ -97,7 +97,7 @@ public class CameraRegistryTests
         var registry = CreateRegistry(repository, media);
 
         var camera = await registry.AddAsync(
-            new CameraRegistration("Крыльцо", "192.168.1.10", null, "admin", "secret", null),
+                        new CameraRegistration("Porch", "192.168.1.10", null, "admin", "secret", null),
             CancellationToken.None);
 
         Assert.NotNull(repository.SavedCamera);
@@ -110,7 +110,7 @@ public class CameraRegistryTests
         var registry = CreateRegistry(new FakeRepository(), new FakeMediaEngine());
 
         await Assert.ThrowsAsync<ArgumentException>(() => registry.AddAsync(
-            new CameraRegistration("Камера", "192.168.1.10", null, "admin", null, null),
+                        new CameraRegistration("Camera", "192.168.1.10", null, "admin", null, null),
             CancellationToken.None));
     }
 
@@ -118,16 +118,16 @@ public class CameraRegistryTests
     public async Task UpdateAsync_EmptyPassword_KeepsStoredCredentials()
     {
         var repository = new FakeRepository();
-        var existing = CreateCamera("Старое имя");
+                var existing = CreateCamera("Old name");
         repository.Seed(existing, Credentials);
         var registry = CreateRegistry(repository, new FakeMediaEngine());
 
         var updated = await registry.UpdateAsync(
             existing.Id,
-            new CameraRegistration("Новое имя", "192.168.1.10", null, "admin", "", null),
+                        new CameraRegistration("New name", "192.168.1.10", null, "admin", "", null),
             CancellationToken.None);
 
-        Assert.Equal("Новое имя", updated.Name);
+                Assert.Equal("New name", updated.Name);
         Assert.Null(repository.UpdatedCredentials);
         Assert.Equal(existing.Id, updated.Id);
     }
@@ -139,7 +139,7 @@ public class CameraRegistryTests
 
         await Assert.ThrowsAsync<CameraNotFoundException>(() => registry.UpdateAsync(
             Guid.NewGuid(),
-            new CameraRegistration("Камера", "192.168.1.10", null, "admin", "secret", null),
+                        new CameraRegistration("Camera", "192.168.1.10", null, "admin", "secret", null),
             CancellationToken.None));
     }
 
@@ -148,7 +148,7 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
-        var existing = CreateCamera("Камера");
+                var existing = CreateCamera("Camera");
         repository.Seed(existing, Credentials);
         var registry = CreateRegistry(repository, media);
 
@@ -164,8 +164,8 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
-        var first = CreateCamera("Первая");
-        var second = CreateCamera("Вторая");
+                var first = CreateCamera("First");
+                var second = CreateCamera("Second");
         repository.Seed(first, Credentials);
         repository.Seed(second, Credentials);
         var registry = CreateRegistry(repository, media);
@@ -180,7 +180,7 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
-        var camera = CreateCamera("Камера");
+                var camera = CreateCamera("Camera");
         repository.Seed(camera, Credentials);
         var registry = CreateRegistry(repository, media);
 
@@ -195,7 +195,7 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
-        var camera = CreateCamera("Камера").SetActive(false, DateTimeOffset.UtcNow);
+                var camera = CreateCamera("Camera").SetActive(false, DateTimeOffset.UtcNow);
         repository.Seed(camera, Credentials);
         var registry = CreateRegistry(repository, media);
 
@@ -219,7 +219,7 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
-        var camera = CreateCamera("Камера", videoCodec: "H.265");
+                var camera = CreateCamera("Camera", videoCodec: "H.265");
         repository.Seed(camera, Credentials);
         var registry = CreateRegistry(repository, media);
 
@@ -236,7 +236,7 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
-        var camera = CreateCamera("Камера", videoCodec: "H.264");
+                var camera = CreateCamera("Camera", videoCodec: "H.264");
         repository.Seed(camera, Credentials);
         var registry = CreateRegistry(repository, media);
 
@@ -252,7 +252,7 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
-        var camera = CreateCamera("Камера", audioCodec: "G7221");
+                var camera = CreateCamera("Camera", audioCodec: "G7221");
         repository.Seed(camera, Credentials);
         var registry = CreateRegistry(repository, media);
 
@@ -277,7 +277,7 @@ public class CameraRegistryTests
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
         var camera = Camera.Register(
-            "Камера",
+                        "Camera",
             "192.168.1.10",
             554,
             "onvif",
@@ -306,7 +306,7 @@ public class CameraRegistryTests
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
         var camera = Camera.Register(
-            "Камера",
+                        "Camera",
             "192.168.1.10",
             554,
             "onvif",
@@ -339,7 +339,7 @@ public class CameraRegistryTests
         var repository = new FakeRepository();
         var media = new FakeMediaEngine();
         var camera = Camera.Register(
-            "Камера",
+                        "Camera",
             "192.168.1.10",
             554,
             "onvif",
@@ -356,15 +356,15 @@ public class CameraRegistryTests
 
         var updated = await registry.UpdateSettingsAsync(
             camera.Id,
-            "Крыльцо",
+                        "Porch",
             "sub2",
             CancellationToken.None);
 
         var saved = await repository.FindAsync(camera.Id, CancellationToken.None);
 
-        Assert.Equal("Крыльцо", updated.Name);
+                Assert.Equal("Porch", updated.Name);
         Assert.Equal("sub2", updated.SubProfileId);
-        Assert.Equal("Крыльцо", saved?.Name);
+                Assert.Equal("Porch", saved?.Name);
         Assert.Equal("sub2", saved?.SubProfileId);
         Assert.Contains(
             media.Streams[$"camera-{camera.Id:N}-sub"],
@@ -375,13 +375,13 @@ public class CameraRegistryTests
     public async Task UpdateSettingsAsync_UnknownSubstream_Throws()
     {
         var repository = new FakeRepository();
-        var camera = CreateCamera("Камера");
+                var camera = CreateCamera("Camera");
         repository.Seed(camera, Credentials);
         var registry = CreateRegistry(repository, new FakeMediaEngine());
 
         await Assert.ThrowsAsync<ArgumentException>(() => registry.UpdateSettingsAsync(
             camera.Id,
-            "Камера",
+                        "Camera",
             "missing",
             CancellationToken.None));
     }
@@ -391,7 +391,7 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var media = new FakeMediaEngine { Answer = "v=0 answer" };
-        var camera = CreateCamera("Камера");
+                var camera = CreateCamera("Camera");
         repository.Seed(camera, Credentials);
         var registry = CreateRegistry(repository, media);
 
@@ -415,7 +415,7 @@ public class CameraRegistryTests
     {
         var repository = new FakeRepository();
         var camera = Camera.Register(
-            "Камера",
+                        "Camera",
             "192.168.1.10",
             554,
             "onvif",
@@ -603,7 +603,7 @@ public class CameraRegistryTests
         {
             if (FailUpserts)
             {
-                throw new HttpRequestException("go2rtc недоступен");
+                                throw new HttpRequestException("go2rtc unavailable");
             }
 
             Streams[id.Value] = sourceUrls;
@@ -637,7 +637,7 @@ public class CameraRegistryTests
             CameraCredentials credentials,
             CancellationToken cancellationToken) =>
             Task.FromResult(new CameraProbeResult(
-                new CameraDeviceInfo("ONVIF", "CX820", "1.0", "SN", "Крыльцо"),
+                                new CameraDeviceInfo("ONVIF", "CX820", "1.0", "SN", "Porch"),
                 [
                     new AbstractionsCameraProfile(
                         CameraStreamProfileKind.Main,

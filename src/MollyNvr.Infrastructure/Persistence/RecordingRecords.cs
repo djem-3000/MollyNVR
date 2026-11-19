@@ -1,6 +1,6 @@
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>Настройки записи камеры (одна строка на камеру).</summary>
+/// <summary>Camera recording settings (one row per camera).</summary>
 public sealed class RecordingSettingsRecord
 {
     public Guid CameraId { get; set; }
@@ -11,14 +11,14 @@ public sealed class RecordingSettingsRecord
 
     public bool ContinuousEnabled { get; set; }
 
-    /// <summary>336 символов «0»/«1»: 7 дней × 48 получасовых слотов.</summary>
+        /// <summary>336 '0'/'1' characters: 7 days x 48 half-hour slots.</summary>
     public string ContinuousSchedule { get; set; } = string.Empty;
 
     public bool EventEnabled { get; set; }
 
     public string EventSchedule { get; set; } = string.Empty;
 
-    /// <summary>Ключи типов событий через запятую.</summary>
+        /// <summary>Event type keys separated by commas.</summary>
     public string EventTypes { get; set; } = string.Empty;
 
     public int PreRollSeconds { get; set; }
@@ -26,7 +26,7 @@ public sealed class RecordingSettingsRecord
     public int PostRollSeconds { get; set; }
 }
 
-/// <summary>Настройки общего пула записей (единственная строка с Id = 1).</summary>
+/// <summary>Shared recording pool settings (the only row with Id = 1).</summary>
 public sealed class StorageSettingsRecord
 {
     public int Id { get; set; } = 1;
@@ -42,7 +42,7 @@ public sealed class StorageSettingsRecord
     public int LowWatermarkPercent { get; set; } = 80;
 }
 
-/// <summary>Сегмент записи на диске (для учёта места и очистки). Время хранится в UTC.</summary>
+/// <summary>Recording segment on disk (for space accounting and cleanup). Times are stored in UTC.</summary>
 public sealed class RecordingSegmentRecord
 {
     public Guid Id { get; set; }
@@ -58,7 +58,7 @@ public sealed class RecordingSegmentRecord
     public long SizeBytes { get; set; }
 }
 
-/// <summary>Событие камеры: окно записи вокруг обнаружения. Время хранится в UTC.</summary>
+/// <summary>Camera event: the recording window around a detection. Times are stored in UTC.</summary>
 public sealed class RecordingEventRecord
 {
     public Guid Id { get; set; }

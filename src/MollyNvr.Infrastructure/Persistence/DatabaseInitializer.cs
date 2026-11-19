@@ -5,7 +5,7 @@ using MollyNvr.Infrastructure.Storage;
 
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>Создаёт каталог данных и применяет миграции EF Core при старте приложения.</summary>
+/// <summary>Creates the data directory and applies EF Core migrations at application startup.</summary>
 public sealed class DatabaseInitializer(
     IDbContextFactory<MollyNvrDbContext> contextFactory,
     StorageOptions storageOptions,
@@ -18,7 +18,7 @@ public sealed class DatabaseInitializer(
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await db.Database.MigrateAsync(cancellationToken);
 
-        logger.LogInformation("База данных камер готова: {DatabasePath}", storageOptions.DatabasePath);
+                logger.LogInformation("Camera database is ready: {DatabasePath}", storageOptions.DatabasePath);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

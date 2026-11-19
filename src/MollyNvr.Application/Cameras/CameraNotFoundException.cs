@@ -1,5 +1,5 @@
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Камера с указанным идентификатором не найдена.</summary>
+/// <summary>No camera with the specified identifier.</summary>
 public sealed class CameraNotFoundException(Guid id)
-    : Exception($"Камера {id} не найдена.");
+        : Exception($"Camera {id} not found.");

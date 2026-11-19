@@ -44,7 +44,7 @@ export default function CameraSortDialog({ cameras, order, onCancel, onSave }: P
     try {
       event.currentTarget.setPointerCapture(event.pointerId)
     } catch {
-      // синтетические события могут не поддерживать capture
+      // synthetic events may not support capture
     }
 
     setDraggingId(cameraId)

@@ -1,43 +1,43 @@
 namespace MollyNvr.Application.Archive;
 
-/// <summary>Камера в списке архива.</summary>
+/// <summary>Camera in the archive list.</summary>
 public sealed record ArchiveCamera(
     Guid Id,
     string Name,
     bool IsActive,
     bool HasRecordingsToday);
 
-/// <summary>День календаря, в который есть записи.</summary>
+/// <summary>Calendar day that has recordings.</summary>
 public sealed record ArchiveDay(
     DateOnly Date,
     int SegmentCount,
     long SizeBytes);
 
-/// <summary>Дни месяца, в которые есть записи.</summary>
+/// <summary>Days of the month that have recordings.</summary>
 public sealed record ArchiveCalendar(
     Guid CameraId,
     int Year,
     int Month,
     IReadOnlyList<ArchiveDay> Days);
 
-/// <summary>Тип события для фильтра таймлайна.</summary>
+/// <summary>Event type for the timeline filter.</summary>
 public sealed record ArchiveEventType(
     string Key,
     string Label);
 
-/// <summary>Непрерывный интервал записи (несколько соседних сегментов).</summary>
+/// <summary>Continuous recording interval (several adjacent segments).</summary>
 public sealed record ArchiveInterval(
     DateTimeOffset Start,
     DateTimeOffset End,
     long SizeBytes);
 
-/// <summary>Окно события, обрезанное по границам дня.</summary>
+/// <summary>Event window clipped by the day boundaries.</summary>
 public sealed record ArchiveEventSlice(
     string Type,
     DateTimeOffset Start,
     DateTimeOffset End);
 
-/// <summary>Данные таймлайна за сутки.</summary>
+/// <summary>Timeline data for one day.</summary>
 public sealed record ArchiveTimeline(
     Guid CameraId,
     DateOnly Date,
@@ -45,14 +45,14 @@ public sealed record ArchiveTimeline(
     IReadOnlyList<ArchiveEventSlice> Events,
     IReadOnlyList<ArchiveEventType> EventTypes);
 
-/// <summary>Сегмент в playback-сессии: реальное время и позиция в непрерывном потоке.</summary>
+/// <summary>Segment in a playback session: real time and position in the continuous stream.</summary>
 public sealed record ArchiveSegmentSlice(
     DateTimeOffset Start,
     DateTimeOffset End,
     double MediaStart,
     double MediaEnd);
 
-/// <summary>Запущенная playback-сессия.</summary>
+/// <summary>Started playback session.</summary>
 public sealed record ArchivePlayback(
     Guid SessionId,
     string PlaylistUrl,

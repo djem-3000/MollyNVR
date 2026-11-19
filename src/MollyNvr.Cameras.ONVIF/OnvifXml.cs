@@ -4,17 +4,17 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Cameras.ONVIF;
 
-/// <summary>Сырые данные профиля ONVIF до получения RTSP-URL.</summary>
+/// <summary>Raw ONVIF profile data before the RTSP URL is obtained.</summary>
 internal sealed record OnvifProfile(
     string Token,
     string? Name,
     CameraVideoSettings Video,
     CameraAudioSettings Audio);
 
-/// <summary>Разбор ответов ONVIF (пространства имён игнорируются, сравнение по локальному имени).</summary>
+/// <summary>ONVIF response parsing (namespaces are ignored, comparison is by local name).</summary>
 internal static class OnvifXml
 {
-    /// <summary>Разбирает ответ <c>GetDeviceInformation</c>.</summary>
+        /// <summary>Parses the <c>GetDeviceInformation</c> response.</summary>
     public static CameraDeviceInfo ParseDeviceInfo(string xml)
     {
         var response = FindResponse(xml, "GetDeviceInformationResponse");
@@ -27,7 +27,7 @@ internal static class OnvifXml
             DeviceName: null);
     }
 
-    /// <summary>Разбирает ответ <c>GetProfiles</c>. Профили без видеокодировщика пропускаются.</summary>
+        /// <summary>Parses the <c>GetProfiles</c> response. Profiles without a video encoder are skipped.</summary>
     public static IReadOnlyList<OnvifProfile> ParseProfiles(string xml)
     {
         var document = Load(xml);
@@ -40,7 +40,7 @@ internal static class OnvifXml
             .ToList();
     }
 
-    /// <summary>Извлекает адрес Media-сервиса из ответа <c>GetCapabilities</c>.</summary>
+        /// <summary>Extracts the Media service address from the <c>GetCapabilities</c> response.</summary>
     public static Uri? ParseMediaServiceUri(string xml)
     {
         var document = Load(xml);
@@ -54,7 +54,7 @@ internal static class OnvifXml
         return Uri.TryCreate(address, UriKind.Absolute, out var uri) ? uri : null;
     }
 
-    /// <summary>Извлекает RTSP-URL из ответа <c>GetStreamUri</c> или <c>GetSnapshotUri</c>.</summary>
+        /// <summary>Extracts the RTSP URL from the <c>GetStreamUri</c> or <c>GetSnapshotUri</c> response.</summary>
     public static string ParseUri(string xml)
     {
         var document = Load(xml);
@@ -64,11 +64,11 @@ internal static class OnvifXml
             .Trim();
 
         return string.IsNullOrWhiteSpace(uri)
-            ? throw new CameraUnavailableException("ONVIF не вернул адрес потока.")
+                        ? throw new CameraUnavailableException("ONVIF did not return a stream address.")
             : uri;
     }
 
-    /// <summary>Разбирает состояние DHCP из ответа <c>GetNetworkInterfaces</c>.</summary>
+        /// <summary>Parses the DHCP state from the <c>GetNetworkInterfaces</c> response.</summary>
     public static bool? ParseDhcpEnabled(string xml)
     {
         var document = Load(xml);
@@ -82,7 +82,7 @@ internal static class OnvifXml
             : null;
     }
 
-    /// <summary>Приводит RTSP-URL к виду без учётных данных.</summary>
+        /// <summary>Reduces the RTSP URL to a credential-free form.</summary>
     public static string StripCredentials(string url)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || string.IsNullOrEmpty(uri.UserInfo))
@@ -137,14 +137,14 @@ internal static class OnvifXml
 
         return document.Descendants()
             .FirstOrDefault(element => element.Name.LocalName == responseName)
-            ?? throw new CameraUnavailableException($"ONVIF вернул ответ без элемента «{responseName}».");
+                        ?? throw new CameraUnavailableException($"ONVIF returned a response without the '{responseName}' element.");
     }
 
     private static XDocument Load(string xml)
     {
         if (string.IsNullOrWhiteSpace(xml))
         {
-            throw new CameraUnavailableException("ONVIF вернул пустой ответ.");
+                        throw new CameraUnavailableException("ONVIF returned an empty response.");
         }
 
         try
@@ -153,7 +153,7 @@ internal static class OnvifXml
         }
         catch (System.Xml.XmlException exception)
         {
-            throw new CameraUnavailableException("ONVIF вернул некорректный XML.", exception);
+                        throw new CameraUnavailableException("ONVIF returned invalid XML.", exception);
         }
     }
 

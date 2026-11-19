@@ -8,8 +8,8 @@ using MollyNvr.Domain.Streams;
 namespace MollyNvr.Application.Cameras;
 
 /// <summary>
-/// Реестр сохранённых камер: добавление с проверкой подключения, изменение, удаление,
-/// синхронизация потоков с медиа-ядром.
+/// Registry of saved cameras: add with a connection check, update, delete,
+/// and stream synchronization with the media engine.
 /// </summary>
 public sealed class CameraRegistry(
     ICameraRepository repository,
@@ -17,14 +17,14 @@ public sealed class CameraRegistry(
     IMediaEngine mediaEngine,
     ILogger<CameraRegistry> logger)
 {
-    /// <summary>Список сохранённых камер.</summary>
+        /// <summary>List of saved cameras.</summary>
     public async Task<IReadOnlyList<CameraView>> ListAsync(CancellationToken cancellationToken)
     {
         var cameras = await repository.ListAsync(cancellationToken);
         return cameras.Select(CameraView.From).ToList();
     }
 
-    /// <summary>Камера по идентификатору или <c>null</c>.</summary>
+        /// <summary>Camera by identifier, or <c>null</c>.</summary>
     public async Task<CameraView?> FindAsync(Guid id, CancellationToken cancellationToken)
     {
         var camera = await repository.FindAsync(id, cancellationToken);
@@ -32,7 +32,7 @@ public sealed class CameraRegistry(
     }
 
     /// <summary>
-    /// Запрашивает у сохранённой камеры состояние DHCP.
+        /// Requests the DHCP state from a saved camera.
     /// </summary>
     public async Task<bool?> GetDhcpEnabledAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -50,7 +50,7 @@ public sealed class CameraRegistry(
         return await probeService.GetDhcpEnabledAsync(target, cancellationToken);
     }
 
-    /// <summary>Проверяет подключение, сохраняет камеру и регистрирует её потоки в медиа-ядре.</summary>
+        /// <summary>Checks the connection, saves the camera and registers its streams in the media engine.</summary>
     public async Task<CameraView> AddAsync(CameraRegistration registration, CancellationToken cancellationToken)
     {
         var credentials = RequireCredentials(registration);
@@ -85,7 +85,7 @@ public sealed class CameraRegistry(
         return CameraView.From(camera);
     }
 
-    /// <summary>Повторно опрашивает камеру и обновляет адрес, профили и учётные данные.</summary>
+        /// <summary>Probes the camera again and refreshes its address, profiles and credentials.</summary>
     public async Task<CameraView> UpdateAsync(
         Guid id,
         CameraRegistration registration,
@@ -131,7 +131,7 @@ public sealed class CameraRegistry(
         return CameraView.From(camera);
     }
 
-    /// <summary>Обновляет имя и выбранный субпоток без повторного опроса камеры.</summary>
+        /// <summary>Updates the name and the selected substream without probing the camera again.</summary>
     public async Task<CameraView> UpdateSettingsAsync(
         Guid id,
         string? name,
@@ -150,7 +150,7 @@ public sealed class CameraRegistry(
             !existing.Profiles.Any(profile =>
                 string.Equals(profile.Id, normalizedSub, StringComparison.Ordinal)))
         {
-            throw new ArgumentException("Выбранный субпоток не найден у камеры.", nameof(subProfileId));
+                        throw new ArgumentException("The selected substream was not found on the camera.", nameof(subProfileId));
         }
 
         var camera = existing.UpdateSettings(normalizedName, normalizedSub, DateTimeOffset.UtcNow);
@@ -165,7 +165,7 @@ public sealed class CameraRegistry(
         return CameraView.From(camera);
     }
 
-    /// <summary>Удаляет камеру из реестра и её потоки из медиа-ядра.</summary>
+        /// <summary>Removes the camera from the registry and its streams from the media engine.</summary>
     public async Task RemoveAsync(Guid id, CancellationToken cancellationToken)
     {
         var camera = await repository.FindAsync(id, cancellationToken)
@@ -175,7 +175,7 @@ public sealed class CameraRegistry(
         await repository.RemoveAsync(id, cancellationToken);
     }
 
-    /// <summary>Включает или выключает камеру; потоки заводятся или снимаются соответственно.</summary>
+        /// <summary>Enables or disables the camera; streams are created or removed accordingly.</summary>
     public async Task<CameraView> SetActiveAsync(
         Guid id,
         bool isActive,
@@ -200,7 +200,7 @@ public sealed class CameraRegistry(
         return CameraView.From(camera);
     }
 
-    /// <summary>JPEG-снапшот профиля сохранённой камеры.</summary>
+        /// <summary>JPEG snapshot of a saved camera profile.</summary>
     public async Task<byte[]> GetSnapshotAsync(
         Guid id,
         CameraStreamProfileKind kind,
@@ -217,8 +217,8 @@ public sealed class CameraRegistry(
     }
 
     /// <summary>
-    /// WHEP-сессия профиля сохранённой камеры: поток регистрируется в медиа-ядре
-    /// (с учётными данными) и негоциируется с go2rtc.
+        /// WHEP session of a saved camera profile: the stream is registered in the media engine
+        /// (with credentials) and negotiated with go2rtc.
     /// </summary>
     public async Task<string> NegotiateWhepAsync(
         Guid id,
@@ -229,7 +229,7 @@ public sealed class CameraRegistry(
     {
         if (string.IsNullOrWhiteSpace(sdpOffer))
         {
-            throw new ArgumentException("SDP offer не может быть пустым.", nameof(sdpOffer));
+                        throw new ArgumentException("The SDP offer cannot be empty.", nameof(sdpOffer));
         }
 
         var camera = await repository.FindAsync(id, cancellationToken)
@@ -250,7 +250,7 @@ public sealed class CameraRegistry(
         return await mediaEngine.NegotiateWebRtcAsync(streamId, sdpOffer, cancellationToken);
     }
 
-    /// <summary>Повторно регистрирует потоки всех камер (после запуска или перезапуска медиа-ядра).</summary>
+        /// <summary>Registers the streams of all cameras again (after the media engine starts or restarts).</summary>
     public async Task SyncStreamsAsync(CancellationToken cancellationToken)
     {
         var cameras = await repository.ListAsync(cancellationToken);
@@ -275,7 +275,7 @@ public sealed class CameraRegistry(
             {
                 logger.LogWarning(
                     exception,
-                    "Не удалось зарегистрировать потоки камеры {CameraId} в медиа-ядре",
+                                        "Failed to register camera {CameraId} streams in the media engine",
                     camera.Id);
             }
         }
@@ -298,7 +298,7 @@ public sealed class CameraRegistry(
         {
             logger.LogWarning(
                 exception,
-                "Камера {CameraId} сохранена, но её потоки не зарегистрированы в медиа-ядре",
+                                "Camera {CameraId} was saved, but its streams are not registered in the media engine",
                 camera.Id);
         }
     }
@@ -323,7 +323,7 @@ public sealed class CameraRegistry(
             {
                 logger.LogWarning(
                     exception,
-                    "Не удалось удалить поток {StreamId} камеры {CameraId} из медиа-ядра",
+                                        "Failed to remove stream {StreamId} of camera {CameraId} from the media engine",
                     streamId,
                     camera.Id);
             }
@@ -343,7 +343,7 @@ public sealed class CameraRegistry(
         }
     }
 
-    /// <summary>Профили, которые публикуются в медиа-ядре: основной и выбранный субпоток.</summary>
+        /// <summary>Profiles published in the media engine: the main stream and the selected substream.</summary>
     private static IEnumerable<Domain.Cameras.CameraProfile> StreamProfiles(Camera camera)
     {
         var main = camera.Profiles.FirstOrDefault(profile =>
@@ -387,7 +387,7 @@ public sealed class CameraRegistry(
                        !string.Equals(profile.Id, camera.MainProfileId, StringComparison.Ordinal) &&
                        string.Equals(profile.Id, profileId, StringComparison.Ordinal))
                 ?? throw new CameraOperationNotSupportedException(
-                    $"У камеры «{camera.Name}» не найден выбранный субпоток. Обновите настройки камеры.");
+                                        $"The selected substream of camera '{camera.Name}' was not found. Refresh the camera settings.");
         }
 
         return camera.Profiles.FirstOrDefault(profile =>
@@ -399,11 +399,11 @@ public sealed class CameraRegistry(
     }
 
     private static CameraOperationNotSupportedException MissingProfile(Camera camera, bool isMain) =>
-        new($"У камеры «{camera.Name}» нет профиля {(isMain ? "основного потока." : "субпотока.")}");
+                new($"Camera '{camera.Name}' has no {(isMain ? "main stream" : "substream")} profile.");
 
     /// <summary>
-    /// Источники потока: RTSP-источник камеры и, при необходимости, ffmpeg-транскод аудио в Opus.
-    /// Видео остаётся passthrough из RTSP.
+        /// Stream sources: the camera RTSP source and, when needed, an ffmpeg audio transcode to Opus.
+        /// Video stays passthrough from RTSP.
     /// </summary>
     private static IReadOnlyList<string> BuildSources(
         MollyNvr.Domain.Cameras.CameraProfile profile,
@@ -433,12 +433,12 @@ public sealed class CameraRegistry(
     {
         if (string.IsNullOrWhiteSpace(registration.UserName))
         {
-            throw new ArgumentException("Укажите логин камеры.", nameof(registration));
+                        throw new ArgumentException("Specify the camera login.", nameof(registration));
         }
 
         if (string.IsNullOrEmpty(registration.Password))
         {
-            throw new ArgumentException("Укажите пароль камеры.", nameof(registration));
+                        throw new ArgumentException("Specify the camera password.", nameof(registration));
         }
 
         return new CameraCredentials(registration.UserName.Trim(), registration.Password);
@@ -449,7 +449,7 @@ public sealed class CameraRegistry(
         if (string.IsNullOrWhiteSpace(registration.Host) ||
             !IPAddress.TryParse(registration.Host.Trim(), out var address))
         {
-            throw new ArgumentException("Укажите IP-адрес камеры.", nameof(registration));
+                        throw new ArgumentException("Specify the camera IP address.", nameof(registration));
         }
 
         return new CameraEndpoint(address, registration.RtspPort ?? 554);
@@ -459,7 +459,7 @@ public sealed class CameraRegistry(
     {
         if (!IPAddress.TryParse(camera.Host, out var address))
         {
-            throw new InvalidOperationException($"В реестре сохранён некорректный адрес камеры «{camera.Host}».");
+                        throw new InvalidOperationException($"The registry contains an invalid camera address '{camera.Host}'.");
         }
 
         return new CameraEndpoint(address, camera.RtspPort);
@@ -482,7 +482,7 @@ public sealed class CameraRegistry(
         }
 
         return probe.MainProfile?.Id
-            ?? throw new CameraOperationNotSupportedException("Модуль камеры не вернул основной профиль потока.");
+                        ?? throw new CameraOperationNotSupportedException("The camera module did not return a main stream profile.");
     }
 
     private static string? NormalizeProfileId(string? profileId) =>

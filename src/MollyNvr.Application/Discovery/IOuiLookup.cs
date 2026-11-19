@@ -1,8 +1,8 @@
 namespace MollyNvr.Application.Discovery;
 
-/// <summary>Определение производителя по первым трём байтам MAC-адреса (OUI).</summary>
+/// <summary>Vendor lookup by the first three bytes of the MAC address (OUI).</summary>
 public interface IOuiLookup
 {
-    /// <summary>Название производителя или <c>null</c>, если префикс неизвестен.</summary>
+        /// <summary>Vendor name, or <c>null</c> when the prefix is unknown.</summary>
     string? FindVendor(string? macAddress);
 }

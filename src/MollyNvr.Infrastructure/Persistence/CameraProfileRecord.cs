@@ -1,6 +1,6 @@
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>Строка таблицы профилей потоков камеры.</summary>
+/// <summary>Row of the camera stream profiles table.</summary>
 public sealed class CameraProfileRecord
 {
     public Guid CameraId { get; set; }

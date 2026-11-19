@@ -4,10 +4,10 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Cameras.Hikvision;
 
-/// <summary>Разбор XML ISAPI (Hikvision) и сборка документа смены кодека.</summary>
+/// <summary>ISAPI (Hikvision) XML parsing and codec-change document building.</summary>
 internal static class HikvisionIsapiXml
 {
-    /// <summary>Разбирает ответ <c>/ISAPI/System/deviceInfo</c>.</summary>
+        /// <summary>Parses the <c>/ISAPI/System/deviceInfo</c> response.</summary>
     public static CameraDeviceInfo ParseDeviceInfo(string xml)
     {
         var root = LoadRoot(xml, "DeviceInfo");
@@ -20,7 +20,7 @@ internal static class HikvisionIsapiXml
             DeviceName: Value(root, "deviceName"));
     }
 
-    /// <summary>Разбирает состояние DHCP из ответа <c>/ISAPI/System/Network/interfaces</c>.</summary>
+        /// <summary>Parses the DHCP state from the <c>/ISAPI/System/Network/interfaces</c> response.</summary>
     public static bool? ParseDhcpEnabled(string xml)
     {
         var root = LoadRoot(xml, "NetworkInterfaceList");
@@ -47,7 +47,7 @@ internal static class HikvisionIsapiXml
         return dhcp is not null && bool.TryParse(dhcp, out var enabled) ? enabled : null;
     }
 
-    /// <summary>Разбирает ответ <c>/ISAPI/Streaming/channels</c> в профили main/sub.</summary>
+        /// <summary>Parses the <c>/ISAPI/Streaming/channels</c> response into main/sub profiles.</summary>
     public static IReadOnlyList<CameraProfile> ParseProfiles(string xml, CameraEndpoint endpoint)
     {
         var root = LoadRoot(xml, "StreamingChannelList");
@@ -61,7 +61,7 @@ internal static class HikvisionIsapiXml
         return SelectProfiles(channels);
     }
 
-    /// <summary>Извлекает человекочитаемое описание ошибки ISAPI.</summary>
+        /// <summary>Extracts a human-readable ISAPI error description.</summary>
     public static string? ReadErrorStatus(string body)
     {
         if (string.IsNullOrWhiteSpace(body) || !body.Contains("ResponseStatus", StringComparison.Ordinal))
@@ -150,7 +150,7 @@ internal static class HikvisionIsapiXml
     {
         if (string.IsNullOrWhiteSpace(xml))
         {
-            throw new CameraUnavailableException("ISAPI вернул пустой ответ.");
+                        throw new CameraUnavailableException("ISAPI returned an empty response.");
         }
 
         XDocument document;
@@ -160,15 +160,15 @@ internal static class HikvisionIsapiXml
         }
         catch (System.Xml.XmlException exception)
         {
-            throw new CameraUnavailableException("ISAPI вернул некорректный XML.", exception);
+                        throw new CameraUnavailableException("ISAPI returned invalid XML.", exception);
         }
 
         var root = document.Root
-            ?? throw new CameraUnavailableException("ISAPI вернул XML без корневого элемента.");
+                        ?? throw new CameraUnavailableException("ISAPI returned XML without a root element.");
 
         if (!string.Equals(root.Name.LocalName, expectedRoot, StringComparison.Ordinal))
         {
-            throw new CameraUnavailableException($"ISAPI вернул неожиданный элемент «{root.Name.LocalName}» вместо «{expectedRoot}».");
+                        throw new CameraUnavailableException($"ISAPI returned unexpected element '{root.Name.LocalName}' instead of '{expectedRoot}'.");
         }
 
         return root;

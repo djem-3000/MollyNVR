@@ -5,7 +5,7 @@ using MollyNvr.Application.Discovery;
 
 namespace MollyNvr.Infrastructure.Discovery;
 
-/// <summary>Чтение ARP-таблицы хоста. В контейнере обычно содержит только шлюз.</summary>
+/// <summary>Reading the host ARP table. Inside a container it usually contains only the gateway.</summary>
 public sealed partial class ArpTableResolver : IArpTableResolver
 {
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(2);
@@ -31,7 +31,7 @@ public sealed partial class ArpTableResolver : IArpTableResolver
         }
         catch (Exception)
         {
-            // Таблица ARP недоступна — поиск продолжится без MAC-адресов.
+                        // The ARP table is unavailable — discovery continues without MAC addresses.
         }
 
         return new Dictionary<IPAddress, string>();

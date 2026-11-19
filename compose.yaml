@@ -7,35 +7,35 @@ services:
       dockerfile: docker/Dockerfile
     image: mollynvr:dev
     container_name: mollynvr
-    # Bridge-сеть с публикацией портов. Причина: host networking в Docker Desktop на Windows
-    # не пробрасывает UDP внутрь контейнера, а WebRTC-медиа (SRTP) идёт по UDP :8555.
-    # Multicast-автопоиск (WS-Discovery/SADP) в bridge недоступен — используется скан подсети
-    # (см. docs/architecture.md §15, риск 1).
+    # Bridge network with published ports. Reason: host networking in Docker Desktop on Windows
+    # does not forward UDP into the container, and WebRTC media (SRTP) runs over UDP :8555.
+    # Multicast discovery (WS-Discovery/SADP) is unavailable in bridge mode — subnet scanning is used
+    # (see docs/architecture.md section 15, risk 1).
     ports:
       - "9080:9080"       # UI/API/WHEP (HTTP)
       - "9443:9443"       # UI/API/WHEP (HTTPS, PWA)
       - "8555:8555"       # WebRTC (ICE-TCP)
-      - "8555:8555/udp"   # WebRTC (SRTP-медиа)
-    # NVENC/NVDEC для транскода (нужен GPU-совместимый Docker Desktop + драйвер NVIDIA).
+      - "8555:8555/udp"   # WebRTC (SRTP media)
+    # NVENC/NVDEC for transcoding (requires a GPU-capable Docker Desktop and the NVIDIA driver).
     gpus: all
     environment:
-      # Драйверные библиотеки NVIDIA целиком (без этого нет libnvidia-encode.so для NVENC).
+      # Full set of NVIDIA driver libraries (otherwise libnvidia-encode.so for NVENC is missing).
       NVIDIA_DRIVER_CAPABILITIES: all
-      # HTTP для отладки/локальной сети и HTTPS для установки PWA на телефон.
+      # HTTP for debugging and the local network, HTTPS for installing the PWA on a phone.
       Kestrel__Endpoints__Https__Url: https://0.0.0.0:9443
       Kestrel__Endpoints__Https__Certificate__Path: /certs/mollynvr.pem
       Kestrel__Endpoints__Https__Certificate__KeyPath: /certs/mollynvr-key.pem
-      # LAN-адрес Windows-хоста для ICE-кандидата WebRTC: из контейнера он не виден.
-      # Задайте HOST_LAN_IP в .env (см. .env.example).
+      # LAN address of the Windows host for the WebRTC ICE candidate: it is not visible from the container.
+      # Set HOST_LAN_IP in .env (see .env.example).
       Go2Rtc__WebRtcCandidates__0: ${HOST_LAN_IP:-192.168.1.151}:8555
-      # Диапазон автопоиска по умолчанию (multicast WS-Discovery/SADP в bridge недоступен).
+      # Default discovery range (multicast WS-Discovery/SADP is unavailable in bridge mode).
       Discovery__DefaultRange: ${DISCOVERY_RANGE:-192.168.1.0/24}
-      # Мост Reolink (Baichuan, порт 9000): HTTP-API и RTSP внутри сети compose.
+      # Reolink bridge (Baichuan, port 9000): HTTP API and RTSP inside the compose network.
       Reolink__ApiBaseUrl: http://reolink:8655
       Reolink__RtspBaseUrl: rtsp://reolink:8654
-      # Часовой пояс: расписания записи и имена файлов используют локальное время сервера.
+      # Time zone: recording schedules and file names use the server local time.
       TZ: ${TZ:-Europe/Moscow}
-      # Запись видео: отдельный том и длина сегмента.
+      # Video recording: a separate volume and the segment length.
       Recording__StoragePath: /recordings
       Recording__SegmentSeconds: ${RECORDING_SEGMENT_SECONDS:-300}
     volumes:
@@ -56,9 +56,9 @@ services:
       retries: 3
       start_period: 20s
 
-  # Мост Reolink: камеры без HTTP/ONVIF (только Baichuan, порт 9000).
-  # Список камер пишет само приложение в ./data/reolink/config.json; мост
-  # перезапускается при изменении файла (см. docker/reolink/entrypoint.sh).
+  # Reolink bridge: cameras without HTTP/ONVIF (Baichuan only, port 9000).
+  # The application writes the camera list to ./data/reolink/config.json; the bridge
+  # restarts when the file changes (see docker/reolink/entrypoint.sh).
   reolink:
     build:
       context: .

@@ -1,12 +1,19 @@
 import type { SystemInfo } from '../api'
-import { t } from '../i18n'
+import { setLocale, t, type Locale } from '../i18n'
+import { useLocale } from '../useLocale'
 import StorageSection from './StorageSection'
 
 type Props = {
   info: SystemInfo | null
 }
 
+const LANGUAGES: { value: Locale; label: string }[] = [
+  { value: 'en', label: 'English' },
+  { value: 'ru', label: 'Русский' }
+]
+
 export default function SettingsPanel({ info }: Props) {
+  const locale = useLocale()
   const go2rtcOk = info?.go2rtc === 'ok'
 
   return (
@@ -25,6 +32,22 @@ export default function SettingsPanel({ info }: Props) {
             </dd>
           </div>
         </dl>
+      </section>
+
+      <section className="page-section">
+        <h2>{t('settings.language')}</h2>
+        <label className="field settings-language">
+          <select
+            value={locale}
+            onChange={(event) => setLocale(event.target.value as Locale)}
+          >
+            {LANGUAGES.map((language) => (
+              <option key={language.value} value={language.value}>
+                {language.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </section>
 
       <StorageSection />

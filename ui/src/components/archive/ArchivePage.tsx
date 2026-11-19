@@ -136,7 +136,7 @@ export default function ArchivePage({ cameraId }: Props) {
     }
 
     if (multi) {
-      // Клик по камере в режиме сетки добавляет её в первый свободный тайл.
+      // Clicking a camera in grid mode adds it to the first free tile.
       setSlots((current) => {
         if (current.includes(cameraId)) {
           return current
@@ -229,7 +229,7 @@ export default function ArchivePage({ cameraId }: Props) {
     return () => {
       cancelled = true
     }
-    // Контроллеры стабильны по методам; перезапуск нужен только при смене камеры или даты.
+    // Controllers are stable by method; a restart is needed only when the camera or date changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCameraId, selectedDate, multi])
 
@@ -370,7 +370,7 @@ export default function ArchivePage({ cameraId }: Props) {
 
   const handleSeek = useCallback(
     (wall: Date) => {
-      // Клик по таймлайну только перемещает риску и останавливает воспроизведение.
+      // Clicking the timeline only moves the playhead and stops playback.
       setCursor(wall)
 
       if (multi) {
@@ -422,7 +422,7 @@ export default function ArchivePage({ cameraId }: Props) {
       autoStartRef.current[index] = { cameraId: slotCameraId, at: now }
       controller.playFrom(new Date(wallMs))
     })
-    // Контроллеры и таймлайны меняются вместе со слотами — запуск нужен при пересечении границы записи.
+    // Controllers and timelines change together with the slots: playback must start when a recording boundary is crossed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multi, playing, wallTime, slots, gridTimelines])
 
@@ -514,7 +514,7 @@ export default function ArchivePage({ cameraId }: Props) {
 
     const target = document.querySelector('.archive-grid') ?? document.querySelector('.archive-player')
     void (target as HTMLElement | null)?.requestFullscreen().catch(() => {
-      console.warn('Не удалось открыть полноэкранный режим')
+      console.warn('Could not enter fullscreen')
     })
   }
 

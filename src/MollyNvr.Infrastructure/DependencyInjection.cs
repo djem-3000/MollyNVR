@@ -60,7 +60,7 @@ public static class DependencyInjection
 
         services.AddSingleton<StreamRegistry>();
 
-        // Инициализация БД должна завершиться до синхронизации потоков камер с go2rtc.
+                // Database initialization must complete before camera streams are synchronized with go2rtc.
         services.AddHostedService<DatabaseInitializer>();
         services.AddHostedService<Go2RtcProcessService>();
 

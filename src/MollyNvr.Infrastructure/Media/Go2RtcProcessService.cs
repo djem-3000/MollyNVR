@@ -10,7 +10,7 @@ using MollyNvr.Domain.Streams;
 
 namespace MollyNvr.Infrastructure.Media;
 
-/// <summary>Запускает go2rtc дочерним процессом, следит за готовностью и перезапускает его при сбое.</summary>
+/// <summary>Starts go2rtc as a child process, watches readiness and restarts it on failure.</summary>
 public sealed partial class Go2RtcProcessService(
     IOptions<Go2RtcOptions> options,
     IHostEnvironment environment,
@@ -29,20 +29,22 @@ public sealed partial class Go2RtcProcessService(
         if (binaryPath is null)
         {
             logger.LogError(
-                "go2rtc не найден: задайте Go2Rtc:BinaryPath или положите бинарник в tools/ (dev) либо /usr/local/bin/go2rtc (контейнер)");
+                                "go2rtc not found: set Go2Rtc:BinaryPath or place the binary in tools/ (dev) or /usr/local/bin/go2rtc (container)");
             return;
         }
 
         DeleteLegacyConfig();
 
         var configPath = WriteConfigFile();
-        logger.LogInformation("Медиа-ядро: {Binary} (конфиг: {Config})", binaryPath, configPath);        while (!stoppingToken.IsCancellationRequested)
+        logger.LogInformation("Media engine: {Binary} (config: {Config})", binaryPath, configPath);
+
+        while (!stoppingToken.IsCancellationRequested)
         {
             var process = StartProcess(binaryPath, configPath);
             try
             {
                 await WaitForReadyAsync(stoppingToken);
-                logger.LogInformation("go2rtc готов, API: {BaseUrl}", options.Value.BaseUrl);
+                logger.LogInformation("go2rtc is ready, API: {BaseUrl}", options.Value.BaseUrl);
 
                 await registry.SyncAsync(stoppingToken);
 
@@ -56,11 +58,11 @@ public sealed partial class Go2RtcProcessService(
                 }
                 catch (Exception exception)
                 {
-                    logger.LogError(exception, "Не удалось зарегистрировать потоки камер в go2rtc");
+                                        logger.LogError(exception, "Failed to register camera streams in go2rtc");
                 }
 
                 await process.WaitForExitAsync(stoppingToken);
-                logger.LogWarning("go2rtc завершился с кодом {ExitCode}", process.ExitCode);
+                                logger.LogWarning("go2rtc exited with code {ExitCode}", process.ExitCode);
             }
             catch (OperationCanceledException)
             {
@@ -68,7 +70,7 @@ public sealed partial class Go2RtcProcessService(
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Сбой при работе с процессом go2rtc");
+                                logger.LogError(exception, "go2rtc process failure");
             }
             finally
             {
@@ -107,7 +109,7 @@ public sealed partial class Go2RtcProcessService(
             }
         }
 
-        throw new TimeoutException("go2rtc не ответил на API-запрос за отведённое время");
+                throw new TimeoutException("go2rtc did not answer the API request in time");
     }
 
     private string? ResolveBinaryPath()
@@ -146,13 +148,13 @@ public sealed partial class Go2RtcProcessService(
         }
 
         File.WriteAllText(configPath, BuildDefaultConfig());
-        logger.LogInformation("Конфиг go2rtc: {Config}", configPath);
+                logger.LogInformation("go2rtc config: {Config}", configPath);
         return configPath;
     }
 
     /// <summary>
-    /// go2rtc дописывает в свой конфиг источники с учётными данными камер.
-    /// Держим его вне volume /data (tmpfs или временный каталог), чтобы креды не попадали на диск.
+        /// go2rtc appends sources with camera credentials to its config.
+        /// Keep it outside the /data volume (tmpfs or a temporary directory) so credentials never reach the disk.
     /// </summary>
     private static string ResolveConfigDirectory()
     {
@@ -164,7 +166,7 @@ public sealed partial class Go2RtcProcessService(
         return Path.Combine(Path.GetTempPath(), "mollynvr");
     }
 
-    /// <summary>Удаляет старый конфиг из /data, где могли остаться источники с паролями.</summary>
+        /// <summary>Removes the old config from /data, where sources with passwords could remain.</summary>
     private void DeleteLegacyConfig()
     {
         if (!string.IsNullOrWhiteSpace(options.Value.ConfigPath))
@@ -179,12 +181,12 @@ public sealed partial class Go2RtcProcessService(
             if (File.Exists(legacyPath))
             {
                 File.Delete(legacyPath);
-                logger.LogWarning("Удалён устаревший конфиг go2rtc с учётными данными: {Path}", legacyPath);
+                                logger.LogWarning("Removed an outdated go2rtc config with credentials: {Path}", legacyPath);
             }
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            logger.LogWarning(exception, "Не удалось удалить устаревший конфиг go2rtc: {Path}", legacyPath);
+                        logger.LogWarning(exception, "Failed to remove the outdated go2rtc config: {Path}", legacyPath);
         }
     }
 
@@ -207,8 +209,8 @@ public sealed partial class Go2RtcProcessService(
             }
         }
 
-        // Внутренний RTSP-сервер: ffmpeg-источники и транскод публикуются как rtsp://localhost:8554/<id>,
-        // откуда go2rtc забирает их для WebRTC. Наружу не выставляется (только loopback).
+                // Internal RTSP server: ffmpeg sources and transcodes are published as rtsp://localhost:8554/<id>,
+                // from where go2rtc pulls them for WebRTC. Not exposed externally (loopback only).
         config.AppendLine();
         config.AppendLine("rtsp:");
         config.AppendLine($"  listen: \"{options.Value.RtspListen}\"");
@@ -255,7 +257,7 @@ public sealed partial class Go2RtcProcessService(
         }
         catch (Exception exception)
         {
-            logger.LogDebug(exception, "Не удалось корректно остановить go2rtc");
+                        logger.LogDebug(exception, "Failed to stop go2rtc cleanly");
         }
     }
 

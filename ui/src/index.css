@@ -1716,7 +1716,7 @@ button.danger:hover:not(:disabled) {
   }
 }
 
-/* --- Мастер добавления камеры --- */
+/* --- Camera setup wizard --- */
 
 .wizard-step-link {
   display: flex;
@@ -1873,7 +1873,7 @@ button:focus-visible {
   }
 }
 
-/* ---------- Запись и хранилище ---------- */
+/* ---------- Recording and storage ---------- */
 
 .section-heading {
   display: flex;
@@ -2154,7 +2154,7 @@ button:focus-visible {
   opacity: 0.85;
 }
 
-/* --- Архив --- */
+/* --- Archive --- */
 .page-body.archive-body {
   padding-top: 0.15rem;
 }
@@ -3717,3 +3717,9 @@ body.page-scroll {
   max-width: 24rem;
   margin-top: 0.5rem;
 }
+
+.settings-language {
+  max-width: 16rem;
+  margin-top: 0.75rem;
+}
+

@@ -467,7 +467,7 @@ export default function CameraTile({
         await container.requestFullscreen()
       }
     } catch {
-      // Браузер может запретить fullscreen без пользовательского жеста.
+      // The browser may block fullscreen without a user gesture.
     }
   }
 

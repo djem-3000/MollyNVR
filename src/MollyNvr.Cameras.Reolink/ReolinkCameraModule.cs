@@ -5,13 +5,13 @@ using MollyNvr.Cameras.Abstractions;
 namespace MollyNvr.Cameras.Reolink;
 
 /// <summary>
-/// Камеры Reolink без HTTP/ONVIF: связь идёт по проприетарному Baichuan (порт 9000)
-/// через мост neolink.net, который отдаёт обычный RTSP.
+/// Reolink cameras without HTTP/ONVIF: communication goes over proprietary Baichuan (port 9000)
+/// through the neolink.net bridge, which exposes regular RTSP.
 /// </summary>
 public sealed class ReolinkCameraModule(ReolinkBridgeClient bridge)
     : ICameraModule, ICameraNetworkInfoProvider
 {
-    /// <summary>Ключ модуля.</summary>
+        /// <summary>Module key.</summary>
     public const string ModuleKey = "reolink";
 
     private const int BaichuanPort = 9000;
@@ -50,8 +50,8 @@ public sealed class ReolinkCameraModule(ReolinkBridgeClient bridge)
         if (!await bridge.WaitUntilOnlineAsync(cameraName, cancellationToken))
         {
             throw new CameraUnavailableException(
-                $"Камера {endpoint.Host} не ответила по протоколу Reolink (порт {BaichuanPort}). " +
-                "Проверьте логин, пароль и доступность камеры.");
+                                $"Camera {endpoint.Host} did not respond over the Reolink protocol (port {BaichuanPort}). " +
+                                "Check the login, password and camera availability.");
         }
 
         var streamInfo = await bridge.GetStreamInfoAsync(cameraName, cancellationToken);
@@ -60,7 +60,7 @@ public sealed class ReolinkCameraModule(ReolinkBridgeClient bridge)
         if (profiles.Count == 0)
         {
             throw new CameraUnavailableException(
-                $"Камера {endpoint.Host} не сообщила ни одного профиля потока.");
+                                $"Camera {endpoint.Host} reported no stream profile.");
         }
 
         var device = await bridge.GetDeviceInfoAsync(cameraName, cancellationToken);
@@ -86,7 +86,7 @@ public sealed class ReolinkCameraModule(ReolinkBridgeClient bridge)
         var snapshot = await bridge.GetSnapshotAsync(cameraName, cancellationToken);
 
         return snapshot ?? throw new CameraModuleException(
-            $"Мост Reolink не вернул стоп-кадр камеры {endpoint.Host}.");
+                        $"The Reolink bridge did not return a snapshot of camera {endpoint.Host}.");
     }
 
     /// <inheritdoc />

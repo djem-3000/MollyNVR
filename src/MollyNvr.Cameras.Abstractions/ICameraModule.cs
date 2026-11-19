@@ -1,29 +1,29 @@
 namespace MollyNvr.Cameras.Abstractions;
 
-/// <summary>Модуль производителя камер: опрос, профили потоков, снапшот.</summary>
+/// <summary>Camera vendor module: probe, stream profiles, snapshot.</summary>
 public interface ICameraModule
 {
-    /// <summary>Ключ модуля (например, <c>onvif</c>).</summary>
+        /// <summary>Module key (for example, <c>onvif</c>).</summary>
     string Key { get; }
 
-    /// <summary>Отображаемое имя производителя.</summary>
+        /// <summary>Vendor display name.</summary>
     string DisplayName { get; }
 
     /// <summary>
-    /// Быстрая проверка, отвечает ли устройство на этом адресе по протоколу модуля
-    /// (без учётных данных). Используется для автопоиска и перебора модулей.
+        /// Quick check whether the device responds at this address over the module protocol
+        /// (without credentials). Used for discovery and module enumeration.
     /// </summary>
     Task<bool> CanHandleAsync(CameraEndpoint endpoint, CancellationToken cancellationToken);
 
-    /// <summary>Опрос устройства: сведения, профили и потоки.</summary>
-    /// <exception cref="CameraAuthenticationException">Камера отклонила учётные данные.</exception>
-    /// <exception cref="CameraUnavailableException">Устройство недоступно или не отвечает по протоколу.</exception>
+        /// <summary>Device probe: details, profiles and streams.</summary>
+        /// <exception cref="CameraAuthenticationException">The camera rejected the credentials.</exception>
+        /// <exception cref="CameraUnavailableException">The device is unavailable or does not respond over the protocol.</exception>
     Task<CameraProbeResult> ProbeAsync(
         CameraEndpoint endpoint,
         CameraCredentials credentials,
         CancellationToken cancellationToken);
 
-    /// <summary>JPEG-снапшот профиля камеры.</summary>
+        /// <summary>JPEG snapshot of a camera profile.</summary>
     Task<byte[]> GetSnapshotAsync(
         CameraEndpoint endpoint,
         CameraCredentials credentials,

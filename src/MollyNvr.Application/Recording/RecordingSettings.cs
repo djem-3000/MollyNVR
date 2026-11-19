@@ -1,76 +1,76 @@
 namespace MollyNvr.Application.Recording;
 
-/// <summary>Настройки записи камеры: поток, режимы, расписания, события, pre/post-roll.</summary>
+/// <summary>Camera recording settings: stream, modes, schedules, events, pre/post-roll.</summary>
 public sealed record RecordingSettings
 {
     public Guid CameraId { get; init; }
 
-    /// <summary>Общий выключатель записи камеры.</summary>
+        /// <summary>Master switch for camera recording.</summary>
     public bool Enabled { get; init; }
 
-    /// <summary>Идентификатор профиля камеры, с которого пишем (main/sub).</summary>
+        /// <summary>Identifier of the camera profile to record from (main/sub).</summary>
     public string ProfileId { get; init; } = string.Empty;
 
-    /// <summary>Потоковая запись по расписанию.</summary>
+        /// <summary>Continuous recording on a schedule.</summary>
     public bool ContinuousEnabled { get; init; }
 
     public WeeklySchedule ContinuousSchedule { get; init; } = WeeklySchedule.Empty;
 
-    /// <summary>Запись по событиям камеры.</summary>
+        /// <summary>Recording triggered by camera events.</summary>
     public bool EventEnabled { get; init; }
 
-    /// <summary>Когда следим за событиями (вне этих окон запись не ведётся).</summary>
+        /// <summary>When events are monitored (no recording outside these windows).</summary>
     public WeeklySchedule EventSchedule { get; init; } = WeeklySchedule.Empty;
 
-    /// <summary>Типы событий камеры, по которым пишем.</summary>
+        /// <summary>Camera event types that trigger recording.</summary>
     public IReadOnlyList<string> EventTypes { get; init; } = [];
 
-    /// <summary>Сколько секунд до события сохранить.</summary>
+        /// <summary>How many seconds to keep before the event.</summary>
     public int PreRollSeconds { get; init; }
 
-    /// <summary>Сколько секунд продолжать запись после окончания события.</summary>
+        /// <summary>How many seconds to keep recording after the event ends.</summary>
     public int PostRollSeconds { get; init; }
 
-    /// <summary>Включён ли хотя бы один режим.</summary>
+        /// <summary>Whether at least one mode is enabled.</summary>
     public bool HasActiveMode => Enabled && (ContinuousEnabled || EventEnabled);
 
-    /// <summary>Нужно ли держать процесс записи запущенным в этот момент (буфер для pre-roll).</summary>
+        /// <summary>Whether the recording process must be running at this moment (pre-roll buffer).</summary>
     public bool ShouldRecord(DateTimeOffset moment) =>
         Enabled &&
         ((ContinuousEnabled && ContinuousSchedule.IsActive(moment)) ||
          (EventEnabled && EventSchedule.IsActive(moment)));
 }
 
-/// <summary>Режим перезаписи общего пула.</summary>
+/// <summary>Overwrite mode of the shared pool.</summary>
 [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum StorageOverwriteMode
 {
-    /// <summary>Кольцевой буфер: удаляется самый старый сегмент, как только превышена квота.</summary>
+        /// <summary>Ring buffer: the oldest segment is deleted as soon as the quota is exceeded.</summary>
     Fifo = 0,
 
-    /// <summary>Водяные знаки: при достижении high удаляем старое до low.</summary>
+        /// <summary>Watermarks: when high is reached, delete old data down to low.</summary>
     Watermark = 1,
 }
 
-/// <summary>Настройки общего пула записей.</summary>
+/// <summary>Shared recording pool settings.</summary>
 public sealed record StorageSettings
 {
-    /// <summary>Каталог пула (внутри смонтированного тома).</summary>
+        /// <summary>Pool directory (inside the mounted volume).</summary>
     public string Path { get; init; } = string.Empty;
 
-    /// <summary>Квота — доля объёма тома в процентах (по умолчанию 90).</summary>
+        /// <summary>Quota — share of the volume capacity in percent (90 by default).</summary>
     public int QuotaPercent { get; init; } = 90;
 
     public StorageOverwriteMode Mode { get; init; } = StorageOverwriteMode.Fifo;
 
-    /// <summary>Верхний порог (в процентах от квоты), после которого начинается очистка.</summary>
+        /// <summary>High watermark (percent of the quota) that starts cleanup.</summary>
     public int HighWatermarkPercent { get; init; } = 90;
 
-    /// <summary>Нижний порог (в процентах от квоты), до которого очищаем.</summary>
+        /// <summary>Low watermark (percent of the quota) to clean down to.</summary>
     public int LowWatermarkPercent { get; init; } = 80;
 }
 
-/// <summary>Сегмент записи на диске.</summary>
+/// <summary>Recording segment on disk.</summary>
 public sealed record RecordingSegment(
     Guid Id,
     Guid CameraId,
@@ -79,7 +79,7 @@ public sealed record RecordingSegment(
     DateTimeOffset EndedAt,
     long SizeBytes);
 
-/// <summary>Событие камеры, по которому пишем (для хранения окон записи).</summary>
+/// <summary>Camera event that triggers recording (for storing recording windows).</summary>
 public sealed record RecordingEvent(
     Guid Id,
     Guid CameraId,
@@ -87,7 +87,7 @@ public sealed record RecordingEvent(
     DateTimeOffset StartedAt,
     DateTimeOffset? EndedAt);
 
-/// <summary>Состояние пула: сколько занято и сколько разрешено.</summary>
+/// <summary>Pool state: how much is used and how much is allowed.</summary>
 public sealed record StoragePoolStatus(
     string Path,
     long TotalBytes,

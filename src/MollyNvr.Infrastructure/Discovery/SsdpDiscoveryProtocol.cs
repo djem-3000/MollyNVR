@@ -5,7 +5,7 @@ using MollyNvr.Application.Discovery;
 
 namespace MollyNvr.Infrastructure.Discovery;
 
-/// <summary>SSDP/UPnP: M-SEARCH на multicast 239.255.255.250:1900 и чтение описания устройства.</summary>
+/// <summary>SSDP/UPnP: M-SEARCH to multicast 239.255.255.250:1900 and device description reading.</summary>
 public sealed class SsdpDiscoveryProtocol(IHttpClientFactory httpClientFactory) : IDiscoveryProtocol
 {
     private static readonly IPEndPoint Target = new(IPAddress.Parse("239.255.255.250"), 1900);

@@ -5,10 +5,10 @@ using MollyNvr.Cameras.Abstractions.Http;
 
 namespace MollyNvr.Cameras.ONVIF;
 
-/// <summary>Универсальный модуль ONVIF-камер (WS-Security UsernameToken, media/device service).</summary>
+/// <summary>Generic ONVIF camera module (WS-Security UsernameToken, media/device service).</summary>
 public sealed class OnvifCameraModule : ICameraModule, ICameraNetworkInfoProvider, ICameraEventSource
 {
-    /// <summary>Ключ модуля.</summary>
+        /// <summary>Module key.</summary>
     public const string ModuleKey = "onvif";
 
     /// <inheritdoc />
@@ -128,7 +128,7 @@ public sealed class OnvifCameraModule : ICameraModule, ICameraNetworkInfoProvide
 
         if (profiles.Count == 0)
         {
-            throw new CameraOperationNotSupportedException("ONVIF не вернул ни одного профиля с видеопотоком.");
+                        throw new CameraOperationNotSupportedException("ONVIF returned no profile with a video stream.");
         }
 
         return new CameraProbeResult(device, AssignKinds(profiles));
@@ -167,7 +167,7 @@ public sealed class OnvifCameraModule : ICameraModule, ICameraNetworkInfoProvide
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
         {
             throw new CameraOperationNotSupportedException(
-                "ONVIF не отдал снапшот по HTTP — используется кадр из RTSP.");
+                                "ONVIF did not provide a snapshot over HTTP — a frame from RTSP is used.");
         }
     }
 
@@ -196,12 +196,12 @@ public sealed class OnvifCameraModule : ICameraModule, ICameraNetworkInfoProvide
         }
         catch (HttpRequestException exception)
         {
-            throw new CameraUnavailableException($"ONVIF недоступен при операции «{operation}».", exception);
+                        throw new CameraUnavailableException($"ONVIF is unavailable for the '{operation}' operation.", exception);
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
             throw new CameraUnavailableException(
-                $"ONVIF не ответил за отведённое время при операции «{operation}».",
+                                $"ONVIF did not respond in time for the '{operation}' operation.",
                 exception);
         }
 
@@ -230,7 +230,7 @@ public sealed class OnvifCameraModule : ICameraModule, ICameraNetworkInfoProvide
         }
         catch (CameraModuleException)
         {
-            // Не все прошивки поддерживают GetCapabilities; media-запросы пробуем на device service.
+                        // Not all firmware supports GetCapabilities; media requests are tried on the device service.
             return endpoint.OnvifServiceUri;
         }
     }
@@ -297,12 +297,12 @@ public sealed class OnvifCameraModule : ICameraModule, ICameraNetworkInfoProvide
         using var response = await client.GetAsync(uri, cancellationToken);
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
-            throw new CameraAuthenticationException("ONVIF отклонил учётные данные при запросе снапшота.");
+                        throw new CameraAuthenticationException("ONVIF rejected the credentials when requesting a snapshot.");
         }
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new CameraUnavailableException($"ONVIF вернул HTTP {(int)response.StatusCode} при запросе снапшота.");
+                        throw new CameraUnavailableException($"ONVIF returned HTTP {(int)response.StatusCode} when requesting a snapshot.");
         }
 
         return await response.Content.ReadAsByteArrayAsync(cancellationToken);

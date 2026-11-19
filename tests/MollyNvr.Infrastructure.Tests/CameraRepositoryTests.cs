@@ -18,14 +18,14 @@ public class CameraRepositoryTests
 
         try
         {
-            var camera = CreateCamera("Крыльцо");
+                        var camera = CreateCamera("Porch");
             var credentials = new CameraCredentials("admin", "super-secret");
             await repository.AddAsync(camera, credentials, CancellationToken.None);
 
             var saved = await repository.FindAsync(camera.Id, CancellationToken.None);
 
             Assert.NotNull(saved);
-            Assert.Equal("Крыльцо", saved.Name);
+                        Assert.Equal("Porch", saved.Name);
             Assert.Equal(2, saved.Profiles.Count);
             Assert.Equal("main", saved.MainProfileId);
             Assert.Equal("sub", saved.SubProfileId);
@@ -54,12 +54,12 @@ public class CameraRepositoryTests
 
         try
         {
-            var camera = CreateCamera("Старое имя");
+                        var camera = CreateCamera("Old name");
             var credentials = new CameraCredentials("admin", "secret");
             await repository.AddAsync(camera, credentials, CancellationToken.None);
 
             var updated = camera.Update(
-                "Новое имя",
+                                "New name",
                 camera.Host,
                 camera.RtspPort,
                 camera.VendorKey,
@@ -76,7 +76,7 @@ public class CameraRepositoryTests
             var saved = await repository.FindAsync(camera.Id, CancellationToken.None);
 
             Assert.NotNull(saved);
-            Assert.Equal("Новое имя", saved.Name);
+                        Assert.Equal("New name", saved.Name);
             Assert.Single(saved.Profiles);
             Assert.Equal(credentials, await repository.GetCredentialsAsync(camera.Id, CancellationToken.None));
         }
@@ -94,16 +94,16 @@ public class CameraRepositoryTests
 
         try
         {
-            var camera = CreateCamera("Камера");
+                        var camera = CreateCamera("Camera");
             await repository.AddAsync(camera, new CameraCredentials("admin", "secret"), CancellationToken.None);
 
-            var updated = camera.UpdateSettings("Крыльцо", "sub", DateTimeOffset.UtcNow);
+                        var updated = camera.UpdateSettings("Porch", "sub", DateTimeOffset.UtcNow);
             await repository.UpdateAsync(updated, credentials: null, CancellationToken.None);
 
             var saved = await repository.FindAsync(camera.Id, CancellationToken.None);
 
             Assert.NotNull(saved);
-            Assert.Equal("Крыльцо", saved.Name);
+                        Assert.Equal("Porch", saved.Name);
             Assert.Equal("sub", saved.SubProfileId);
         }
         finally
@@ -120,7 +120,7 @@ public class CameraRepositoryTests
 
         try
         {
-            var camera = CreateCamera("Камера");
+                        var camera = CreateCamera("Camera");
             await repository.AddAsync(camera, new CameraCredentials("admin", "secret"), CancellationToken.None);
 
             await repository.RemoveAsync(camera.Id, CancellationToken.None);
@@ -145,7 +145,7 @@ public class CameraRepositoryTests
 
         try
         {
-            var camera = CreateCamera("Камера");
+                        var camera = CreateCamera("Camera");
             var credentials = new CameraCredentials("admin", "secret");
             await repository.AddAsync(camera, credentials, CancellationToken.None);
 
@@ -172,12 +172,12 @@ public class CameraRepositoryTests
 
         try
         {
-            await repository.AddAsync(CreateCamera("Яблоко"), new CameraCredentials("admin", "secret"), CancellationToken.None);
-            await repository.AddAsync(CreateCamera("Абрикос"), new CameraCredentials("admin", "secret"), CancellationToken.None);
+                        await repository.AddAsync(CreateCamera("Apple"), new CameraCredentials("admin", "secret"), CancellationToken.None);
+                        await repository.AddAsync(CreateCamera("Apricot"), new CameraCredentials("admin", "secret"), CancellationToken.None);
 
             var cameras = await repository.ListAsync(CancellationToken.None);
 
-            Assert.Equal(["Абрикос", "Яблоко"], cameras.Select(static camera => camera.Name));
+                        Assert.Equal(["Apple", "Apricot"], cameras.Select(static camera => camera.Name));
         }
         finally
         {

@@ -3,7 +3,7 @@ using MollyNvr.Domain.Streams;
 
 namespace MollyNvr.Api.Endpoints;
 
-/// <summary>Системные эндпоинты: проверка живости и сведения о приложении/медиа-ядре.</summary>
+/// <summary>System endpoints: liveness probe and application/media engine details.</summary>
 public static class SystemEndpoints
 {
     public static IEndpointRouteBuilder MapSystemEndpoints(this IEndpointRouteBuilder app)
@@ -13,14 +13,14 @@ public static class SystemEndpoints
         return app;
     }
 
-    /// <summary>Проверка живости API (liveness).</summary>
-    /// <remarks>Возвращает 200, пока процесс приложения отвечает; зависимости не проверяются.</remarks>
+        /// <summary>API liveness probe.</summary>
+        /// <remarks>Returns 200 while the application process responds; dependencies are not checked.</remarks>
     private static IResult GetHealth() => Results.Ok(new { status = "ok" });
 
-    /// <summary>Версии приложения и .NET, состояние медиа-ядра go2rtc.</summary>
+        /// <summary>Application and .NET versions, go2rtc media engine state.</summary>
     /// <remarks>
-    /// Поле <c>go2rtc</c>: <c>ok</c> — HTTP API go2rtc отвечает, <c>unavailable</c> — не отвечает
-    /// (процесс ещё стартует, перезапускается или завершился с ошибкой).
+        /// The <c>go2rtc</c> field: <c>ok</c> — the go2rtc HTTP API responds, <c>unavailable</c> — no response
+        /// (the process is still starting, restarting or has exited with an error).
     /// </remarks>
     private static async Task<IResult> GetSystemInfoAsync(
         IMediaEngine mediaEngine,
@@ -41,7 +41,7 @@ public static class SystemEndpoints
         });
     }
 
-    /// <summary>Проверяет готовность go2rtc запросом к его API; ошибки не пробрасываются наружу.</summary>
+        /// <summary>Checks go2rtc readiness with an API request; errors are not propagated to the client.</summary>
     private static async Task<bool> IsMediaEngineReadyAsync(
         IMediaEngine mediaEngine,
         ILoggerFactory loggerFactory,
@@ -54,7 +54,7 @@ public static class SystemEndpoints
         }
         catch (Exception exception)
         {
-            loggerFactory.CreateLogger(nameof(SystemEndpoints)).LogDebug(exception, "go2rtc недоступен");
+                        loggerFactory.CreateLogger(nameof(SystemEndpoints)).LogDebug(exception, "go2rtc is unavailable");
             return false;
         }
     }

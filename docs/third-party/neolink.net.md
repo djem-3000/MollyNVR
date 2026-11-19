@@ -1,32 +1,33 @@
 # neolink.net (AGPL-3.0)
 
-Мост для камер Reolink, которые не отдают RTSP/ONVIF и доступны только по проприетарному
-протоколу **Baichuan** (TCP 9000). Запускается отдельным сервисом `reolink` в `compose.yaml`.
+A bridge for Reolink cameras that do not provide RTSP/ONVIF and are reachable only over the proprietary
+**Baichuan** protocol (TCP 9000). It runs as a separate `reolink` service in `compose.yaml`.
 
-- Проект: <https://github.com/borexola/neolink.net>
-- Лицензия: **GNU Affero General Public License v3.0** — <https://www.gnu.org/licenses/agpl-3.0.html>
-- Используемая версия: `ghcr.io/borexola/neolink.net:1.2.2`
-- Наш образ: `docker/reolink/Dockerfile` (тот же бинарник + супервизор `entrypoint.sh`).
+- Project: <https://github.com/borexola/neolink.net>
+- License: **GNU Affero General Public License v3.0** — <https://www.gnu.org/licenses/agpl-3.0.html>
+- Version in use: `ghcr.io/borexola/neolink.net:1.2.2`
+- Our image: `docker/reolink/Dockerfile` (the same binary plus the `entrypoint.sh` supervisor).
 
-## Как связан с MollyNVR
+## How it relates to MollyNVR
 
-Код MollyNVR с neolink.net **не линкуется** и не включает его исходники: это отдельный процесс,
-обмен идёт по HTTP-API и RTSP. Поэтому AGPL распространяется на сам neolink.net, а не на код приложения.
+The MollyNVR code is **not linked** with neolink.net and does not include its sources: it is a separate
+process, and the interaction goes over the HTTP API and RTSP. Therefore the AGPL applies to neolink.net
+itself, not to the application code.
 
-AGPL требует предоставить исходный код пользователям, которые взаимодействуют с программой по сети.
-Исходники доступны по ссылке выше; мы их не изменяем — только запускаем в контейнере.
+The AGPL requires providing the source code to users who interact with the program over a network.
+The sources are available at the link above; we do not modify them — we only run them in a container.
 
-## Что MollyNVR пишет в конфигурацию моста
+## What MollyNVR writes to the bridge configuration
 
-Файл `data/reolink/config.json` (в контейнере — `/config/config.json`):
+The `data/reolink/config.json` file (inside the container — `/config/config.json`):
 
-- имя камеры (`cam-<ip>`), адрес, логин и **пароль** камеры (мосту нужен вход);
-- остальные поля конфигурации не трогаются.
+- the camera name (`cam-<ip>`), address, login and **password** of the camera (the bridge needs to sign in);
+- other configuration fields are left untouched.
 
-Пароль хранится в открытом виде — это требование neolink.net (он читает только файл).
-Каталог `data/` исключён из git; доступ к файлу ограничен правами файловой системы.
+The password is stored in plain text — this is a neolink.net requirement (it reads only the file).
+The `data/` directory is excluded from git; access to the file is limited by file system permissions.
 
-## Обновление
+## Updating
 
-Версия зафиксирована в `docker/reolink/Dockerfile` (тег образа). Перед обновлением проверьте
-список изменений и лицензию проекта.
+The version is pinned in `docker/reolink/Dockerfile` (the image tag). Before updating, review
+the changelog and the license of the project.

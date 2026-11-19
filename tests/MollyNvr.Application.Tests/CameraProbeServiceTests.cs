@@ -54,11 +54,11 @@ public class CameraProbeServiceTests
     {
         var unavailable = new FakeModule("unavailable", canHandle: true)
         {
-            ProbeException = new CameraUnavailableException("нет ответа"),
+                        ProbeException = new CameraUnavailableException("no response"),
         };
         var unauthorized = new FakeModule("unauthorized", canHandle: true)
         {
-            ProbeException = new CameraAuthenticationException("неверный пароль"),
+                        ProbeException = new CameraAuthenticationException("wrong password"),
         };
         var service = CreateService(unavailable, unauthorized);
 
@@ -110,7 +110,7 @@ public class CameraProbeServiceTests
     {
         var module = new FakeModule("fake", canHandle: true)
         {
-            SnapshotException = new CameraOperationNotSupportedException("нет HTTP"),
+                        SnapshotException = new CameraOperationNotSupportedException("no HTTP"),
         };
         var grabber = new FakeFrameGrabber([7, 8]);
         var service = CreateService([module], new FakeMediaProbe(null), grabber);
@@ -255,7 +255,7 @@ public class CameraProbeServiceTests
     {
         var onvif = new FakeModule("onvif", canHandle: true)
         {
-            ProbeException = new CameraUnavailableException("ONVIF недоступен"),
+                        ProbeException = new CameraUnavailableException("ONVIF unavailable"),
         };
         var reolink = new FakeModule("reolink", canHandle: true);
         var service = CreateService(onvif, reolink);

@@ -1,11 +1,11 @@
 namespace MollyNvr.Application.Cameras;
 
 /// <summary>
-/// Получение JPEG-кадра из RTSP-источника для камер, у которых нет нативного снапшота
-/// (например, HTTP-порт камеры закрыт).
+/// Getting a JPEG frame from an RTSP source for cameras without a native snapshot
+/// (for example, when the camera HTTP port is closed).
 /// </summary>
 public interface IFrameGrabber
 {
-    /// <summary>Возвращает JPEG-кадр источника. Источник содержит учётные данные и не попадает в логи.</summary>
+        /// <summary>Returns a JPEG frame of the source. The source contains credentials and is never logged.</summary>
     Task<byte[]> GrabJpegAsync(string sourceUrl, CancellationToken cancellationToken);
 }

@@ -1,6 +1,6 @@
 namespace MollyNvr.Application.Recording;
 
-/// <summary>Недельное расписание записи: 7 дней по 24 часовых слота, с понедельника.</summary>
+/// <summary>Weekly recording schedule: 7 days with 24 hourly slots each, starting on Monday.</summary>
 public sealed class WeeklySchedule
 {
     public const int DaysPerWeek = 7;
@@ -14,17 +14,17 @@ public sealed class WeeklySchedule
 
     private WeeklySchedule(bool[] slots) => _slots = slots;
 
-    /// <summary>Пустое расписание (ничего не записывается).</summary>
+        /// <summary>Empty schedule (nothing is recorded).</summary>
     public static WeeklySchedule Empty { get; } = new(new bool[SlotCount]);
 
-    /// <summary>Круглосуточное расписание на все дни.</summary>
+        /// <summary>Around-the-clock schedule for all days.</summary>
     public static WeeklySchedule Always { get; } = new(Enumerable.Repeat(true, SlotCount).ToArray());
 
     public bool IsEmpty => !_slots.Contains(true);
 
     /// <summary>
-    /// Разбирает строку из 168 символов «0»/«1» (7×24). Строки старого формата
-    /// 7×48 сворачиваются в часовые слоты; пустая или битая строка — пустое расписание.
+        /// Parses a string of 168 '0'/'1' characters (7x24). Strings in the old
+        /// 7x48 format are folded into hourly slots; an empty or broken string is an empty schedule.
     /// </summary>
     public static WeeklySchedule Parse(string? value)
     {
@@ -69,17 +69,17 @@ public sealed class WeeklySchedule
         return new WeeklySchedule(slots);
     }
 
-    /// <summary>Строка из 336 символов «0»/«1» — для хранения и передачи в UI.</summary>
+        /// <summary>A string of 336 '0'/'1' characters — for storage and passing to the UI.</summary>
     public string Serialize() => new(_slots.Select(static slot => slot ? '1' : '0').ToArray());
 
-    /// <summary>Активен ли слот в указанный момент (локальное время сервера).</summary>
+        /// <summary>Whether the slot is active at the specified moment (server local time).</summary>
     public bool IsActive(DateTimeOffset moment)
     {
         var local = moment.LocalDateTime;
         return _slots[Index(local.DayOfWeek, local.Hour, local.Minute)];
     }
 
-    /// <summary>Пересекается ли интервал [<paramref name="from"/>, <paramref name="to"/>) с отмеченными слотами.</summary>
+        /// <summary>Whether the interval [<paramref name="from"/>, <paramref name="to"/>) overlaps selected slots.</summary>
     public bool Overlaps(DateTimeOffset from, DateTimeOffset to)
     {
         if (to <= from)
@@ -89,7 +89,7 @@ public sealed class WeeklySchedule
 
         var slotStart = FloorToSlot(from);
 
-        // Ограничение на всякий случай: не больше 8 суток перебора.
+                // Safety limit: no more than 8 days of iteration.
         for (var guard = 0; guard < DaysPerWeek * SlotsPerDay * 2 && slotStart < to; guard++)
         {
             if (IsActive(slotStart))
@@ -103,7 +103,7 @@ public sealed class WeeklySchedule
         return false;
     }
 
-    /// <summary>Начало получасового слота, в который попадает момент.</summary>
+        /// <summary>Start of the half-hour slot that contains the moment.</summary>
     public static DateTimeOffset FloorToSlot(DateTimeOffset moment)
     {
         var local = DateTime.SpecifyKind(moment.LocalDateTime, DateTimeKind.Unspecified);
@@ -113,7 +113,7 @@ public sealed class WeeklySchedule
         return new DateTimeOffset(floored);
     }
 
-    /// <summary>День недели в порядке UI: 0 — понедельник, 6 — воскресенье.</summary>
+        /// <summary>Day of the week in UI order: 0 — Monday, 6 — Sunday.</summary>
     public static int DayIndex(DayOfWeek day) => ((int)day + 6) % DaysPerWeek;
 
     private static int Index(DayOfWeek day, int hour, int minute) =>

@@ -8,7 +8,7 @@ import {
 } from '../api'
 import { profileLabel } from '../cameraProfileFormat'
 import { formatBytes } from '../format'
-import { t } from '../i18n'
+import { eventLabel, t } from '../i18n'
 import EventIcon from './EventIcon'
 import ScheduleGrid from './ScheduleGrid'
 
@@ -228,7 +228,7 @@ const RecordingSection = forwardRef<RecordingHandle, Props>(function RecordingSe
                                 onChange={() => toggleEventType(type.key)}
                               />
                               <EventIcon type={type.key} />
-                              <span>{type.label}</span>
+                              <span>{eventLabel(type.key)}</span>
                             </label>
                           ))}
                         </div>

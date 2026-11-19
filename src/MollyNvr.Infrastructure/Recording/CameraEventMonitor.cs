@@ -10,8 +10,8 @@ using MollyNvr.Domain.Cameras;
 namespace MollyNvr.Infrastructure.Recording;
 
 /// <summary>
-/// Подписывается на события камер (ONVIF PullPoint, ISAPI alert stream) и складывает
-/// окна событий в БД — по ним пишется событийная запись с pre/post-roll.
+/// Subscribes to camera events (ONVIF PullPoint, ISAPI alert stream) and stores
+/// event windows in the database — they drive event recording with pre/post-roll.
 /// </summary>
 public sealed class CameraEventMonitor(
     IRecordingSettingsStore settingsStore,
@@ -41,7 +41,7 @@ public sealed class CameraEventMonitor(
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Ошибка мониторинга событий камер");
+                                logger.LogError(exception, "Camera event monitoring error");
             }
 
             try
@@ -136,7 +136,7 @@ public sealed class CameraEventMonitor(
             {
                 logger.LogWarning(
                     exception,
-                    "Подписка на события камеры «{Camera}» прервана, переподключение через 15 с",
+                                        "Event subscription of camera '{Camera}' was interrupted, reconnecting in 15 s",
                     camera.Name);
 
                 try

@@ -49,7 +49,7 @@ function pickMime(format: RecordFormat): string | undefined {
   return candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate))
 }
 
-/** Стоп-кадр и запись браузером для одного тайла архива. */
+/** Snapshot and browser-side recording for a single archive tile. */
 export function useArchiveCapture(
   controller: Controller,
   cameraName: string

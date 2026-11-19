@@ -2,21 +2,21 @@ using System.Net;
 
 namespace MollyNvr.Application.Discovery;
 
-/// <summary>Диапазон IPv4-адресов для автопоиска камер.</summary>
+/// <summary>IPv4 address range for camera discovery.</summary>
 public sealed record IpRange(IPAddress First, IPAddress Last)
 {
-    /// <summary>Максимальное число адресов в одном сканировании.</summary>
+        /// <summary>Maximum number of addresses in one scan.</summary>
     public const int MaxHosts = 1024;
 
     /// <summary>
-    /// Разбирает одиночный адрес, CIDR (<c>192.168.1.0/24</c>) или диапазон
+        /// Parses a single address, CIDR (<c>192.168.1.0/24</c>) or a range
     /// (<c>192.168.1.10-192.168.1.50</c>, <c>192.168.1.10-50</c>).
     /// </summary>
     public static IpRange Parse(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("Укажите диапазон адресов для поиска.", nameof(value));
+                        throw new ArgumentException("Specify an address range to search.", nameof(value));
         }
 
         var text = value.Trim();
@@ -33,13 +33,13 @@ public sealed record IpRange(IPAddress First, IPAddress Last)
 
         if (!TryParseIpv4(text, out var address))
         {
-            throw new ArgumentException($"Некорректный IPv4-адрес: «{text}».", nameof(value));
+                        throw new ArgumentException($"Invalid IPv4 address: '{text}'.", nameof(value));
         }
 
         return new IpRange(address, address);
     }
 
-    /// <summary>Все адреса диапазона включительно (не больше <see cref="MaxHosts"/>).</summary>
+        /// <summary>All addresses of the range, inclusive (no more than <see cref="MaxHosts"/>).</summary>
     public IReadOnlyList<IPAddress> Hosts()
     {
         var first = ToUInt32(First);
@@ -60,7 +60,7 @@ public sealed record IpRange(IPAddress First, IPAddress Last)
         return hosts;
     }
 
-    /// <summary>IPv4-адрес как 32-битное число (для сортировки и арифметики диапазонов).</summary>
+        /// <summary>IPv4 address as a 32-bit number (for sorting and range arithmetic).</summary>
     public static uint ToUInt32(IPAddress address)
     {
         var bytes = address.GetAddressBytes();
@@ -74,7 +74,7 @@ public sealed record IpRange(IPAddress First, IPAddress Last)
             !int.TryParse(parts[1].Trim(), out var prefix) ||
             prefix is < 8 or > 32)
         {
-            throw new ArgumentException($"Некорректный CIDR-диапазон: «{text}».", nameof(text));
+                        throw new ArgumentException($"Invalid CIDR range: '{text}'.", nameof(text));
         }
 
         var mask = prefix == 32 ? uint.MaxValue : uint.MaxValue << (32 - prefix);
@@ -93,7 +93,7 @@ public sealed record IpRange(IPAddress First, IPAddress Last)
 
         if (!TryParseIpv4(startText, out var start))
         {
-            throw new ArgumentException($"Некорректный начальный адрес: «{startText}».", nameof(text));
+                        throw new ArgumentException($"Invalid start address: '{startText}'.", nameof(text));
         }
 
         IPAddress end;
@@ -101,14 +101,14 @@ public sealed record IpRange(IPAddress First, IPAddress Last)
         {
             if (!TryParseIpv4(endText, out end))
             {
-                throw new ArgumentException($"Некорректный конечный адрес: «{endText}».", nameof(text));
+                                throw new ArgumentException($"Invalid end address: '{endText}'.", nameof(text));
             }
         }
         else
         {
             if (!byte.TryParse(endText, out var lastOctet))
             {
-                throw new ArgumentException($"Некорректный конечный адрес: «{endText}».", nameof(text));
+                                throw new ArgumentException($"Invalid end address: '{endText}'.", nameof(text));
             }
 
             var startBytes = start.GetAddressBytes();
@@ -119,7 +119,7 @@ public sealed record IpRange(IPAddress First, IPAddress Last)
         var last = ToUInt32(end);
         if (last < first)
         {
-            throw new ArgumentException("Конец диапазона раньше начала.", nameof(text));
+                        throw new ArgumentException("The end of the range is earlier than the start.", nameof(text));
         }
 
         EnsureHostLimit((long)last - first + 1);
@@ -130,7 +130,7 @@ public sealed record IpRange(IPAddress First, IPAddress Last)
     {
         if (count > MaxHosts)
         {
-            throw new ArgumentException($"Диапазон содержит {count} адресов — максимум {MaxHosts}.");
+                        throw new ArgumentException($"The range contains {count} addresses — the maximum is {MaxHosts}.");
         }
     }
 

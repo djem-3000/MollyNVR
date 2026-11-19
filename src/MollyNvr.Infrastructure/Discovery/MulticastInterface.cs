@@ -5,8 +5,8 @@ using System.Net.Sockets;
 namespace MollyNvr.Infrastructure.Discovery;
 
 /// <summary>
-/// Выбирает IPv4-адрес локальной сети для multicast-поиска. VPN-адаптеры (Wintun, WireGuard)
-/// часто перехватывают маршрут 224.0.0.0/4, поэтому интерфейс задаётся явно.
+/// Selects the local network IPv4 address for multicast discovery. VPN adapters (Wintun, WireGuard)
+/// often capture the 224.0.0.0/4 route, so the interface is specified explicitly.
 /// </summary>
 internal static class MulticastInterface
 {
@@ -52,6 +52,6 @@ internal static class MulticastInterface
         return new Candidate(address, (hasGateway ? 0 : 2) + kindScore);
     }
 
-    /// <summary>Меньше — предпочтительнее: сначала интерфейсы со шлюзом, затем проводные и Wi-Fi.</summary>
+        /// <summary>Lower is better: interfaces with a gateway first, then wired and Wi-Fi.</summary>
     private sealed record Candidate(IPAddress Address, int Score);
 }

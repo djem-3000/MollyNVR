@@ -2,10 +2,10 @@ using System.Net;
 
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Сканирование TCP-портов устройства при опросе камеры.</summary>
+/// <summary>TCP port scanning of a device during a camera probe.</summary>
 public interface IPortScanner
 {
-    /// <summary>Возвращает открытые порты из указанного набора.</summary>
+        /// <summary>Returns open ports from the specified set.</summary>
     Task<IReadOnlyList<int>> FindOpenPortsAsync(
         IPAddress host,
         IReadOnlyList<int> ports,

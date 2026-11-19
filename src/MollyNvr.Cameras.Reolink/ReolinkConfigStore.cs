@@ -5,8 +5,8 @@ using MollyNvr.Cameras.Abstractions;
 namespace MollyNvr.Cameras.Reolink;
 
 /// <summary>
-/// Файл конфигурации моста neolink.net. Мост читает его при старте, поэтому после
-/// изменения файла супервизор (entrypoint контейнера или локальный скрипт) перезапускает процесс.
+/// neolink.net bridge configuration file. The bridge reads it at startup, so after
+/// the file changes a supervisor (container entrypoint or local script) restarts the process.
 /// </summary>
 internal static class ReolinkConfigStore
 {
@@ -20,7 +20,7 @@ internal static class ReolinkConfigStore
 
     private static readonly JsonSerializerOptions WriteOptions = new() { WriteIndented = true };
 
-    /// <summary>Добавляет или обновляет камеру; возвращает <c>true</c>, если файл изменился.</summary>
+        /// <summary>Adds or updates the camera; returns <c>true</c> when the file changed.</summary>
     public static async Task<bool> UpsertAsync(
         string path,
         string cameraName,
@@ -83,12 +83,12 @@ internal static class ReolinkConfigStore
         try
         {
             return JsonNode.Parse(text, nodeOptions: null, DocumentOptions) as JsonObject
-                ?? throw new JsonException("корневой элемент не объект");
+                                ?? throw new JsonException("the root element is not an object");
         }
         catch (JsonException exception)
         {
             throw new InvalidOperationException(
-                $"Файл конфигурации моста Reolink повреждён: {exception.Message}",
+                                $"The Reolink bridge configuration file is corrupted: {exception.Message}",
                 exception);
         }
     }

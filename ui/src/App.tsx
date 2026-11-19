@@ -19,6 +19,7 @@ import {
   useRoute
 } from './router'
 import { useIsMobile } from './useMediaQuery'
+import { useLocale } from './useLocale'
 
 function LiveIcon() {
   return (
@@ -77,6 +78,7 @@ function MenuIcon() {
 }
 
 export default function App() {
+  useLocale()
   const route = useRoute()
   const [info, setInfo] = useState<SystemInfo | null>(null)
   const [cameras, setCameras] = useState<SavedCamera[]>([])
@@ -233,7 +235,7 @@ export default function App() {
                       archiveDragAt.current = Date.now()
                     }}
                     onClick={() => {
-                      // после перетаскивания клик не должен уводить в одиночный режим
+                      // after dragging, a click must not open single mode
                       if (Date.now() - archiveDragAt.current < 800) {
                         return
                       }

@@ -4,7 +4,7 @@ using DomainCameraProfile = MollyNvr.Domain.Cameras.CameraProfile;
 
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Представление профиля камеры для API: RTSP-URL без учётных данных.</summary>
+/// <summary>Camera profile representation for the API: RTSP URL without credentials.</summary>
 public sealed record CameraProfileView(
     string Kind,
     string Id,
@@ -79,12 +79,12 @@ public sealed record CameraProfileView(
     }
 }
 
-/// <summary>Протокол связи с камерой и его порт.</summary>
-/// <param name="Name">Название протокола; <c>null</c>, если порт не сопоставлен с протоколом по умолчанию.</param>
-/// <param name="Role">Роль протокола: <c>video</c> или <c>control</c>; <c>null</c> для несопоставленного порта.</param>
+/// <summary>Camera communication protocol and its port.</summary>
+/// <param name="Name">Protocol name; <c>null</c> when the port is not mapped to a default protocol.</param>
+/// <param name="Role">Protocol role: <c>video</c> or <c>control</c>; <c>null</c> for an unmapped port.</param>
 public sealed record CameraProtocolView(string? Name, int Port, string? Role);
 
-/// <summary>Результат опроса камеры для API.</summary>
+/// <summary>Camera probe result for the API.</summary>
 public sealed record CameraProbeView(
     string VendorKey,
     string Vendor,

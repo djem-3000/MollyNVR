@@ -1,28 +1,28 @@
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Как звук профиля доходит до браузера.</summary>
+/// <summary>How the profile audio reaches the browser.</summary>
 public enum AudioPlaybackMode
 {
-    /// <summary>Аудио у профиля отключено.</summary>
+        /// <summary>Audio is disabled for the profile.</summary>
     Disabled,
 
-    /// <summary>Кодек уже поддерживается WebRTC — без перекодирования.</summary>
+        /// <summary>The codec is already supported by WebRTC — no transcoding.</summary>
     Passthrough,
 
-    /// <summary>Кодек перекодируется сервером в Opus.</summary>
+        /// <summary>The codec is transcoded by the server to Opus.</summary>
     Transcoded,
 
-    /// <summary>Кодек не поддерживается (нет декодера/WebRTC) — звука не будет.</summary>
+        /// <summary>The codec is not supported (no decoder/WebRTC) — there will be no sound.</summary>
     Unsupported,
 }
 
-/// <summary>Политика воспроизведения аудио в WebRTC (единая для API и регистрации потоков).</summary>
+/// <summary>WebRTC audio playback policy (shared by the API and stream registration).</summary>
 public static class AudioPlaybackPolicy
 {
-    /// <summary>Целевой кодек перекодирования.</summary>
+        /// <summary>Target transcoding codec.</summary>
     public const string TargetCodec = "Opus";
 
-    /// <summary>Определяет режим по кодеку камеры.</summary>
+        /// <summary>Determines the mode from the camera codec.</summary>
     public static AudioPlaybackMode Classify(string? audioCodec)
     {
         if (string.IsNullOrWhiteSpace(audioCodec))
@@ -37,7 +37,7 @@ public static class AudioPlaybackPolicy
             return AudioPlaybackMode.Passthrough;
         }
 
-        // FFmpeg не умеет декодировать G.722.1 — перекодирование невозможно.
+                // FFmpeg cannot decode G.722.1 — transcoding is impossible.
         if (ContainsAny(codec, "G.722.1", "G7221"))
         {
             return AudioPlaybackMode.Unsupported;
@@ -46,7 +46,7 @@ public static class AudioPlaybackPolicy
         return AudioPlaybackMode.Transcoded;
     }
 
-    /// <summary>Строковое значение режима для API/UI.</summary>
+        /// <summary>String value of the mode for the API and UI.</summary>
     public static string ToApiValue(AudioPlaybackMode mode) => mode switch
     {
         AudioPlaybackMode.Disabled => "disabled",
@@ -56,7 +56,7 @@ public static class AudioPlaybackPolicy
         _ => "unsupported",
     };
 
-    /// <summary>Целевой кодек для режима (только при перекодировании).</summary>
+        /// <summary>Target codec for the mode (only when transcoding).</summary>
     public static string? TargetCodecFor(AudioPlaybackMode mode) =>
         mode == AudioPlaybackMode.Transcoded ? TargetCodec : null;
 

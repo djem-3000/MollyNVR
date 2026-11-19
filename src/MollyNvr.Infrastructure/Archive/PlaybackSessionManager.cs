@@ -10,8 +10,8 @@ using MollyNvr.Infrastructure.Storage;
 namespace MollyNvr.Infrastructure.Archive;
 
 /// <summary>
-/// Готовит HLS по индексу сегментов: ffmpeg склеивает файлы и отдаёт плейлист,
-/// который потом раздаётся через API вместе с фрагментами.
+/// Prepares HLS from the segment index: ffmpeg concatenates the files and produces a playlist,
+/// which is then served by the API together with the fragments.
 /// </summary>
 public sealed class PlaybackSessionManager : IArchivePlaybackManager
 {
@@ -45,7 +45,7 @@ public sealed class PlaybackSessionManager : IArchivePlaybackManager
     {
         if (files.Count == 0)
         {
-            throw new ArgumentException("Нет файлов для воспроизведения.", nameof(files));
+                        throw new ArgumentException("There are no files to play.", nameof(files));
         }
 
         var id = Guid.NewGuid();
@@ -83,14 +83,14 @@ public sealed class PlaybackSessionManager : IArchivePlaybackManager
                 {
                     var error = session.ErrorText;
                     throw new InvalidOperationException(string.IsNullOrWhiteSpace(error)
-                        ? "ffmpeg завершился до создания HLS-плейлиста."
-                        : $"ffmpeg не смог подготовить воспроизведение: {error}");
+                                                ? "ffmpeg exited before creating the HLS playlist."
+                                                : $"ffmpeg could not prepare playback: {error}");
                 }
 
                 await Task.Delay(100, cancellationToken);
             }
 
-            throw new InvalidOperationException("ffmpeg не успел подготовить HLS-плейлист.");
+                        throw new InvalidOperationException("ffmpeg did not prepare the HLS playlist in time.");
         }
         catch
         {
@@ -121,9 +121,9 @@ public sealed class PlaybackSessionManager : IArchivePlaybackManager
 
         var path = Path.Combine(session.Directory, safeName);
 
-        // ffmpeg с temp_file пересоздаёт плейлист и фрагменты: между unlink и rename
-        // файл может отсутствовать или быть пустым. Несколько коротких попыток
-        // убирают плавающие 500 при первом запросе hls.js.
+                // With temp_file ffmpeg recreates the playlist and fragments: between unlink and rename
+                // the file may be missing or empty. A few short retries
+                // remove intermittent 500 errors on the first hls.js request.
         var content = ReadWithRetry(path);
 
         if (content is null)
@@ -156,7 +156,7 @@ public sealed class PlaybackSessionManager : IArchivePlaybackManager
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
-                // файл переименовывается — повторим
+                                // the file is being renamed — retry
             }
 
             Thread.Sleep(30);
@@ -173,7 +173,7 @@ public sealed class PlaybackSessionManager : IArchivePlaybackManager
         }
     }
 
-    /// <summary>Удаляет завершённые и давно не используемые сессии.</summary>
+        /// <summary>Removes finished and long-unused sessions.</summary>
     public void Cleanup()
     {
         var now = DateTimeOffset.UtcNow;
@@ -215,13 +215,13 @@ public sealed class PlaybackSessionManager : IArchivePlaybackManager
 
                 if (!session.Process.WaitForExit(3000))
                 {
-                    _logger.LogWarning("ffmpeg playback-сессии {SessionId} не завершился за 3 с.", session.Id);
+                                        _logger.LogWarning("ffmpeg of playback session {SessionId} did not exit within 3 s.", session.Id);
                 }
             }
         }
         catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
         {
-            _logger.LogDebug(exception, "Не удалось остановить ffmpeg playback-сессии {SessionId}.", session.Id);
+                        _logger.LogDebug(exception, "Failed to stop ffmpeg of playback session {SessionId}.", session.Id);
         }
         finally
         {
@@ -248,7 +248,7 @@ public sealed class PlaybackSessionManager : IArchivePlaybackManager
             {
                 if (attempt == 2)
                 {
-                    _logger.LogWarning(exception, "Не удалось удалить каталог playback-сессии {Directory}.", directory);
+                                        _logger.LogWarning(exception, "Failed to delete the playback session directory {Directory}.", directory);
                 }
             }
         }
@@ -267,7 +267,7 @@ public sealed class PlaybackSessionManager : IArchivePlaybackManager
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            _logger.LogWarning(exception, "Не удалось очистить каталог playback-сессий {Directory}.", _cacheRoot);
+                        _logger.LogWarning(exception, "Failed to clean the playback sessions directory {Directory}.", _cacheRoot);
         }
     }
 

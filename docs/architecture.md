@@ -1,44 +1,44 @@
-# Архитектура MollyNVR
+# MollyNVR architecture
 
-**Статус:** черновик v0.1 на согласование · **Дата:** 2026-10-18 · **Стек:** .NET 10 + React
+**Status:** draft v0.1 for approval · **Date:** 2026-10-18 · **Stack:** .NET 10 + React
 
 ---
 
-## 1. Цели и принципы
+## 1. Goals and principles
 
-- **Простота эксплуатации:** всё решение — один Docker-образ; запуск — `docker compose up -d`. Обновление — пересборка образа.
-- **Максимум автоматизации:** автопоиск камер, подстановка профилей, самостоятельное определение кодеков, минимум ручных настроек.
-- **Live-просмотр — ядро v1.** Запись, детекция, AI — только архитектурный задел (интерфейсы и точки расширения).
-- **Passthrough по умолчанию:** видео идёт без перекодирования; транскод включается только при несовместимости и автоматически (со статусом в UI).
-- **Модульность производителей:** каждая марка камеры — подключаемый модуль (плагин) за стабильным контрактом.
-- **Локальность:** приложение для LAN, личное использование; никаких облаков.
+- **Operational simplicity:** the whole solution is one Docker image; start with `docker compose up -d`. Upgrade by rebuilding the image.
+- **Maximum automation:** camera discovery, profile selection, automatic codec detection, minimal manual configuration.
+- **Live viewing is the core of v1.** Recording, detection and AI started as architectural groundwork (interfaces and extension points).
+- **Passthrough by default:** video flows without transcoding; transcoding is enabled only on incompatibility and automatically (with a status in the UI).
+- **Vendor modularity:** every camera brand is a pluggable module behind a stable contract.
+- **Local first:** an application for a LAN, for personal use; no clouds.
 
-## 2. Согласованные решения
+## 2. Agreed decisions
 
-| Вопрос | Решение |
+| Question | Decision |
 |---|---|
-| Объём v1 | Только live-просмотр (раскладки, фокус, аудио). Запись и AI — задел |
-| Камеры | `192.168.1.113` Reolink CX820, `192.168.1.115` Hikvision KV-9503; всего в сети 4 — остальные через автопоиск |
-| Аудио | Только у тайла в фокусе (один клик — фокус + звук, звук переезжает при смене тайла), общий mute в тулбаре |
-| Сеть Docker | bridge + публикация портов `9080/tcp`, `9443/tcp` (HTTPS для PWA), `8555/tcp`, `8555/udp`. Причина: host networking в Docker Desktop на Windows не пробрасывает UDP внутрь контейнера (проверено на M1), а WebRTC-медиа идёт по UDP. Автопоиск (multicast) — отдельная задача M3, см. §15 риск 1 |
-| H.265 | Автоматически при просмотре: passthrough, если браузер поддерживает кодек; иначе автотранскод в лучший кодек с аппаратной поддержкой (NVENC). Мастер добавления ничего не спрашивает |
+| v1 scope | Live viewing only (layouts, focus, audio). Recording and AI as groundwork |
+| Cameras | `192.168.1.113` Reolink CX820, `192.168.1.115` Hikvision KV-9503; 4 in total on the network — the rest through discovery |
+| Audio | Only on the focused tile (a single click focuses a tile and enables its sound, sound moves with the focus), global mute in the toolbar |
+| Docker network | bridge + published ports `9080/tcp`, `9443/tcp` (HTTPS for PWA), `8555/tcp`, `8555/udp`. Reason: host networking in Docker Desktop on Windows does not forward UDP into the container (verified on M1), and WebRTC media runs over UDP. Discovery (multicast) is a separate M3 task, see section 15 risk 1 |
+| H.265 | Automatic during viewing: passthrough when the browser supports the codec; otherwise automatic transcoding to the best codec with hardware support (NVENC). The add wizard asks nothing |
 
-**Железо хоста (проверено):** Ryzen 5 5600 (6 ядер/12 потоков), **RTX 3060 Ti** (NVENC/NVDEC — аппаратный транскод), 16 ГБ RAM. Свободно: C: 6 ГБ (!), D: 91 ГБ, E: 142 ГБ. Docker Desktop 29.8.2 (WSL2). Сеть хоста — `192.168.1.151/24`.
+**Host hardware (verified):** Ryzen 5 5600 (6 cores/12 threads), **RTX 3060 Ti** (NVENC/NVDEC — hardware transcoding), 16 GB RAM. Free space: C: 6 GB (!), D: 91 GB, E: 142 GB. Docker Desktop 29.8.2 (WSL2). Host network — `192.168.1.151/24`.
 
-> ⚠️ На диске C всего 6 ГБ. Образы Docker и WSL-VHDX по умолчанию живут на C — до сборки нужно перенести data-root Docker или чистить место (см. §11).
+> ⚠️ Only 6 GB free on drive C. Docker images and the WSL VHDX live on C by default — move the Docker data-root or free space before building (see section 11).
 
-## 3. Контекст и компоненты
+## 3. Context and components
 
 ```mermaid
 flowchart LR
-  subgraph LAN["Локальная сеть 192.168.1.0/24"]
-    B["Браузер<br/>React SPA + WebRTC"]
-    subgraph NVR["Контейнер MollyNVR (bridge, порты 9080/8555)"]
-      API["MollyNvr.Api :9080<br/>REST · WHEP-прокси · статика SPA"]
-      CORE["Domain / Application / Infrastructure<br/>камеры · discovery · оркестрация"]
-      MOD["Модули камер<br/>ONVIF · Hikvision"]
-      G2R["go2rtc :1984 локально<br/>RTSP ingest · WebRTC · снапшоты"]
-      FF["FFmpeg<br/>транскод видео/аудио (NVENC)"]
+  subgraph LAN["Local network 192.168.1.0/24"]
+    B["Browser<br/>React SPA + WebRTC"]
+    subgraph NVR["MollyNVR container (bridge, ports 9080/8555)"]
+      API["MollyNvr.Api :9080<br/>REST · WHEP proxy · SPA static files"]
+      CORE["Domain / Application / Infrastructure<br/>cameras · discovery · orchestration"]
+      MOD["Camera modules<br/>ONVIF · Hikvision"]
+      G2R["go2rtc :1984 locally<br/>RTSP ingest · WebRTC · snapshots"]
+      FF["FFmpeg<br/>video/audio transcoding (NVENC)"]
       DB[("SQLite<br/>/data/molly.db")]
     end
     C1["Reolink CX820<br/>192.168.1.113"]
@@ -53,90 +53,90 @@ flowchart LR
   G2R -- RTSP 554 --> C2
   MOD -- "ONVIF / ISAPI" --> C1
   MOD -- "ONVIF / ISAPI" --> C2
-  G2R -. "при транскоде" .-> FF
+  G2R -. "when transcoding" .-> FF
   CORE --> DB
 ```
 
-| Компонент | Ответственность |
+| Component | Responsibility |
 |---|---|
-| **SPA (React + TS + Vite)** | Раскладки, тайлы, фокус/аудио, fullscreen, мастер добавления камеры. Отдаётся Kestrel как статика — единый origin |
-| **MollyNvr.Api** | REST API, WHEP-прокси к go2rtc (наружу торчит только :9080), health |
-| **Domain / Application / Infrastructure** | Домен и use cases: реестр камер, оркестрация discovery, управление потоками. Инфраструктура: SQLite (EF Core), клиент go2rtc, запуск ffmpeg, шифрование кредов |
-| **Модули производителей** | Модули `ICameraModule`: discovery, проверка подключения, профили, снапшот. Реализация — отдельные .NET-проекты в солюшене, регистрируются через DI. Для Reolink без RTSP/ONVIF — модуль поверх моста `neolink.net` (Baichuan, порт 9000) |
-| **go2rtc** (MIT) | Медиа-ядро: забирает RTSP, отдаёт WebRTC (WHEP) / MSE / снапшоты, при необходимости сам запускает ffmpeg-транскод источника |
-| **FFmpeg** | Транскод видео (H.265→H.264, NVENC/CPU) и аудио (→ Opus) при несовместимости |
-| **SQLite** | Камеры и профили. Креды — шифрованно (§12) |
+| **SPA (React + TS + Vite)** | Layouts, tiles, focus/audio, fullscreen, add-camera wizard. Served by Kestrel as static files — a single origin |
+| **MollyNvr.Api** | REST API, WHEP proxy to go2rtc (only :9080 is exposed), health |
+| **Domain / Application / Infrastructure** | Domain and use cases: camera registry, discovery orchestration, stream management. Infrastructure: SQLite (EF Core), go2rtc client, ffmpeg launch, credential encryption |
+| **Vendor modules** | `ICameraModule` modules: discovery, connection check, profiles, snapshot. Implemented as separate .NET projects in the solution, registered through DI. For Reolink without RTSP/ONVIF — a module on top of the `neolink.net` bridge (Baichuan, port 9000) |
+| **go2rtc** (MIT) | Media engine: pulls RTSP, serves WebRTC (WHEP) / MSE / snapshots, and starts ffmpeg source transcoding when needed |
+| **FFmpeg** | Video (H.265→H.264, NVENC/CPU) and audio (→ Opus) transcoding on incompatibility |
+| **SQLite** | Cameras and profiles. Credentials encrypted (section 12) |
 
-**Почему go2rtc:** MIT-лицензия, один бинарник, динамическое управление источниками через HTTP API, встроенная обвязка ffmpeg для транскода «на лету», WebRTC/MSE/HLS из коробки, зрелость (используется в Frigate и Home Assistant). Альтернатива — MediaMTX — зрелее в части записи, но требует внешнего транскода и менее динамична; запись сделана отдельным ffmpeg-сегментатором, поэтому выбран go2rtc.
+**Why go2rtc:** MIT license, a single binary, dynamic source management through the HTTP API, built-in ffmpeg transcoding on the fly, WebRTC/MSE/HLS out of the box, maturity (used by Frigate and Home Assistant). The alternative, MediaMTX, is more mature for recording but needs external transcoding and is less dynamic; recording is a separate ffmpeg segmenter here, so go2rtc was chosen.
 
-## 4. Путь видео (live)
+## 4. Video path (live)
 
 ```mermaid
 sequenceDiagram
   autonumber
-  participant B as Браузер
+  participant B as Browser
   participant A as MollyNvr.Api
   participant G as go2rtc
-  participant C as Камера
+  participant C as Camera
   B->>A: POST /api/cameras/{id}/whep?profile=sub (SDP offer)
-  A->>G: проксирование WHEP (SDP offer)
+  A->>G: WHEP proxying (SDP offer)
   G->>C: RTSP DESCRIBE / SETUP / PLAY
   C-->>G: RTP: H.264 — passthrough
   G-->>A: SDP answer
   A-->>B: SDP answer
-  G-->>B: SRTP-медиапоток (UDP :8555, published)
+  G-->>B: SRTP media stream (UDP :8555, published)
 ```
 
-- Тайлы сетки подключаются к **субпотоку**; двойной клик — fullscreen тайла и **основной поток** в максимальном разрешении; кнопка «На весь экран» разворачивает всю сетку, выход — `Esc`.
-- Каждый тайл — отдельная WebRTC-сессия (WHEP). Аудио-трек включается только у тайла в фокусе; остальные сессии muted. Общий mute в тулбаре выключает звук у всех видео, включая активный тайл.
-- go2rtc слушает `127.0.0.1:1984` (API/signalling — только через прокси backend), `127.0.0.1:8554` (внутренний RTSP: публикация `ffmpeg:`-источников и будущего транскода; наружу не торчит) и `:8555` TCP/UDP — медиа для браузеров LAN (порт публикуется Docker'ом).
-- Задержка WebRTC (SRTP/UDP, passthrough) — доли секунды, без HLS-буферизации.
+- Grid tiles connect to the **substream**; a double click switches the tile to fullscreen and the **main stream** at maximum resolution; the "Fullscreen" button expands the whole grid, exit with `Esc`.
+- Every tile is a separate WebRTC session (WHEP). The audio track is enabled only on the focused tile; the other sessions are muted. The global mute in the toolbar mutes all videos, including the active tile.
+- go2rtc listens on `127.0.0.1:1984` (API/signalling — only through the backend proxy), `127.0.0.1:8554` (internal RTSP: publishing `ffmpeg:` sources and future transcodes; not exposed) and `:8555` TCP/UDP — media for LAN browsers (the port is published by Docker).
+- WebRTC latency (SRTP/UDP, passthrough) is a fraction of a second, without HLS buffering.
 
-## 5. Определение возможностей браузера и политика кодеков
+## 5. Browser capabilities and codec policy
 
-Твой вопрос: «есть ли возможность определить, что браузер поддерживает видео и аудио поток?» — **да, но 100% гарантии «заранее» нет**. Правильная схема — комбинированная:
+Your question: "is it possible to determine that the browser supports the video and audio stream?" — **yes, but there is no 100% guarantee "in advance"**. The right scheme is combined:
 
-1. **Точный факт — SDP-негоциация WebRTC.** В offer браузер сам перечисляет кодеки, которые готов принять. Если кодек камеры есть в offer — passthrough; нет — транскод. Проверка происходит в момент подключения, ошибиться невозможно.
-2. **Заблаговременные эвристики (для UI):**
+1. **The exact fact — WebRTC SDP negotiation.** In the offer the browser lists the codecs it is ready to accept. If the camera codec is in the offer — passthrough; if not — transcoding. The check happens at connection time, so it cannot be wrong.
+2. **Early heuristics (for the UI):**
 
 ```ts
-RTCRtpReceiver.getCapabilities('video')?.codecs            // кодеки WebRTC текущего браузера
-MediaSource.isTypeSupported('video/mp4; codecs="hvc1.1.6.L120.90"')  // H.265 в MSE
-await navigator.mediaCapabilities.decodingInfo({           // хватит ли железа и плавно ли
+RTCRtpReceiver.getCapabilities('video')?.codecs            // WebRTC codecs of the current browser
+MediaSource.isTypeSupported('video/mp4; codecs="hvc1.1.6.L120.90"')  // H.265 in MSE
+await navigator.mediaCapabilities.decodingInfo({           // enough hardware and smooth playback
   type: 'file', video: { contentType: 'video/mp4; codecs="hvc1"' }
 });
 ```
 
-**Практическая матрица:**
+**Practical matrix:**
 
-| Кодек | WebRTC в Chrome/Edge | WebRTC в Firefox | Вывод |
+| Codec | WebRTC in Chrome/Edge | WebRTC in Firefox | Conclusion |
 |---|---|---|---|
-| H.264 | Да | Да | Passthrough везде |
-| H.265 | Только при аппаратном декодировании (обычно да на NVIDIA) | Нет | Не полагаться — при просмотре решается автоматически |
-| Аудио G.711 (PCMU) | Да | Да | Passthrough |
-| Аудио AAC | Нет (не входит в WebRTC) | Нет | Транскод → Opus |
+| H.264 | Yes | Yes | Passthrough everywhere |
+| H.265 | Only with hardware decoding (usually yes on NVIDIA) | No | Do not rely on it — decided automatically during viewing |
+| Audio G.711 (PCMU) | Yes | Yes | Passthrough |
+| Audio AAC | No (not part of WebRTC) | No | Transcode → Opus |
 
-**Автоматическая политика при просмотре.** Решение принимается в момент подключения каждого тайла, без диалогов — мастер добавления ничего не спрашивает (у разных людей разные браузеры, привязываться к выбору при добавлении камеры неверно):
-- кодек источника есть в SDP offer браузера → **passthrough**, нулевая нагрузка;
-- иначе → **автотранскод в лучший целевой кодек**: выбирается лучший кодек, который одновременно поддерживает браузер и аппаратно умеет сервер (RTX 3060 Ti через NVENC: H.264/H.265; практический выбор — H.264, его принимают все браузеры). Аудио при необходимости — транскод в Opus.
+**Automatic policy during viewing.** The decision is made when each tile connects, without dialogs — the add wizard asks nothing (different people have different browsers, so tying the decision to camera creation is wrong):
+- the source codec is in the browser SDP offer → **passthrough**, zero load;
+- otherwise → **automatic transcoding to the best target codec**: the best codec is chosen that both the browser supports and the server can handle in hardware (RTX 3060 Ti through NVENC: H.264/H.265; the practical choice is H.264, accepted by all browsers). Audio is transcoded to Opus when needed.
 
-Результат держится на время сессии; статус «транскод» виден в тайле. Смена кодека камеры вручную не предусмотрена — политика полностью автоматическая.
+The result is kept for the session; the "transcode" status is visible in the tile. Manual camera codec switching is not provided — the policy is fully automatic.
 
-**Аудио (реализовано в M4):** если кодек камеры не входит в WebRTC (AAC, G.722.1), к потоку добавляется второй источник `ffmpeg:<rtsp>#audio=opus`; видео остаётся passthrough из RTSP, ffmpeg занимается только звуком. Для PCMU/PCMA транскод не требуется.
+**Audio (implemented in M4):** when the camera codec is not part of WebRTC (AAC, G.722.1), a second source `ffmpeg:<rtsp>#audio=opus` is added to the stream; video stays passthrough from RTSP and ffmpeg handles only the sound. PCMU/PCMA need no transcoding.
 
-**Видео (реализовано в M5):** для H.265-профилей добавляется резервный источник `ffmpeg:<rtsp>#video=h264#hardware` (авто-выбор CUDA/NVENC). go2rtc запускает его только если в SDP offer браузера нет H.265; при поддержке H.265 идёт passthrough без ffmpeg. Статус «транскод» показывается в тайле, фактические кодеки — в оверлее по наведению на Live.
+**Video (implemented in M5):** for H.265 profiles a fallback source `ffmpeg:<rtsp>#video=h264#hardware` is added (automatic CUDA/NVENC selection). go2rtc starts it only when the browser SDP offer has no H.265; with H.265 support the stream is passthrough without ffmpeg. The "transcode" status is shown in the tile, and the actual codecs are in the overlay on hover over Live.
 
 ```mermaid
 flowchart TD
-  S(["Подключение тайла — WHEP, SDP offer"]) --> C{"Кодек источника поддерживается браузером?"}
-  C -- да --> P["Passthrough WebRTC — без нагрузки"]
-  C -- "нет (обычно H.265)" --> T["Автотранскод в лучший кодек с аппаратной поддержкой — H.264 (NVENC)"]
-  T --> N["Статус «транскод» в тайле"]
+  S(["Tile connection — WHEP, SDP offer"]) --> C{"Source codec supported by the browser?"}
+  C -- yes --> P["WebRTC passthrough — no load"]
+  C -- "no (usually H.265)" --> T["Automatic transcode to the best hardware-supported codec — H.264 (NVENC)"]
+  T --> N["Transcode status in the tile"]
 ```
 
-## 6. Модули производителей
+## 6. Vendor modules
 
-Контракт (фактический, `src/MollyNvr.Cameras.Abstractions/ICameraModule.cs`):
+Contract (actual, `src/MollyNvr.Cameras.Abstractions/ICameraModule.cs`):
 
 ```csharp
 public interface ICameraModule
@@ -146,233 +146,233 @@ public interface ICameraModule
     Task<bool> CanHandleAsync(CameraEndpoint endpoint, CancellationToken ct);
     Task<CameraProbeResult> ProbeAsync(CameraEndpoint endpoint, CameraCredentials credentials, CancellationToken ct);
     Task<byte[]> GetSnapshotAsync(CameraEndpoint endpoint, CameraCredentials credentials, CameraProfile profile, CancellationToken ct);
-    // задел: автопоиск (DiscoverAsync), PTZ, события, детекция движения
+    // planned: discovery (DiscoverAsync), PTZ, events, motion detection
 }
 ```
 
-- **Подключение:** модуль — это отдельный .NET-проект в солюшене (`MollyNvr.Cameras.ONVIF`, `MollyNvr.Cameras.Hikvision`), регистрируется через DI в `MollyNvr.Infrastructure`. Добавить производителя = добавить проект + регистрацию. Контракт — в `MollyNvr.Cameras.Abstractions`; модули зависят только от него (не от Domain/Application/Infrastructure).
-- **Учётные данные:** в контракте передаются отдельным объектом `CameraCredentials`; URL потоков, отдаваемые наружу, — без кредов (`RtspUriFactory` добавляет их только для внутренних вызовов). Пароли не пишутся в логи.
-- **ONVIF (общий модуль):** Device/Media-сервисы ONVIF, WS-Security UsernameToken (PasswordDigest), RTSP через `GetStreamUri`, снапшот через `GetSnapshotUri`, DHCP через `GetNetworkInterfaces`. Профили main/sub определяются по максимальному разрешению; аудио читается из `AudioEncoderConfiguration` (кодек, частота, битрейт). Такой модуль обслуживает Reolink и другие ONVIF-совместимые камеры без отдельного проекта производителя. Для Reolink CX820 ONVIF доступен на порту **8000**, HTTP-порт 80 может быть закрыт — тогда снапшот берётся кадром из RTSP. Кодеки уточняются по SDP (RTSP DESCRIBE).
-- **Hikvision KV-9503:** ISAPI на :80 (HTTP Digest), RTSP `/Streaming/Channels/101` (main) и `/102` (sub); ISAPI даёт точные кодеки/разрешения/fps/аудио, снапшот `/ISAPI/Streaming/channels/{id}/picture`. SDK-порт 8000, ONVIF `/onvif/device_service` — не используются.
-- **Снапшот (M2):** сначала нативный метод модуля, при недоступности — кадр из RTSP через go2rtc (`/api/frame.jpeg?src=…`); так работает и для ONVIF-камер с закрытым HTTP-портом.
-- Профили субпотока (разрешение/кодек/аудио) вычитываются и показываются в мастере — как ты и просил, «форматы видео и аудио».
+- **Wiring:** a module is a separate .NET project in the solution (`MollyNvr.Cameras.ONVIF`, `MollyNvr.Cameras.Hikvision`) registered through DI in `MollyNvr.Infrastructure`. Adding a vendor means adding a project plus a registration. The contract lives in `MollyNvr.Cameras.Abstractions`; modules depend only on it (not on Domain/Application/Infrastructure).
+- **Credentials:** passed through the contract as a separate `CameraCredentials` object; stream URLs exposed to clients contain no credentials (`RtspUriFactory` adds them only for internal calls). Passwords are never logged.
+- **ONVIF (shared module):** ONVIF Device/Media services, WS-Security UsernameToken (PasswordDigest), RTSP through `GetStreamUri`, snapshot through `GetSnapshotUri`, DHCP through `GetNetworkInterfaces`. Main/sub profiles are detected by maximum resolution; audio is read from `AudioEncoderConfiguration` (codec, sample rate, bitrate). This module serves Reolink and other ONVIF-compatible cameras without a dedicated vendor project. For Reolink CX820 ONVIF is available on port **8000**, while HTTP port 80 may be closed — in that case the snapshot is taken as a frame from RTSP. Codecs are verified through SDP (RTSP DESCRIBE).
+- **Hikvision KV-9503:** ISAPI on :80 (HTTP Digest), RTSP `/Streaming/Channels/101` (main) and `/102` (sub); ISAPI provides exact codecs/resolutions/fps/audio, snapshot `/ISAPI/Streaming/channels/{id}/picture`. The SDK port 8000 and ONVIF `/onvif/device_service` are not used.
+- **Snapshot (M2):** the native module method first, and when it is unavailable — a frame from RTSP through go2rtc (`/api/frame.jpeg?src=…`); this also works for ONVIF cameras with a closed HTTP port.
+- Substream profiles (resolution/codec/audio) are read and shown in the wizard — as requested, "video and audio formats".
 
-## 7. Автопоиск
+## 7. Discovery
 
-| Метод | Транспорт | Что находит |
+| Method | Transport | What it finds |
 |---|---|---|
-| ONVIF WS-Discovery | UDP multicast 239.255.255.250:3702 | Камеры/NVR с ONVIF, XAddrs (имя из scopes как модель не используется — это аппаратный идентификатор) |
-| SSDP/UPnP | UDP multicast 239.255.255.250:1900 (M-SEARCH) | Описание устройства: производитель, модель; фильтр по камерам/NVR |
-| mDNS/Bonjour | UDP multicast 224.0.0.251:5353 (`_rtsp`, `_onvif`, `_http`) | IP-адреса камер из A-записей |
-| Hikvision SADP | UDP 37020 (multicast/broadcast) | Hikvision: MAC, модель, IP |
-| Скан подсети (Unicast) | ICMP-опрос диапазона, затем TCP connect только по живым хостам (таймаут 4 с, один повтор на молчаливый SYN) | Всё, что отвечает; производитель — MAC/OUI, ответ протокола или модуль |
-| IP-адрес | TCP connect по типовым портам одного адреса | Конкретное устройство; вендор — выбранный модуль или автоопределение |
+| ONVIF WS-Discovery | UDP multicast 239.255.255.250:3702 | Cameras/NVRs with ONVIF, XAddrs (the scopes name is not used as a model — it is a hardware identifier) |
+| SSDP/UPnP | UDP multicast 239.255.255.250:1900 (M-SEARCH) | Device description: vendor, model; filtered to cameras/NVRs |
+| mDNS/Bonjour | UDP multicast 224.0.0.251:5353 (`_rtsp`, `_onvif`, `_http`) | Camera IP addresses from A records |
+| Hikvision SADP | UDP 37020 (multicast/broadcast) | Hikvision: MAC, model, IP |
+| Subnet scan (unicast) | ICMP probe of the range, then TCP connect only to live hosts (4 s timeout, one retry on a silent SYN) | Everything that responds; vendor from MAC/OUI, protocol response or module |
+| IP address | TCP connect on typical ports of one address | A specific device; vendor from the selected module or autodetection |
 
-После обнаружения — идентификация производителя: MAC → OUI (компактный справочник IEEE в `Application/Discovery/oui-cameras.csv`) важнее названия протокола («ONVIF» — не производитель), затем ответ multicast-протокола, затем `CanHandleAsync` модулей. В таблице результата — IP, MAC, производитель, модель и открытые порты; кнопка «Подключиться» доступна всегда.
+After discovery, vendor identification: MAC → OUI (a compact IEEE reference in `Application/Discovery/oui-cameras.csv`) outranks the protocol name ("ONVIF" is not a vendor), then the multicast protocol response, then the modules' `CanHandleAsync`. The result table shows IP, MAC, vendor, model and open ports; the "Connect" button is always available.
 
-**Unicast:** CIDR/диапазон/одиночный адрес; API возвращает все найденные устройства, а мастер скрывает уже добавленные камеры (по списку сохранённых). Сначала ICMP-опрос диапазона (только отвечающие хосты), затем быстрый набор портов камер, затем полный список портов у найденных хостов; результат объединяется. ICMP-предфильтр важен для Docker Desktop: полный перебор портов по /24 создаёт лавину соединений, которую теряет NAT, а камеры с Wi-Fi power save отвечают на SYN за 1–3 секунды. Поэтому таймаут порта — 4 с с одним повтором при молчаливом таймауте (явный RST не повторяется), а уже найденные порты повторно не проверяются. Если ICMP недоступен или никто не ответил — сканируется весь диапазон (медленный путь). Хосты только с HTTP-портами (роутеры) отбрасываются. **IP:** строка результата возвращается даже без открытых портов. **Multicast:** в результаты попадают только устройства, у которых открыт хотя бы один порт камеры (554, 8554, 8000, 9000, 34567, 37777) — роутеры и веб-панели отбрасываются. Дополнительно сканируются известные ARP-соседи: так находятся камеры, которые не отвечают на multicast (например, Reolink с отключёнными ONVIF/HTTP). Отправка идёт через явно выбранный LAN-интерфейс (`MulticastInterface`): VPN-адаптеры (Wintun/WireGuard) часто перехватывают маршрут `224.0.0.0/4`, и без этого multicast молча не находит ничего. Контейнер в bridge-сети LAN напрямую не видит, поэтому методы возвращают пустой список; UI показывает предупреждение и предлагает скан подсети. На хосте/Linux multicast работает; для этого есть `scripts/run-local.ps1`. См. §15, риск 1.
+**Unicast:** CIDR/range/single address; the API returns all discovered devices, and the wizard hides cameras that are already added (by the saved list). First an ICMP probe of the range (only responding hosts), then the fast camera port set, then the full port list on the discovered hosts; the results are merged. The ICMP prefilter matters for Docker Desktop: a full port sweep across a /24 creates a connection burst that the NAT drops, and cameras with Wi-Fi power save answer SYN within 1-3 s. That is why the port timeout is 4 s with one retry on a silent timeout (an explicit RST is not retried), and ports already found are not checked again. When ICMP is unavailable or nobody responded, the whole range is scanned (the slow path). Hosts with only HTTP ports (routers) are discarded. **IP:** the result row is returned even without open ports. **Multicast:** only devices with at least one camera port open (554, 8554, 8000, 9000, 34567, 37777) reach the results — routers and web panels are discarded. Known ARP neighbours are scanned as well: this finds cameras that do not answer multicast (for example, Reolink with ONVIF/HTTP disabled). Requests go through an explicitly selected LAN interface (`MulticastInterface`): VPN adapters (Wintun/WireGuard) often capture the `224.0.0.0/4` route, and without this multicast silently finds nothing. A container on a bridge network does not see the LAN directly, so the methods return an empty list; the UI shows a warning and suggests a subnet scan. On the host or Linux multicast works; `scripts/run-local.ps1` exists for that. See section 15, risk 1.
 
-**Reolink без RTSP/ONVIF (Baichuan):** некоторые камеры (например, E1 с выключенными HTTP/ONVIF/RTSP) доступны только по проприетарному протоколу на порту 9000. Для них поднимается отдельный сервис `reolink` — `neolink.net` (AGPL-3.0, отдельный процесс, см. `docs/third-party/neolink.net.md`): входит в камеру по Baichuan и отдаёт RTSP + HTTP-API. Модуль `MollyNvr.Cameras.Reolink` при выборе производителя сначала пробует стандартный ONVIF, затем Baichuan: записывает камеру в `data/reolink/config.json` (мост перезапускается), ждёт `online`, берёт профили из `/api/cameras/<name>/streaminfo`, стоп-кадр — из `/api/cameras/<name>/snapshot.jpg`, а потоки — `rtsp://reolink:8654/<name>/mainStream|subStream`.
+**Reolink without RTSP/ONVIF (Baichuan):** some cameras (for example, E1 with HTTP/ONVIF/RTSP disabled) are reachable only over the proprietary protocol on port 9000. For them a separate `reolink` service runs — `neolink.net` (AGPL-3.0, a separate process, see `docs/third-party/neolink.net.md`): it connects to the camera over Baichuan and exposes RTSP plus an HTTP API. The `MollyNvr.Cameras.Reolink` module, when the vendor is selected, first tries standard ONVIF and then Baichuan: writes the camera to `data/reolink/config.json` (the bridge restarts), waits for `online`, reads the profiles from `/api/cameras/<name>/streaminfo`, takes the snapshot from `/api/cameras/<name>/snapshot.jpg`, and the streams are `rtsp://reolink:8654/<name>/mainStream|subStream`.
 
-### Запись видео
+### Video recording
 
-Движок — отдельный `ffmpeg` на камеру (видео `-c copy`, аудио в AAC: G.711/PCM несовместимы с fMP4; сегменты по 5 минут), источник — внутренний RTSP go2rtc (`rtsp://127.0.0.1:8554/camera-<id>-main|sub`): камера держит одно соединение, пароль не попадает в командную строку. Фоновый `RecordingWorker` сверяет расписания раз в 10 с и просыпается сразу после сохранения настроек записи (`IRecordingSettingsNotifier`), запуская или останавливая процессы; признак записи для индикатора `REC` снимается в момент остановки, не дожидаясь выхода ffmpeg. Сегменты индексируются в `recording_segments`; `SegmentIndexer` оставляет только те, что пересекаются с окнами потокового расписания или с событиями (+pre/post-roll), остальные удаляет с задержкой (pre-roll для ещё не наступивших событий). `StorageRetention` держит квоту пула: FIFO или водяные знаки (high/low от квоты).
+The engine is a separate `ffmpeg` per camera (video `-c copy`, audio to AAC: G.711/PCM are incompatible with fMP4; 5-minute segments), the source is the internal go2rtc RTSP (`rtsp://127.0.0.1:8554/camera-<id>-main|sub`): the camera keeps a single connection and the password never reaches the command line. The background `RecordingWorker` compares schedules every 10 s and wakes immediately after recording settings are saved (`IRecordingSettingsNotifier`), starting or stopping processes; the recording flag for the `REC` indicator is cleared when the stop begins, without waiting for ffmpeg to exit. Segments are indexed in `recording_segments`; `SegmentIndexer` keeps only those that intersect streaming schedule windows or events (+pre/post-roll) and deletes the rest with a delay (pre-roll for events that have not started yet). `StorageRetention` enforces the pool quota: FIFO or watermarking (high/low of the quota).
 
-События: `ICameraEventSource` у модулей — ONVIF PullPoint (`CreatePullPointSubscription`/`PullMessages`) и Hikvision ISAPI `alertStream` (multipart XML). `CameraEventMonitor` пишет окна в `recording_events`. Reolink через мост Baichuan событий не отдаёт — только расписание.
+Events: `ICameraEventSource` in the modules — ONVIF PullPoint (`CreatePullPointSubscription`/`PullMessages`) and Hikvision ISAPI `alertStream` (multipart XML). `CameraEventMonitor` writes windows to `recording_events`. Reolink through the Baichuan bridge reports no events — schedule only.
 
-API: `GET/PUT /api/cameras/{id}/recording`, `GET/PUT /api/settings/storage`. Таблицы: `recording_settings`, `recording_segments`, `recording_events`, `storage_settings` (EF Core, миграция `AddRecording`).
+API: `GET/PUT /api/cameras/{id}/recording`, `GET/PUT /api/settings/storage`. Tables: `recording_settings`, `recording_segments`, `recording_events`, `storage_settings` (EF Core, migration `AddRecording`).
 
-### Архив
+### Archive
 
-`/api/archive/*`: камеры, календарь по месяцам, таймлайн за день (интервалы записей + события) и HLS-воспроизведение. `ArchiveService` выбирает окно 2 часа от запрошенного момента, склеивает сегменты и запускает `ffmpeg` через `PlaybackSessionManager` (copy для H.264, hvc1 для HEVC или транскод в H.264, если браузер не поддерживает HEVC). Готовые HLS-файлы раздаются через API, кэш — `<data>/playback-cache`, устаревшие сессии убирает `PlaybackCleanupService`. UI — `hls.js` (загружается отдельным чанком).
+`/api/archive/*`: cameras, a per-month calendar, a per-day timeline (recording intervals + events) and HLS playback. `ArchiveService` selects a 2-hour window from the requested moment, stitches the segments and starts `ffmpeg` through `PlaybackSessionManager` (copy for H.264, hvc1 for HEVC, or transcoding to H.264 when the browser does not support HEVC). The resulting HLS files are served by the API, the cache is `<data>/playback-cache`, and stale sessions are removed by `PlaybackCleanupService`. The UI uses `hls.js` (loaded as a separate chunk).
 
-### Архив
+### Archive
 
-Индекс сегментов и событий читается через `ArchiveService`: календарь (дни с записями), таймлайн за сутки (непрерывные интервалы + окна событий) и список камер. Время в `recording_segments`/`recording_events` хранится в UTC (`DateTime`), поэтому SQLite корректно фильтрует по интервалам; миграция `NormalizeRecordingTimes` переводит старые значения.
+The segment and event index is read through `ArchiveService`: the calendar (days with recordings), the daily timeline (continuous intervals + event windows) and the camera list. Times in `recording_segments`/`recording_events` are stored in UTC (`DateTime`), so SQLite filters by intervals correctly; the `NormalizeRecordingTimes` migration converts old values.
 
-Воспроизведение — HLS по запросу. `PlaybackSessionManager` берёт сегменты от точки клика на 2 часа вперёд (в пределах суток), склеивает их `ffmpeg -f concat` и раздаёт плейлист с фрагментами из `/data/playback-cache`; сессии живут по TTL и удаляются по `DELETE`. H.264 отдаётся `-c copy`, H.265/MJPEG перекодируются в H.264, если браузер не заявил поддержку HEVC. API возвращает карту «медиа-время → реальное время»: по ней клиент рисует красную риску и счётчик времени на записи. Пропуски между записями схлопываются при склейке, поэтому воспроизведение перескакивает их автоматически.
+Playback is HLS on demand. `PlaybackSessionManager` takes segments from the click point up to 2 hours ahead (within the day), concatenates them with `ffmpeg -f concat` and serves the playlist with fragments from `/data/playback-cache`; sessions live by TTL and are deleted by `DELETE`. H.264 is served with `-c copy`, H.265/MJPEG are transcoded to H.264 when the browser did not declare HEVC support. The API returns a "media time → real time" map: the client uses it to draw the red playhead and the time counter over the recording. Gaps between recordings collapse during stitching, so playback skips them automatically.
 
 ## 8. UI
 
 
-- **Навигация:** полноэкранный макет, слева — «Прямая трансляция», «Архив», «Камеры», «Настройки». Версия, .NET и статус go2rtc — в «Настройках».
-- **Раскладки:** 1, 2, 4 (2×2), 4 с большим тайлом, 6 (3×2), 6 с двумя большими тайлами, 9, 12 с большим тайлом и 12 (равномерная). 4 с большим тайлом — сетка 4×3: тайл 3×3 слева и 3 камеры в правой колонке; 6 с двумя большими — сетка 4×3: два тайла 2×2 сверху (слева и справа) и 4 камеры в нижнем ряду; 9 — сетка 4×3, большой тайл 2×2 слева сверху и 8 малых; 12 с большим тайлом — сетка 5×4, большой тайл 3×3 слева сверху и 11 малых; 12 (равномерная) — сетка 4×3. Выбор — иконка сетки, по клику попап с миниатюрами и количеством тайлов; активная подсвечена синим.
-- **Тулбар сетки:** слева от выбора раскладки — общая кнопка включения/выключения звука; после раскладки — кнопка «На весь экран» (нативный Fullscreen API для всей сетки, выход по `Esc`), затем «Растянуть изображение»; во включённом состоянии кнопки подсвечены синим, видео во всех тайлах заполняет площадь (`object-fit: fill`). Иконки тулбара одного серого цвета, как у раскладки. Состояния звука, растяжения, раскладки, фокуса и порядка тайлов хранятся в `localStorage` браузера, на сервере не сохраняются.
-- **Каждый тайл:** активные камеры автоматически занимают свободные места; порядок можно менять перетаскиванием (тайлы меняются местами), он запоминается отдельно для каждой раскладки в браузере. Лишние камеры не показываются.
-- **Взаимодействие:**
-  - один клик — фокус (рамка) + звук этой камеры; клик по другому тайлу — звук переезжает;
-  - колесо мыши — масштаб изображения под курсором (1×–6×); увеличенное изображение перетаскивается левой кнопкой мыши, панорамирование ограничено краями тайла;
-  - у активного тайла — иконка громкости с ползунком (Windows 11); при нулевой громкости, общем mute или недоступном кодеке — красная иконка;
-  - двойной клик — fullscreen тайла + основной поток в максимальном разрешении; повторный двойной (или Esc) — возврат в сетку (субпоток, звук остаётся на фокусе);
-  - кнопка «На весь экран» в тулбаре разворачивает всю сетку; выход — `Esc`;
-  - при курсоре в нижней трети тайла снизу по центру плавно (200 мс) появляются круглые кнопки «Инфо» (оверлей с параметрами камеры) и «Настройки» (переход на страницу настроек камеры); при наведении кнопка светлеет, при нажатии/активном состоянии подсвечивается синим.
-- **Индикаторы:** индикатор Live скрыт; показываются только состояния connecting / failed. При обрыве или перезапуске go2rtc тайл автоматически переподключается через 5 секунд. Кодек на изображении не показывается; при транскоде видео — бейдж «транскод». Информационный оверлей (кнопка «Инфо») показывает название камеры и параметры видео/аудио; строки «Видео транскодировано» и «Аудио транскодировано» показываются только при реальной перекодировке (для видео — по фактическому кодеку SDP answer). Если звук недоступен из-за кодека — красная иконка со знаком запрета; при mute — красный перечёркнутый динамик.
-- **Мастер добавления (4 шага, реализовано):** 1) поиск — Multicast (WS-Discovery/SSDP/mDNS/SADP), Unicast (CIDR/диапазон) или IP-адрес; таблица результатов: IP, MAC, производитель, модель, открытые порты, «Подключиться»; уже добавленные камеры скрыты. 2) подключение — адрес, логин, пароль, производитель (ONVIF + подключённые модули), карточка устройства. 3) профили — таблица всех профилей с radio: основной выбран автоматически по максимальному разрешению и заблокирован, дополнительные пронумерованы, по умолчанию выбран минимального разрешения; у каждого свой стоп-кадр. 4) сохранение — метаданные, имя камеры, стоп-кадр основного потока вместо превью, сводка выбранных потоков. Навигация: клик по любому предыдущему шагу. После сохранения камера появляется в свободном тайле сетки.
-- **M3 (реализовано):** страница «Камеры»: список сохранённых камер, удаление, включение/выключение, переход к настройкам; кнопка «+ Добавить» открывает мастер, автопоиск встроен в первый шаг мастера. Колонка включения — первая, без заголовка, с переключателем; отключённая строка притемнена. Далее колонки «Название» и «Производитель» в этом порядке. После сохранения камера переживает перезапуск контейнера.
-- **Настройки камеры (реализовано):** `/cameras/:id/settings` — живой preview с изображением и звуком, параметры устройства (производитель, модель, прошивка, серийный номер, адрес, DHCP), обязательное название, таблица потоков с подсветкой битрейта и переключателем выбора субпотока (основной всегда включён и заблокирован, субпотоки — радиокнопки). Разрешение показывается в формате `1920×1080 Full HD · 2,1 Мп · 16:9`; кодеки подсвечиваются по поддержке браузера и доступности ffmpeg-транскода, при отключённом аудио — нейтральный прочерк. Кнопка ▶ в строке потока переключает preview на основной или конкретный субпоток; при открытии активен основной поток. Сохранение — по кнопке «Сохранить» (`PUT /api/cameras/{id}/settings`) с зелёным toast на 3 секунды; кнопка «Назад» возвращает на предыдущую страницу. DHCP запрашивается по `GET /api/cameras/{id}/network`; черновик в мастере показывает «Без живого preview».
-- **M4 (реализовано):** раздел «Прямая трансляция»: раскладки 1, 2, 4 (2×2), 4 с тайлом 3×3, 6 (3×2), 6 с двумя тайлами 2×2, 9, 12 с большим тайлом и 12 (равномерная); активные камеры занимают свободные тайлы; drag & drop меняет тайлы местами и запоминается для каждой раскладки; клик — фокус, иконка громкости только у активного тайла (ползунок в стиле Windows 11; mute — красный перечёркнутый динамик, недоступный кодек — красный знак запрета), общий mute слева от раскладки; колесо мыши — зум под курсором, увеличенное изображение панорамируется левой кнопкой; двойной клик — fullscreen тайла с основным потоком, кнопка «На весь экран» — fullscreen всей сетки (выход по Esc); аудио AAC → Opus через ffmpeg-источник; кнопки «Инфо» и «Настройки» появляются при курсоре в нижней трети тайла; индикатор Live скрыт, показываются connecting/failed; раскладка, порядок, фокус, растяжение и mute сохраняются в `localStorage`. В «Сохранённых камерах» — переключатель активна/выключена и редактирование (неактивные скрыты из сетки, их потоки снимаются с go2rtc). В левом верхнем углу тайла при активной записи — мигающая точка `REC` и иконки триггеров (расписание и/или открытые события, опрос `GET /api/recording/status` раз в 5 с); кнопка «Архив» в панели тайла открывает архив с этой камерой.
-- **M6 (реализовано): архив.** Отдельная вкладка «Архив»: под пунктом меню — список активных камер, камера по умолчанию не выбрана; выбор камеры грузит календарь и таймлайн. Сверху плеер, под ним панель управления (дата, время, фильтры, транспорт, скорость 1/2/4/8, просмотр нескольких камер), таймлайн 0–24 ч; дата открывает календарь вверх (точки на днях с видео, закрытие по выбору даты или Esc). На таймлайне серые полосы — расписание, синие поверх — события; перетаскивание — прокрутка, клик — воспроизведение с ближайшей записи справа, красная риска — текущая позиция. «Просмотр нескольких камер» делит область на 4 тайла: камеры перетаскиваются из меню, тайлы меняются местами, воспроизведение синхронное; под общей шкалой времени — по полоске на камеру в порядке тайлов, активная подсвечена, звук идёт только с неё, красная риска общая. Плеер и сетка занимают всё свободное место, панель управления и таймлайн прижаты к низу. Кнопки «Запись» и «Стоп кадр» находятся на изображении и появляются при наведении; запись показывает мигающую точку и `REC чч:мм:сс`. Запись и стоп-кадр выполняются в браузере (`MediaRecorder` + canvas), формат (PNG/JPEG, WebM/MP4) хранится в `localStorage` (раздел «Настройки»). Кнопка «На весь экран» — на панели управления (разворачивает плеер или сетку 2×2). Дата по умолчанию — сегодня. Из тайла прямой трансляции кнопка «Архив» открывает архив с этой камерой.
-- **PWA:** `manifest.webmanifest`, service worker (кеширует оболочку, API/HLS не кешируются), иконки 192/512 и maskable; `start_url=/live`, `display=standalone`. Установка как приложение требует HTTPS: на `http://<LAN-IP>:9080` service worker недоступен (исключение — localhost).
-- Русский язык по умолчанию. Все строки UI — через словари локализации (i18n): заложена возможность выбора языка в настройках; сам выбор в v1 не реализуем.
+- **Navigation:** a full-screen layout with "Live", "Archive", "Cameras" and "Settings" on the left. Version and go2rtc status are in "Settings".
+- **Layouts:** 1, 2, 4 (2x2), 4 with a large tile, 6 (3x2), 6 with two large tiles, 9, 12 with a large tile and 12 (even). 4 with a large tile — a 4x3 grid: a 3x3 tile on the left and 3 cameras in the right column; 6 with two large tiles — a 4x3 grid: two 2x2 tiles on top (left and right) and 4 cameras in the bottom row; 9 — a 4x3 grid with a 2x2 large tile at the top left and 8 small tiles; 12 with a large tile — a 5x4 grid with a 3x3 large tile at the top left and 11 small tiles; 12 (even) — a 4x3 grid. Selection is the grid icon; a click opens a popover with thumbnails and tile counts; the active one is highlighted in blue.
+- **Grid toolbar:** to the left of the layout picker — a global sound on/off button; after the layout — a "Fullscreen" button (native Fullscreen API for the whole grid, exit with `Esc`), then "Stretch image"; when enabled, the buttons are highlighted in blue and the video in all tiles fills the area (`object-fit: fill`). Toolbar icons are the same gray as the layout icon. Sound, stretch, layout, focus and tile order are stored in the browser `localStorage` and not on the server.
+- **Each tile:** active cameras automatically fill the free places; the order can be changed by dragging (tiles swap places) and is remembered separately for each layout in the browser. Extra cameras are not shown.
+- **Interaction:**
+  - a single click — focus (border) and the sound of that camera; a click on another tile moves the sound;
+  - mouse wheel — zoom of the image under the cursor (1x-6x); the zoomed image is dragged with the left mouse button, panning is bounded by the tile edges;
+  - on the active tile — a volume icon with a slider (Windows 11 style); at zero volume, with global mute or an unsupported codec — a red icon;
+  - double click — tile fullscreen plus the main stream at maximum resolution; a repeated double click (or Esc) returns to the grid (substream, the sound stays on the focused tile);
+  - the "Fullscreen" button in the toolbar expands the whole grid; exit with `Esc`;
+  - when the cursor is in the bottom third of a tile, round "Info" (overlay with camera details) and "Settings" (opens the camera settings page) buttons appear smoothly (200 ms) at the bottom center; on hover the button lightens, on press or in the active state it is highlighted in blue.
+- **Indicators:** the Live indicator is hidden; only connecting / failed states are shown. After a connection loss or a go2rtc restart the tile reconnects automatically in 5 seconds. The codec is not shown on the image; when video is transcoded, a "transcode" badge appears. The information overlay (the "Info" button) shows the camera name and the video/audio parameters; the "Video is transcoded" and "Audio is transcoded" rows appear only on actual transcoding (for video — according to the actual codec from the SDP answer). When audio is unavailable because of the codec — a red icon with a prohibition sign; when muted — a red crossed-out speaker.
+- **Add wizard (4 steps, implemented):** 1) search — Multicast (WS-Discovery/SSDP/mDNS/SADP), Unicast (CIDR/range) or IP address; the result table: IP, MAC, vendor, model, open ports, "Connect"; already added cameras are hidden. 2) connection — address, login, password, vendor (ONVIF plus connected modules), device card. 3) profiles — a table of all profiles with a radio button: the main profile is selected automatically by maximum resolution and locked, the others are numbered and the lowest resolution is selected by default; each has its own snapshot. 4) saving — metadata, camera name, a snapshot of the main stream instead of a preview, a summary of the selected streams. Navigation: a click on any previous step. After saving, the camera appears in a free grid tile.
+- **M3 (implemented):** the "Cameras" page: a list of saved cameras, deletion, enable/disable, navigation to settings; the "+ Add" button opens the wizard, and discovery is built into the first wizard step. The enable column is first, without a header, with a toggle; a disabled row is dimmed. Then the "Name" and "Vendor" columns in that order. After saving, the camera survives a container restart.
+- **Camera settings (implemented):** `/cameras/:id/settings` — a live preview with image and sound, device details (vendor, model, firmware, serial number, address, DHCP), a required name, a stream table with bitrate highlighting and a substream selector (the main stream is always enabled and locked, substreams are radio buttons). Resolution is shown as `1920×1080 Full HD · 2.1 MP · 16:9`; codecs are highlighted by browser support and ffmpeg transcoding availability, and a neutral dash is shown when audio is disabled. The ▶ button in a stream row switches the preview to the main or a specific substream; the main stream is active on open. Saving is done with the "Save" button (`PUT /api/cameras/{id}/settings`) with a green toast for 3 seconds; the "Back" button returns to the previous page. DHCP is requested through `GET /api/cameras/{id}/network`; the draft in the wizard shows "No live preview".
+- **M4 (implemented):** the "Live" section: layouts 1, 2, 4 (2x2), 4 with a 3x3 tile, 6 (3x2), 6 with two 2x2 tiles, 9, 12 with a large tile and 12 (even); active cameras occupy free tiles; drag and drop swaps tiles and is remembered for each layout; a click focuses a tile, the volume icon appears only on the active tile (a Windows 11 style slider; mute — a red crossed-out speaker, an unsupported codec — a red prohibition sign), the global mute is to the left of the layout; the mouse wheel zooms under the cursor and the zoomed image pans with the left button; a double click opens tile fullscreen with the main stream, the "Fullscreen" button expands the whole grid (exit with Esc); AAC audio → Opus through an ffmpeg source; the "Info" and "Settings" buttons appear when the cursor is in the bottom third of a tile; the Live indicator is hidden, connecting/failed states are shown; layout, order, focus, stretch and mute are stored in `localStorage`. The "Saved cameras" page has an enabled/disabled toggle and editing (disabled cameras are hidden from the grid and their streams are removed from go2rtc). In the top left corner of a tile, while recording is active, a blinking `REC` dot and trigger icons are shown (schedule and/or open events, `GET /api/recording/status` polled every 5 s); the "Archive" button in the tile panel opens the archive for that camera.
+- **M6 (implemented): archive.** A separate "Archive" tab: the active camera list is under the menu item, no camera is selected by default; selecting a camera loads the calendar and the timeline. The player is on top, below it the control panel (date, time, filters, transport, speed 1/2/4/8, multi-camera view), then the 0-24 h timeline; the date opens the calendar upwards (dots mark days with video, it closes on date selection or Esc). On the timeline gray bars are the schedule and blue bars on top are events; dragging scrolls, a click plays from the nearest recording to the right, the red playhead is the current position. "Multi-camera view" splits the area into 4 tiles: cameras are dragged from the menu, tiles can be swapped, playback is synchronized; under the shared time scale there is one bar per camera in tile order, the active one is highlighted, sound comes only from it, and the red playhead is shared. The player and the grid take all free space, the control panel and the timeline are pinned to the bottom. The "Record" and "Snapshot" buttons are on the image and appear on hover; recording shows a blinking dot and `REC hh:mm:ss`. Recording and snapshots are done in the browser (`MediaRecorder` plus canvas), and the format (PNG/JPEG, WebM/MP4) is stored in `localStorage` (the "Settings" section). The "Fullscreen" button is on the control panel (expands the player or the 2x2 grid). The default date is today. From a live tile, the "Archive" button opens the archive for that camera.
+- **PWA:** `manifest.webmanifest`, a service worker (caches the shell, does not cache the API/HLS), 192/512 and maskable icons; `start_url=/live`, `display=standalone`. Installing as an app requires HTTPS: on `http://<LAN-IP>:9080` the service worker is unavailable (localhost is the exception).
+- **Language:** English is the default UI language, Russian is available in "Settings" (the choice is stored in the browser). All UI strings go through the localization dictionaries (i18n).
 
-## 9. Стек и структура решения
+## 9. Stack and solution structure
 
 ```
-MollyNvr.slnx                       # чистая архитектура (.slnx — формат решений .NET 10)
+MollyNvr.slnx                       # clean architecture (.slnx — the .NET 10 solution format)
 ├─ src/
-│  ├─ MollyNvr.Domain/              # сущности, value objects, доменные интерфейсы (порты)
+│  ├─ MollyNvr.Domain/              # entities, value objects, domain interfaces (ports)
 │  ├─ MollyNvr.Application/         # use cases: AddCamera, ScanNetwork, OpenStream, CodecPolicy…
-│  ├─ MollyNvr.Infrastructure/      # EF Core + SQLite, клиент go2rtc, запуск ffmpeg,
-│  │                                # WS-Discovery/SADP/скан, шифрование кредов — реализации портов
-│  ├─ MollyNvr.Api/                 # ASP.NET Core: REST, WHEP-прокси, статика SPA, хост go2rtc
-│  ├─ MollyNvr.Cameras.Abstractions/# контракт модулей производителей (ICameraModule, DTO)
+│  ├─ MollyNvr.Infrastructure/      # EF Core + SQLite, go2rtc client, ffmpeg launch,
+│  │                                # WS-Discovery/SADP/scanning, credential encryption — port implementations
+│  ├─ MollyNvr.Api/                 # ASP.NET Core: REST, WHEP proxy, SPA static files, go2rtc host
+│  ├─ MollyNvr.Cameras.Abstractions/# vendor module contract (ICameraModule, DTOs)
 │  ├─ MollyNvr.Cameras.ONVIF/
 │  └─ MollyNvr.Cameras.Hikvision/
 ├─ ui/                              # React 19 + TypeScript + Vite
-├─ tests/                           # xUnit: Domain, Application, Infrastructure (EF/SQLite, AES), модули (парсеры ONVIF/ISAPI/SADP)
+├─ tests/                           # xUnit: Domain, Application, Infrastructure (EF/SQLite, AES), modules (ONVIF/ISAPI/SADP parsers)
 ├─ docker/                          # Dockerfile, compose.yaml, entrypoint
-└─ docs/                            # этот документ
+└─ docs/                            # this document
 ```
 
-- Правило зависимостей (чистая архитектура): Domain ← Application ← Infrastructure/Api; Domain не знает ни о чём, кроме BCL; модули зависят только от `Cameras.Abstractions`; DI-контейнер собирается в Api.
-- .NET 10 (`net10.0`), nullable enabled, `TreatWarningsAsErrors` для Domain/Application и всех `MollyNvr.Cameras.*`.
-- Тесты — xUnit; для парсеров ONVIF/ISAPI/SADP — обязательно (текстовые фикстуры).
-- UI: React 19 + TS, состояние — минимальное (Zustand), без тяжёлых фреймворков; WebRTC — нативный API + WHEP.
+- Dependency rule (clean architecture): Domain <- Application <- Infrastructure/Api; Domain knows nothing but the BCL; modules depend only on `Cameras.Abstractions`; the DI container is composed in Api.
+- .NET 10 (`net10.0`), nullable enabled, `TreatWarningsAsErrors` for Domain/Application and all `MollyNvr.Cameras.*`.
+- Tests are xUnit; for the ONVIF/ISAPI/SADP parsers they are mandatory (text fixtures).
+- UI: React 19 + TS, minimal state (Zustand), no heavy frameworks; WebRTC through the native API plus WHEP.
 
 ## 10. API (v1)
 
-| Метод и путь | Назначение |
+| Method and path | Purpose |
 |---|---|
-| `GET /api/system/info` | Версии, статус go2rtc/ffmpeg |
-| `GET /api/discovery/settings` | Диапазон автопоиска по умолчанию (M3) |
-| `POST /api/discovery/scan` | Unicast-скан подсети/CIDR/диапазона: IP, MAC, производитель, модель, открытые порты |
-| `POST /api/discovery/multicast` | Multicast-поиск: WS-Discovery, SSDP, mDNS, Hikvision SADP |
-| `POST /api/discovery/ip` | Проверка одного IPv4-адреса; необязательный ключ модуля производителя |
-| `GET /api/cameras/modules` | Список модулей производителей (M2) |
-| `POST /api/cameras/probe` | Опрос камеры без сохранения: устройство + профили main/sub (M2) |
-| `POST /api/cameras/snapshot` | JPEG-снапшот профиля: нативный метод или кадр из RTSP (M2) |
-| `GET /api/cameras` | Сохранённые камеры с профилями (M3) |
-| `POST /api/cameras` | Добавить камеру: проверка → БД → потоки в go2rtc (M3) |
-| `GET /api/cameras/{id}` | Камера по идентификатору (M3) |
-| `GET /api/cameras/{id}/network` | Сетевые параметры камеры: `dhcpEnabled` (может быть `null`) (M3) |
-| `PUT /api/cameras/{id}` | Повторный опрос и обновление камеры (M3) |
-| `PUT /api/cameras/{id}/settings` | Сохранить название и выбранный субпоток (M3) |
-| `DELETE /api/cameras/{id}` | Удаление камеры и её потоков (M3) |
-| `PUT /api/cameras/{id}/active` | Включить/выключить камеру; неактивные скрыты из сетки (M4) |
-| `GET /api/cameras/{id}/snapshot?profile=sub\|main` | Снапшот сохранённой камеры (M3) |
-| `POST /api/cameras/{id}/whep?profile=sub\|main` | WebRTC-сессия камеры: субпоток для тайла, основной — для fullscreen (M4) |
-| `POST /api/streams/{id}/whep?profile=sub\|main` | WebRTC-подключение (прокси к go2rtc) |
-| `GET/PUT /api/cameras/{id}/recording` | Настройки записи камеры: расписание, события, pre/post-roll |
-| `GET /api/recording/status` | Активные записи: камера, время старта, расписание, открытые события (для индикатора REC) |
-| `GET/PUT /api/settings/storage` | Пул хранения: путь, квота, режим перезаписи |
-| `GET /api/archive/cameras` | Камеры архива и отметка записей за сегодня |
-| `GET /api/archive/cameras/{id}/calendar?year=&month=` | Дни месяца, в которые есть записи |
-| `GET /api/archive/cameras/{id}/timeline?date=` | Интервалы записей и события за день |
-| `POST /api/archive/playback` | HLS-сессия от `from`; `supportsHevc` выбирает copy или транскод |
-| `DELETE /api/archive/playback/{sessionId}` | Остановить сессию и удалить фрагменты |
-| `GET /api/archive/playback/{sessionId}/{file}` | Плейлист HLS и фрагменты (`Range` поддерживается) |
+| `GET /api/system/info` | Versions, go2rtc/ffmpeg status |
+| `GET /api/discovery/settings` | Default discovery range (M3) |
+| `POST /api/discovery/scan` | Unicast subnet/CIDR/range scan: IP, MAC, vendor, model, open ports |
+| `POST /api/discovery/multicast` | Multicast discovery: WS-Discovery, SSDP, mDNS, Hikvision SADP |
+| `POST /api/discovery/ip` | Check a single IPv4 address; optional vendor module key |
+| `GET /api/cameras/modules` | List of vendor modules (M2) |
+| `POST /api/cameras/probe` | Probe a camera without saving: device plus main/sub profiles (M2) |
+| `POST /api/cameras/snapshot` | JPEG snapshot of a profile: native method or a frame from RTSP (M2) |
+| `GET /api/cameras` | Saved cameras with profiles (M3) |
+| `POST /api/cameras` | Add a camera: check → database → streams in go2rtc (M3) |
+| `GET /api/cameras/{id}` | Camera by identifier (M3) |
+| `GET /api/cameras/{id}/network` | Camera network parameters: `dhcpEnabled` (may be `null`) (M3) |
+| `PUT /api/cameras/{id}` | Probe again and update the camera (M3) |
+| `PUT /api/cameras/{id}/settings` | Save the name and the selected substream (M3) |
+| `DELETE /api/cameras/{id}` | Delete the camera and its streams (M3) |
+| `PUT /api/cameras/{id}/active` | Enable/disable the camera; inactive cameras are hidden from the grid (M4) |
+| `GET /api/cameras/{id}/snapshot?profile=sub\|main` | Snapshot of a saved camera (M3) |
+| `POST /api/cameras/{id}/whep?profile=sub\|main` | WebRTC session of a camera: substream for the tile, main stream for fullscreen (M4) |
+| `POST /api/streams/{id}/whep?profile=sub\|main` | WebRTC connection (proxy to go2rtc) |
+| `GET/PUT /api/cameras/{id}/recording` | Camera recording settings: schedule, events, pre/post-roll |
+| `GET /api/recording/status` | Active recordings: camera, start time, schedule, open events (for the REC indicator) |
+| `GET/PUT /api/settings/storage` | Storage pool: path, quota, overwrite mode |
+| `GET /api/archive/cameras` | Archive cameras and the today's recordings mark |
+| `GET /api/archive/cameras/{id}/calendar?year=&month=` | Days of the month that have recordings |
+| `GET /api/archive/cameras/{id}/timeline?date=` | Recording intervals and events for a day |
+| `POST /api/archive/playback` | HLS session from `from`; `supportsHevc` selects copy or transcoding |
+| `DELETE /api/archive/playback/{sessionId}` | Stop the session and delete the fragments |
+| `GET /api/archive/playback/{sessionId}/{file}` | HLS playlist and fragments (`Range` supported) |
 | `GET /api/health` | Liveness/readiness |
 
-## 11. Docker и деплой
+## 11. Docker and deployment
 
 ```mermaid
 flowchart TB
   subgraph DD["Docker Desktop (WSL2)"]
-    subgraph CT["Контейнер mollynvr · bridge · ports 9080/8555 · --gpus all"]
+    subgraph CT["mollynvr container · bridge · ports 9080/8555 · --gpus all"]
       ASP["ASP.NET Core :9080<br/>UI + API"]
-      G2["go2rtc :1984 и RTSP :8554 (только localhost)<br/>WebRTC :8555 tcp+udp (published)"]
+      G2["go2rtc :1984 and RTSP :8554 (localhost only)<br/>WebRTC :8555 tcp+udp (published)"]
       FFX["ffmpeg"]
-      VOL[("/data<br/>SQLite · secret.key · снапшоты")]
+      VOL[("/data<br/>SQLite · secret.key · snapshots")]
     end
   end
-  CT <-->|"NAT хоста — RTSP/HTTP к камерам"| LAN2["LAN 192.168.1.0/24"]
-  BR["Браузер LAN"] -->|"9080/tcp · 8555/tcp+udp"| CT
+  CT <-->|"host NAT — RTSP/HTTP to cameras"| LAN2["LAN 192.168.1.0/24"]
+  BR["LAN browser"] -->|"9080/tcp · 8555/tcp+udp"| CT
 ```
 
-- **Один контейнер.** ASP.NET Core запускает go2rtc дочерним процессом (health-check, автоперезапуск, остановка при завершении) — это убирает supervisor и упрощает эксплуатацию: «запустить контейнер» = одна команда.
-- **Сеть — bridge + публикация портов** (`9080/tcp`, `8555/tcp`, `8555/udp`). Проверено на M1: host networking в Docker Desktop на Windows **не пробрасывает UDP** внутрь контейнера (на Windows не появляется UDP-листенер :8555) — WebRTC-медиа (SRTP/UDP) до браузера не доходит. Bridge с публикацией UDP работает. RTSP/HTTP к камерам идут через NAT хоста.
-- **Порты:** наружу — `9080` (UI/API/WHEP) и `8555` (WebRTC-медиа, TCP+UDP). go2rtc bind на `127.0.0.1:1984` (API) и `127.0.0.1:8554` (внутренний RTSP — публикация `ffmpeg:`-источников и будущего транскода); наружу они не торчат.
-- **ICE-кандидат:** LAN-адрес хоста внутри контейнера не виден — задаётся явно (`Go2Rtc__WebRtcCandidates__0=192.168.1.151:8555`).
-- **`--gpus all`** — для NVENC в транскоде; проверим в M1 (в WSL2 NVENC обычно доступен). Если нет — CPU-резерв и приоритет «переключить камеру на H.264».
-- **Volume:** `./data:/data` — SQLite, ключ шифрования, снапшоты; позже сюда же записи. Конфиг go2rtc с URL камер — вне volume (tmpfs).
-- **Диск C:** 6 ГБ свободно — перед сборкой перенести Docker data-root на D:/E: (Docker Desktop → Settings → Resources → Advanced) или освободить место. Иначе образ (~0.7–1 ГБ) может не поместиться.
-- **Dev-режим (без Docker):** `go2rtc.exe` локально (в `tools/`), `dotnet run --project src/MollyNvr.Api`, `npm run dev` в `ui/` (Vite-прокси на :9080).
+- **One container.** ASP.NET Core starts go2rtc as a child process (health check, automatic restart, shutdown on exit) — this removes the supervisor and simplifies operations: "start the container" is one command.
+- **Network — bridge plus published ports** (`9080/tcp`, `8555/tcp`, `8555/udp`). Verified on M1: host networking in Docker Desktop on Windows **does not forward UDP** into the container (no UDP listener on :8555 appears on Windows) — WebRTC media (SRTP/UDP) never reaches the browser. Bridge with published UDP works. RTSP/HTTP to cameras go through the host NAT.
+- **Ports:** exposed — `9080` (UI/API/WHEP) and `8555` (WebRTC media, TCP+UDP). go2rtc binds to `127.0.0.1:1984` (API) and `127.0.0.1:8554` (internal RTSP — publishing `ffmpeg:` sources and future transcodes); neither is exposed.
+- **ICE candidate:** the host LAN address is not visible from the container — it is set explicitly (`Go2Rtc__WebRtcCandidates__0=192.168.1.151:8555`).
+- **`--gpus all`** — for NVENC during transcoding; verified in M1 (in WSL2 NVENC is usually available). If not — CPU fallback and a preference for switching the camera to H.264.
+- **Volume:** `./data:/data` — SQLite, encryption key, snapshots; recordings later go here too. The go2rtc config with camera URLs stays outside the volume (tmpfs).
+- **Drive C:** 6 GB free — before building, move the Docker data-root to D:/E: (Docker Desktop → Settings → Resources → Advanced) or free space. Otherwise the image (~0.7-1 GB) may not fit.
+- **Dev mode (no Docker):** `go2rtc.exe` locally (in `tools/`), `dotnet run --project src/MollyNvr.Api`, `npm run dev` in `ui/` (Vite proxy to :9080).
 
-## 12. Безопасность
+## 12. Security
 
-- Креды камер — **никогда** в открытом виде: шифрование AES-GCM (M3: логин и пароль в одной зашифрованной строке, nonce на запись), ключ генерируется при первом старте в `/data/secret.key` (права 0600). В логах и API — только маскирование.
-- Конфиг go2rtc (в нём рабочие URL с паролями) не хранится в `/data`: пишется в `/dev/shm/mollynvr` (tmpfs) или временный каталог; старый `/data/go2rtc.yaml` удаляется при старте.
-- API наружу не выставляется (только LAN :9080). Аутентификация UI в v1 — опциональный пароль (задел: JWT); для личного использования в LAN по умолчанию выключена.
-- Валидация ввода: IP/порт/URL/креды при добавлении; никакого shell-склеивания — только аргументы процессов.
-- Креды для отладки — через `appsettings.Development.json`/переменные окружения (не в git).
+- Camera credentials are **never** stored in plain text: AES-GCM encryption (M3: login and password in one encrypted string, a nonce per record), the key is generated on first start into `/data/secret.key` (mode 0600). Logs and the API only show masked values.
+- The go2rtc config (it contains working URLs with passwords) is not stored in `/data`: it is written to `/dev/shm/mollynvr` (tmpfs) or a temporary directory; the old `/data/go2rtc.yaml` is deleted at startup.
+- The API is not exposed externally (only LAN :9080). UI authentication in v1 is an optional password (JWT planned); for personal LAN use it is disabled by default.
+- Input validation: IP/port/URL/credentials on addition; no shell concatenation — process arguments only.
+- Credentials for debugging come from `appsettings.Development.json` or environment variables (never git).
 
-## 13. Точки расширения (задел, не реализуем в v1)
+## 13. Extension points (groundwork, not implemented in v1)
 
-| Направление | Задел |
+| Direction | Groundwork |
 |---|---|
-| Запись и архив | Реализовано: ffmpeg-сегменты, расписание/события, retention, HLS-просмотр. Дальше — экспорт фрагментов. |
-| Экспорт фрагментов | Выгрузка выбранного интервала в MP4 (`ffmpeg -c copy`), очередь заданий и уведомления |
-| События, движение | Контракт событий камеры (`ICameraEvents`), in-proc канал-шина, таблица `events` |
-| Детекция объектов, номера, лица | Пайплайн кадров: снапшот-эндпоинт уже есть; интерфейсы `IObjectDetector`/`IFrameAnalyzer` (пусто) |
-| AI-поиск по описанию | Таблица метаданных + embeddings-поле в БД (резерв), отдельный сервис позже |
-| Интеграции MQTT | Публикация событий в MQTT-брокер (пример: обнаружен объект) для Home Assistant и др. — распишем позже |
+| Recording and archive | Implemented: ffmpeg segments, schedule/events, retention, HLS viewing. Next — fragment export. |
+| Fragment export | Export a selected interval to MP4 (`ffmpeg -c copy`), a job queue and notifications |
+| Events, motion | Camera event contract (`ICameraEvents`), in-process channel bus, `events` table |
+| Object, plate, face detection | A frame pipeline: the snapshot endpoint exists; `IObjectDetector`/`IFrameAnalyzer` interfaces (empty) |
+| AI description search | A metadata table plus an embeddings column in the database (reserved), a separate service later |
+| MQTT integrations | Publish events to an MQTT broker (for example, an object detected) for Home Assistant and others — to be designed later |
 
-## 14. План разработки (этапы)
+## 14. Development plan (stages)
 
-| Этап | Содержание | Критерий готовности |
+| Stage | Content | Definition of done |
 |---|---|---|
-| **M0. Каркас** | sln, проекты, SPA-заглушка, Docker-образ, health | ✅ `docker compose up` открывает UI и health из контейнера |
-| **M1. Медиа-ядро** | Запуск go2rtc дочерним процессом, ручной RTSP-источник, WebRTC в одном тайле | ✅ Live с реальной камеры `.113` (Reolink, субпоток H.264) из браузера через контейнер; по `.115` уточняются креды (камера отвечает 401) |
-| **M2. Модули** | `ICameraModule`, ONVIF + Hikvision: probe, профили, снапшот | ✅ Профили обеих камер видны в API (кодеки уточнены по SDP); снапшот работает для обеих (Hikvision — ISAPI, ONVIF — кадр из RTSP); xUnit: парсеры ISAPI/ONVIF, SDP, Digest, сервис опроса (80 тестов) |
-| **M3. Реестр и discovery** | SQLite/EF Core + миграции, AES-GCM, скан подсети, CRUD камер, мастер в UI | ✅ Автопоиск по диапазону находит камеры (ONVIF — :8000, Hikvision — ISAPI :80); камера сохраняется в БД, переживает перезапуск, потоки регистрируются в go2rtc; пароли в БД зашифрованы; UI: список камер, автопоиск, проверка и сохранение (119 тестов) |
-| **M4. Live-UI** | Раскладки, назначения, фокус/аудио, fullscreen/main | ✅ «Прямая трансляция»: 1, 2, 4 (2×2), 4 с тайлом 3×3, 6 (3×2), 6 с двумя тайлами 2×2, 9, 12 с большим тайлом и 12 (равномерная); активные камеры автоматически в тайлах; фокус, общий mute и громкость тайла; fullscreen тайла с основным потоком; fullscreen всей сетки; drag & drop; растяжение на весь тайл; зум колесом и панорамирование; кнопки «Инфо»/«Настройки» в нижней трети тайла; индикатор Live скрыт; аудио AAC → Opus; раскладка, порядок, фокус, растяжение и mute в localStorage; переключатель активна/выключена |
-| **M5. Политики кодеков** | Автополитика при просмотре (passthrough → транскод в лучший кодек, NVENC) | ✅ H.265 → H.264 (`ffmpeg:#video=h264#hardware`, CUDA/NVENC) добавляется как резервный источник и запускается только если SDP браузера не содержит H.265; для H.265-браузера — passthrough без ffmpeg. Аудио AAC → Opus — только для несовместимого кодека. Статус «транскод» в тайле, фактические кодеки в оверлее (160 тестов) |
-| **M6. Запись и архив** | ffmpeg-сегменты, расписание/события, retention, HLS-архив | ✅ Запись по расписанию и событиям, календарь/таймлайн/плеер, H.265→H.264 только при отсутствии поддержки; xUnit: склейка интервалов и карта воспроизведения |
-| **M6. Финал** | 4 камеры в сети добавлены, compose начисто, README | ✅ 4 камеры в реестре (CX820, E1 Outdoor, RLC-420, Hikvision), все активны; README и `.env.example`, env-подстановки, healthcheck; конфиг go2rtc вне volume; проверена чистая пересборка контейнера |
+| **M0. Skeleton** | solution, projects, SPA stub, Docker image, health | ✅ `docker compose up` opens the UI and health from the container |
+| **M1. Media engine** | go2rtc as a child process, manual RTSP source, WebRTC in one tile | ✅ Live from the real `.113` camera (Reolink, H.264 substream) in a browser through the container; credentials for `.115` are being clarified (the camera answers 401) |
+| **M2. Modules** | `ICameraModule`, ONVIF + Hikvision: probe, profiles, snapshot | ✅ Profiles of both cameras are visible in the API (codecs verified through SDP); snapshots work for both (Hikvision — ISAPI, ONVIF — a frame from RTSP); xUnit: ISAPI/ONVIF parsers, SDP, Digest, probe service (80 tests) |
+| **M3. Registry and discovery** | SQLite/EF Core + migrations, AES-GCM, subnet scan, camera CRUD, UI wizard | ✅ Range discovery finds cameras (ONVIF — :8000, Hikvision — ISAPI :80); the camera is saved to the database, survives a restart, and streams are registered in go2rtc; passwords in the database are encrypted; UI: camera list, discovery, check and save (119 tests) |
+| **M4. Live UI** | Layouts, assignments, focus/audio, fullscreen/main | ✅ "Live": 1, 2, 4 (2x2), 4 with a 3x3 tile, 6 (3x2), 6 with two 2x2 tiles, 9, 12 with a large tile and 12 (even); active cameras automatically in tiles; focus, global mute and tile volume; tile fullscreen with the main stream; whole-grid fullscreen; drag and drop; stretch to the whole tile; wheel zoom and panning; "Info"/"Settings" buttons in the bottom third of a tile; the Live indicator is hidden; AAC audio → Opus; layout, order, focus, stretch and mute in localStorage; enabled/disabled toggle |
+| **M5. Codec policies** | Automatic policy during viewing (passthrough → transcode to the best codec, NVENC) | ✅ H.265 → H.264 (`ffmpeg:#video=h264#hardware`, CUDA/NVENC) is added as a fallback source and starts only when the browser SDP has no H.265; for an H.265 browser — passthrough without ffmpeg. AAC audio → Opus only for an incompatible codec. "Transcode" status in the tile, actual codecs in the overlay (160 tests) |
+| **M6. Recording and archive** | ffmpeg segments, schedule/events, retention, HLS archive | ✅ Scheduled and event recording, calendar/timeline/player, H.265→H.264 only without support; xUnit: interval stitching and the playback map |
+| **M6. Final** | 4 cameras on the network added, clean compose, README | ✅ 4 cameras in the registry (CX820, E1 Outdoor, RLC-420, Hikvision), all active; README and `.env.example`, env substitutions, healthcheck; the go2rtc config outside the volume; a clean container rebuild verified |
 
-## 15. Риски и допущения
+## 15. Risks and assumptions
 
-1. **UDP в контейнер (проверено на M1):** host networking в Docker Desktop на Windows не пробрасывает UDP — WebRTC-медиа не проходит. Решение: bridge + публикация `8555/tcp+udp`. Следствие: multicast-поиск (WS-Discovery/SSDP/mDNS/SADP) из bridge-контейнера не получает ответы LAN; реализован best-effort с предупреждением в UI, а рабочий путь в контейнере — unicast-скан подсети и IP-режим. На хосте/Linux multicast работает.
-2. **NVENC в контейнере WSL2** — проверено в M5: `/api/ffmpeg/hardware` показывает `hardware=cuda` для H.264/H.265, при запросе без H.265 запускается ffmpeg с `h264_nvenc`; при поддержке H.265 ffmpeg не стартует (passthrough). Fallback — CPU-транскод (4K тяжело для Ryzen 5 5600).
-3. **Reolink CX820:** HTTP-порт 80 закрыт (проверено) — нативный снапшот и часть управления по HTTP недоступны; используем ONVIF :8000 и RTSP (снапшот — кадр из RTSP через go2rtc).
-4. **Точные модели/API** CX820 и KV-9503 проверены на живых устройствах (M2): ISAPI/ONVIF-парсеры покрыты фикстурами реальных ответов.
-5. Локальная сеть без VLAN-изоляции; при появлении IPv6/изоляции клиентов — ICE может потребовать TURN (в v1 не закладываем).
-6. **Аудио.** AAC (Reolink) транскодируется в Opus через ffmpeg и работает в WebRTC (M4). G.722.1 (Hikvision DS-KV9503) не имеет декодера в FFmpeg — звук с этой камеры не пойдёт, пока в её настройках не выбран G.711ulaw/PCMU (или AAC). В UI такой профиль помечается красным знаком запрета и статусом в оверлее.
-7. **Reolink Baichuan (AGPL).** Камеры без RTSP/ONVIF обслуживает отдельный сервис `neolink.net` (AGPL-3.0, отдельный процесс, без линковки кода). Условия: второй контейнер в compose, пароль камеры в `data/reolink/config.json` в открытом виде, задержка первого опроса (перезапуск моста). Если у камеры включить HTTP/ONVIF, приоритет у ONVIF, мост остаётся резервом.
+1. **UDP into the container (verified on M1):** host networking in Docker Desktop on Windows does not forward UDP — WebRTC media does not pass. Solution: bridge plus published `8555/tcp+udp`. Consequence: multicast discovery (WS-Discovery/SSDP/mDNS/SADP) from a bridge container gets no LAN responses; a best-effort implementation with a UI warning exists, and the working path in the container is a unicast subnet scan and IP mode. On the host or Linux multicast works.
+2. **NVENC in a WSL2 container** — verified in M5: `/api/ffmpeg/hardware` reports `hardware=cuda` for H.264/H.265, and ffmpeg with `h264_nvenc` starts when the request has no H.265; when H.265 is supported ffmpeg does not start (passthrough). Fallback — CPU transcoding (4K is heavy for a Ryzen 5 5600).
+3. **Reolink CX820:** HTTP port 80 is closed (verified) — the native snapshot and part of the HTTP control are unavailable; ONVIF :8000 and RTSP are used (the snapshot is a frame from RTSP through go2rtc).
+4. **Exact models/APIs** of CX820 and KV-9503 were verified on live devices (M2): the ISAPI/ONVIF parsers are covered by fixtures of real responses.
+5. The local network has no VLAN isolation; if IPv6 or client isolation appears, ICE may require TURN (not planned in v1).
+6. **Audio.** AAC (Reolink) is transcoded to Opus through ffmpeg and works in WebRTC (M4). G.722.1 (Hikvision DS-KV9503) has no decoder in FFmpeg — this camera produces no sound until G.711ulaw/PCMU (or AAC) is selected in its settings. In the UI such a profile is marked with a red prohibition sign and a status in the overlay.
+7. **Reolink Baichuan (AGPL).** Cameras without RTSP/ONVIF are served by a separate `neolink.net` service (AGPL-3.0, a separate process, no code linking). Conditions: a second container in compose, the camera password in `data/reolink/config.json` in plain text, a first-probe delay (bridge restart). If HTTP/ONVIF are enabled on the camera, ONVIF takes priority and the bridge remains a fallback.
 
-## 16. Итоги согласования
+## 16. Approval summary
 
-| Пункт | Решение |
+| Item | Decision |
 |---|---|
-| Медиа-ядро go2rtc | ✅ подтверждено |
-| Диск C: перенос Docker data-root на D:/E: | ✅ да, делаем на этапе M0 |
-| Аутентификация UI | ✅ в v1 выключена (LAN); добавление — позже, интерфейс заложим |
-| Этапы M0–M6 | ✅ согласованы; M0 — после этой актуализации документа |
-| Один контейнер или два сервиса | ✅ выбран один контейнер |
+| go2rtc media engine | ✅ confirmed |
+| Drive C: move the Docker data-root to D:/E: | ✅ yes, done in M0 |
+| UI authentication | ✅ disabled in v1 (LAN); to be added later, the interface is planned |
+| Stages M0-M6 | ✅ agreed; M0 — after this document update |
+| One container or two services | ✅ one container chosen |
 
-**Справка: «один контейнер» или «два сервиса в compose»**
+**Reference: "one container" or "two services in compose"**
 
-- *Один контейнер* — backend, go2rtc и ffmpeg внутри одного образа; go2rtc поднимается backend'ом как дочерний процесс. Одна сущность, один лог, один volume; запуск — `docker compose up -d`. Обновление — целиком новый образ.
-- *Два сервиса* — контейнер `nvr` и контейнер `media` (go2rtc), один `docker compose up -d`. Обновляются независимо (например, только media), чище разделение ответственности. Минус — две сущности вместо одной.
+- *One container* — backend, go2rtc and ffmpeg inside a single image; go2rtc is started by the backend as a child process. One entity, one log, one volume; start with `docker compose up -d`. Upgrade — a completely new image.
+- *Two services* — an `nvr` container and a `media` container (go2rtc), one `docker compose up -d`. They upgrade independently (for example, only media), with a cleaner separation of responsibilities. The downside is two entities instead of one.
 
-**Решение: один контейнер** — для личного использования проще всего, а go2rtc обновляется пересборкой образа (редко).
+**Decision: one container** — simplest for personal use, and go2rtc is upgraded by rebuilding the image (rarely).
 
 ---
 
-## Приложение. Глоссарий
+## Appendix. Glossary
 
-- **WebRTC** — технология передачи медиа с малой задержкой: поток идёт браузеру UDP-пакетами (SRTP), а не скачиванием по HTTP. Именно это даёт «живой» эфир с задержкой в доли секунды.
-- **WHEP** — WebRTC-HTTP Egress Protocol: простой способ установить WebRTC-сессию по обычному HTTP (браузер отправляет SDP offer → получает SDP answer). *«WHEP-прокси»* — наш backend принимает такой запрос от браузера и передаёт его go2rtc: наружу открыт только порт 9080, а go2rtc доступен лишь с localhost.
-- **SDP offer/answer** — текстовое описание медиа-сессии, включая список кодеков, которые сторона умеет принимать. SDP offer браузера — 100% точная проверка совместимости кодеков.
-- **NVENC / NVDEC** — аппаратные видеокодер и декодер NVIDIA (в RTX 3060 Ti). Транскод на NVENC почти не нагружает CPU; CPU-транскод — резерв на случай недоступности GPU.
-- **MSE** (Media Source Extensions) — браузерный JavaScript-API подачи видео в `<video>` (fMP4). Резервный канал доставки, если WebRTC не подходит; go2rtc умеет и его.
-- **Opus** — аудиокодек, который гарантированно принимают все браузеры в WebRTC (обязательный по стандарту WebRTC). AAC в WebRTC не входит, поэтому аудио AAC с камеры транскодируется в Opus; G.711 (PCMU) обычно проходит без транскода.
-- **Passthrough / транскод** — passthrough: поток камеры пересылается как есть (нагрузки почти ноль); транскод: перекодирование в другой кодек/разрешение (нужно, только если браузер не понимает кодек источника).
-- **RTSP** — стандартный протокол видеопотока с IP-камер (порт 554); go2rtc забирает потоки по нему.
-- **ONVIF** — стандартный интерфейс обнаружения и управления камерами (профили, кодеки и т.п.); **ISAPI** — HTTP API Hikvision; **SADP** — протокол поиска устройств Hikvision; **WS-Discovery** — стандартный multicast-поиск ONVIF-устройств.
-- **go2rtc** — медиа-ядро решения (лицензия MIT): забирает RTSP, отдаёт WebRTC/MSE, делает снапшоты, управляет ffmpeg-транскодом.
-- **Kestrel** — встроенный веб-сервер ASP.NET Core: отдаёт API и статику UI.
-- **SQLite / EF Core** — файловая база данных и ORM .NET: камеры и профили.
-- **AES-GCM** — шифрование паролей камер в БД; ключ лежит в `/data/secret.key`.
-- **Vite** — сборщик и dev-сервер для React-приложения.
-- **i18n** — локализация интерфейса (словари строк); заложена возможность выбора языка.
+- **WebRTC** — low-latency media delivery technology: the stream reaches the browser as UDP packets (SRTP) instead of an HTTP download. This is what gives "live" video with sub-second latency.
+- **WHEP** — WebRTC-HTTP Egress Protocol: a simple way to establish a WebRTC session over plain HTTP (the browser sends an SDP offer → receives an SDP answer). *"WHEP proxy"* — our backend accepts such a request from the browser and forwards it to go2rtc: only port 9080 is exposed, and go2rtc is reachable only from localhost.
+- **SDP offer/answer** — a textual description of a media session, including the list of codecs the side can accept. The browser SDP offer is a 100% accurate codec compatibility check.
+- **NVENC / NVDEC** — NVIDIA hardware video encoder and decoder (in the RTX 3060 Ti). NVENC transcoding puts almost no load on the CPU; CPU transcoding is the fallback when the GPU is unavailable.
+- **MSE** (Media Source Extensions) — a browser JavaScript API for feeding video into `<video>` (fMP4). A fallback delivery channel when WebRTC does not fit; go2rtc supports it too.
+- **Opus** — an audio codec guaranteed to be accepted by all browsers in WebRTC (mandatory per the WebRTC standard). AAC is not part of WebRTC, so AAC audio from a camera is transcoded to Opus; G.711 (PCMU) usually passes without transcoding.
+- **Passthrough / transcoding** — passthrough: the camera stream is forwarded as is (almost zero load); transcoding: re-encoding to another codec/resolution (needed only when the browser does not understand the source codec).
+- **RTSP** — the standard video stream protocol of IP cameras (port 554); go2rtc pulls streams over it.
+- **ONVIF** — the standard interface for camera discovery and control (profiles, codecs and so on); **ISAPI** — the Hikvision HTTP API; **SADP** — the Hikvision device discovery protocol; **WS-Discovery** — the standard multicast discovery for ONVIF devices.
+- **go2rtc** — the media engine of the solution (MIT license): pulls RTSP, serves WebRTC/MSE, makes snapshots and drives ffmpeg transcoding.
+- **Kestrel** — the built-in ASP.NET Core web server: serves the API and the UI static files.
+- **SQLite / EF Core** — a file database and the .NET ORM: cameras and profiles.
+- **AES-GCM** — encryption of camera passwords in the database; the key is stored in `/data/secret.key`.
+- **Vite** — the bundler and dev server for the React application.
+- **i18n** — UI localization (string dictionaries); the language can be switched in the settings.

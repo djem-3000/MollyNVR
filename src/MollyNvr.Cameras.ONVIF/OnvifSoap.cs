@@ -5,7 +5,7 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Cameras.ONVIF;
 
-/// <summary>Сборка SOAP-запросов ONVIF и разбор ответов (WS-Security UsernameToken).</summary>
+/// <summary>Building ONVIF SOAP requests and parsing responses (WS-Security UsernameToken).</summary>
 internal static class OnvifSoap
 {
     private static readonly XNamespace Soap = "http://www.w3.org/2003/05/soap-envelope";
@@ -15,7 +15,7 @@ internal static class OnvifSoap
     private static readonly XNamespace Schema = "http://www.onvif.org/ver10/schema";
     private static readonly XNamespace Device = "http://www.onvif.org/ver10/device/wsdl";
 
-    /// <summary>Действие SOAP для операций ONVIF.</summary>
+        /// <summary>SOAP action for ONVIF operations.</summary>
     public static class Actions
     {
         public const string GetDeviceInformation = "http://www.onvif.org/ver10/device/wsdl/GetDeviceInformation";
@@ -26,7 +26,7 @@ internal static class OnvifSoap
         public const string GetSnapshotUri = "http://www.onvif.org/ver10/media/wsdl/GetSnapshotUri";
     }
 
-    /// <summary>Собирает SOAP-конверт с WS-Security UsernameToken (PasswordDigest).</summary>
+        /// <summary>Builds a SOAP envelope with a WS-Security UsernameToken (PasswordDigest).</summary>
     public static string BuildEnvelope(CameraCredentials? credentials, XElement body)
     {
         ArgumentNullException.ThrowIfNull(body);
@@ -49,7 +49,7 @@ internal static class OnvifSoap
         return new XDocument(new XDeclaration("1.0", "UTF-8", null), envelope).ToString(SaveOptions.DisableFormatting);
     }
 
-    /// <summary>Формирует тело запроса <c>GetStreamUri</c>.</summary>
+        /// <summary>Builds the <c>GetStreamUri</c> request body.</summary>
     public static XElement CreateGetStreamUri(string profileToken) =>
         new(
             Media + "GetStreamUri",
@@ -59,35 +59,35 @@ internal static class OnvifSoap
                 new XElement(Schema + "Transport", new XElement(Schema + "Protocol", "RTSP"))),
             new XElement(Media + "ProfileToken", profileToken));
 
-    /// <summary>Формирует тело запроса <c>GetSnapshotUri</c>.</summary>
+        /// <summary>Builds the <c>GetSnapshotUri</c> request body.</summary>
     public static XElement CreateGetSnapshotUri(string profileToken) =>
         new(Media + "GetSnapshotUri", new XElement(Media + "ProfileToken", profileToken));
 
-    /// <summary>Формирует тело запроса <c>GetProfiles</c>.</summary>
+        /// <summary>Builds the <c>GetProfiles</c> request body.</summary>
     public static XElement CreateGetProfiles() => new(Media + "GetProfiles");
 
-    /// <summary>Формирует тело запроса <c>GetDeviceInformation</c>.</summary>
+        /// <summary>Builds the <c>GetDeviceInformation</c> request body.</summary>
     public static XElement CreateGetDeviceInformation() => new(Device + "GetDeviceInformation");
 
-    /// <summary>Формирует тело запроса <c>GetCapabilities</c>.</summary>
+        /// <summary>Builds the <c>GetCapabilities</c> request body.</summary>
     public static XElement CreateGetCapabilities() => CreateGetCapabilities("Media");
 
-    /// <summary>Формирует тело запроса <c>GetCapabilities</c> для указанной категории.</summary>
+        /// <summary>Builds the <c>GetCapabilities</c> request body for the specified category.</summary>
     public static XElement CreateGetCapabilities(string category) =>
         new(
             Device + "GetCapabilities",
             new XElement(Device + "Category", category));
 
-    /// <summary>Формирует тело запроса <c>GetNetworkInterfaces</c>.</summary>
+        /// <summary>Builds the <c>GetNetworkInterfaces</c> request body.</summary>
     public static XElement CreateGetNetworkInterfaces() => new(Device + "GetNetworkInterfaces");
 
-    /// <summary>Проверяет, что ответ является SOAP-конвертом ONVIF.</summary>
+        /// <summary>Checks that the response is an ONVIF SOAP envelope.</summary>
     public static bool IsSoapEnvelope(string xml) =>
         !string.IsNullOrWhiteSpace(xml) &&
         xml.Contains("Envelope", StringComparison.Ordinal) &&
         xml.Contains("http://www.w3.org/2003/05/soap-envelope", StringComparison.Ordinal);
 
-    /// <summary>Извлекает текст ошибки SOAP, если ответ содержит Fault.</summary>
+        /// <summary>Extracts the SOAP error text when the response contains a Fault.</summary>
     public static string? ReadFault(string xml)
     {
         if (string.IsNullOrWhiteSpace(xml))
@@ -124,7 +124,7 @@ internal static class OnvifSoap
             .Trim();
 
         return string.IsNullOrWhiteSpace(reason)
-            ? subcode ?? "ONVIF вернул ошибку без описания."
+                        ? subcode ?? "ONVIF returned an error without a description."
             : string.IsNullOrWhiteSpace(subcode) ? reason : $"{subcode}: {reason}";
     }
 

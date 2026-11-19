@@ -2,7 +2,7 @@ using MollyNvr.Domain.Streams;
 
 namespace MollyNvr.Application.Streams;
 
-/// <summary>Реестр потоков (M1: ручные источники, хранение в памяти процесса).</summary>
+/// <summary>Stream registry (M1: manual sources stored in process memory).</summary>
 public sealed class StreamRegistry(IMediaEngine mediaEngine)
 {
     private readonly Dictionary<string, string> _sources = new(StringComparer.OrdinalIgnoreCase);
@@ -78,7 +78,7 @@ public sealed class StreamRegistry(IMediaEngine mediaEngine)
         return await mediaEngine.NegotiateWebRtcAsync(streamId, sdpOffer, cancellationToken);
     }
 
-    /// <summary>Повторно применяет источники в медиа-ядре (после его перезапуска).</summary>
+        /// <summary>Re-applies the sources in the media engine (after it restarts).</summary>
     public async Task SyncAsync(CancellationToken cancellationToken)
     {
         List<KeyValuePair<string, string>> snapshot;
@@ -97,12 +97,12 @@ public sealed class StreamRegistry(IMediaEngine mediaEngine)
     {
         if (string.IsNullOrWhiteSpace(sourceUrl))
         {
-            throw new ArgumentException("URL источника не может быть пустым.", nameof(sourceUrl));
+                        throw new ArgumentException("The source URL cannot be empty.", nameof(sourceUrl));
         }
 
         var trimmed = sourceUrl.Trim();
 
-        // ffmpeg:-источники go2rtc — для тестовых и виртуальных потоков.
+                // ffmpeg: sources in go2rtc are for test and virtual streams.
         if (trimmed.StartsWith("ffmpeg:", StringComparison.OrdinalIgnoreCase))
         {
             return trimmed;
@@ -111,7 +111,7 @@ public sealed class StreamRegistry(IMediaEngine mediaEngine)
         if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri) ||
             (uri.Scheme != "rtsp" && uri.Scheme != "rtsps"))
         {
-            throw new ArgumentException("Ожидается URL потока вида rtsp://… или rtsps://…", nameof(sourceUrl));
+                        throw new ArgumentException("A stream URL like rtsp://... or rtsps://... is expected.", nameof(sourceUrl));
         }
 
         return trimmed;

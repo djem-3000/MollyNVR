@@ -1,171 +1,171 @@
 # MollyNVR
 
-Локальное live-видеонаблюдение в одном Docker-контейнере: ASP.NET Core (.NET 10) + React, медиа-ядро go2rtc и FFmpeg. Запись и архив в v1 не входят — только просмотр в реальном времени.
+Local live video surveillance in a single Docker container: ASP.NET Core (.NET 10) + React, the go2rtc media engine and FFmpeg. The v1 scope below covers live viewing, recording and archive playback.
 
-## Возможности
+## Features
 
-- ONVIF-камеры и Hikvision: опрос, профили main/sub, снапшоты. ONVIF-модуль обслуживает Reolink и другие совместимые камеры.
-- Автопоиск камер: Multicast (WS-Discovery, SSDP/UPnP, mDNS, Hikvision SADP), Unicast по подсети/CIDR/диапазону и проверка IP-адреса; мастер из 4 шагов с выбором основного потока и субпотока.
-- Реестр камер в SQLite; учётные данные шифруются AES-GCM; настройки камеры: имя, субпоток, параметры устройства и потоков.
-- «Прямая трансляция»: раскладки 1, 2, 4 (2×2), 4 с тайлом 3×3, 6 (3×2), 6 с двумя большими тайлами, 9, 12 с большим тайлом и 12 равномерная — выбор через иконку сетки с попапом; кнопки растяжения изображения и полноэкранного режима всей сетки (выход по `Esc`).
-- Активные камеры автоматически занимают свободные тайлы; порядок тайлов меняется перетаскиванием и запоминается отдельно для каждой раскладки.
-- Клик — фокус и звук, двойной клик — развернуть/свернуть fullscreen тайла с основным потоком.
-- Колесо мыши — масштаб изображения под курсором; увеличенное изображение перетаскивается левой кнопкой.
-- При курсоре в нижней трети тайла снизу по центру плавно появляются круглые кнопки «Инфо» и «Настройки»; на странице настроек — preview со звуком, параметры устройства (включая DHCP), имя, таблица потоков с цветовыми статусами кодеков, переключателем выбора субпотока и кнопкой ▶ для предпросмотра.
-- Тайлы автоматически переподключаются после обрыва связи или перезапуска медиа-ядра; состояния «подключение» и «ошибка» показываются, индикатор Live скрыт.
-- Громкость: общий mute слева от выбора раскладки, ползунок в стиле Windows 11 у активного тайла; mute и недоступный аудиокодек помечаются красной иконкой.
-- Транскод только по необходимости: H.265 → H.264 (NVENC) и AAC → Opus, если браузер не поддерживает исходный кодек.
-- Раскладка, порядок камер, фокус, растяжение и общий mute сохраняются в браузере (`localStorage`), на сервере не хранятся.
-- PWA: манифест, service worker (офлайн-оболочка) и иконки; на телефоне устанавливается как приложение. Для установки нужен HTTPS с доверенным сертификатом (см. ниже). На мобильном — меню-гамбургер, камеры одной колонкой и диалог сортировки.
+- ONVIF and Hikvision cameras: probing, main/sub profiles, snapshots. The ONVIF module also serves Reolink and other compatible cameras.
+- Camera discovery: multicast (WS-Discovery, SSDP/UPnP, mDNS, Hikvision SADP), unicast subnet/CIDR/range scanning and single IP checks; a four-step wizard with main stream and substream selection.
+- Camera registry in SQLite; credentials are encrypted with AES-GCM; camera settings cover the name, substream, device and stream details.
+- "Live": layouts 1, 2, 4 (2x2), 4 with a 3x3 tile, 6 (3x2), 6 with two large tiles, 9, 12 with a large tile and 12 even — selected through the grid icon with a popover; buttons for image stretching and whole-grid fullscreen (exit with `Esc`).
+- Active cameras fill the free tiles automatically; the tile order can be changed by dragging and is stored separately for each layout.
+- Click focuses a tile and enables its sound; double click expands or collapses a tile to fullscreen with the main stream.
+- Mouse wheel zooms the image under the cursor; the zoomed image is dragged with the left button.
+- When the cursor is in the bottom third of a tile, round "Info" and "Settings" buttons appear smoothly at the bottom center; the settings page shows a preview with sound, device details (including DHCP), the name, a stream table with codec color statuses, a substream selector and a ▶ preview button.
+- Tiles reconnect automatically after a connection loss or a media engine restart; "connecting" and "error" states are shown and the Live indicator is hidden.
+- Volume: a global mute to the left of the layout picker and a Windows 11 style slider on the active tile; muted or unsupported audio codecs are marked with a red icon.
+- Transcoding only when needed: H.265 → H.264 (NVENC) and AAC → Opus when the browser does not support the source codec.
+- Layout, camera order, focus, stretch and global mute are stored in the browser (`localStorage`) and never on the server.
+- PWA: manifest, service worker (offline shell) and icons; it installs as an app on a phone. Installation requires HTTPS with a trusted certificate (see below). On mobile there is a hamburger menu, a single-column camera list and a sorting dialog.
 
-## Быстрый старт
+## Quick start
 
-Требования: Docker Desktop (WSL2), доступ к камерам в локальной сети. Для аппаратного транскода — NVIDIA GPU и драйвер; без GPU видео H.265 в неподдерживающем браузере может не запуститься.
+Requirements: Docker Desktop (WSL2) and access to the cameras on the local network. Hardware transcoding needs an NVIDIA GPU and driver; without a GPU, H.265 video may not play in a browser that does not support it.
 
-1. Создайте `.env` и укажите LAN-адрес хоста:
+1. Create `.env` and set the host LAN address:
 
    ```powershell
    Copy-Item .env.example .env
    notepad .env
    ```
 
-   `HOST_LAN_IP` — IPv4-адрес компьютера в локальной сети (например, `192.168.1.151`). Он нужен браузерам как ICE-кандидат WebRTC.
+   `HOST_LAN_IP` is the IPv4 address of the computer on the local network (for example, `192.168.1.151`). Browsers use it as the WebRTC ICE candidate.
 
-2. Соберите и запустите контейнеры (приложение и мост Reolink):
+2. Build and start the containers (the application and the Reolink bridge):
 
    ```powershell
    docker compose up -d --build
    ```
 
-3. Для установки как приложения на телефон выпустите локальный сертификат (нужен `mkcert`):
+3. To install the app on a phone, issue a local certificate (requires `mkcert`):
 
    ```powershell
    .\scripts\make-cert.ps1 -HostIp <HOST_LAN_IP>
    ```
 
-   Скрипт создаст `./certs` (в git не попадает) и `rootCA.crt`. Установите этот корневой сертификат на телефон (Android: Настройки → Безопасность → Шифрование и учётные данные → Установить сертификат → Сертификат CA).
+   The script creates `./certs` (not committed to git) and `rootCA.crt`. Install this root certificate on the phone (Android: Settings → Security → Encryption & credentials → Install a certificate → CA certificate).
 
-4. Откройте http://localhost:9080 (или `http://<HOST_LAN_IP>:9080` с другого устройства в LAN) либо по HTTPS — `https://<HOST_LAN_IP>:9443`. На телефоне откройте HTTPS-адрес и выберите в меню Chrome «Установить приложение» / «Добавить на главный экран».
+4. Open http://localhost:9080 (or `http://<HOST_LAN_IP>:9080` from another LAN device) or use HTTPS at `https://<HOST_LAN_IP>:9443`. On a phone, open the HTTPS address and choose "Install app" / "Add to Home screen" in the Chrome menu.
 
-5. Откройте «Камеры» → «+ Добавить». На шаге «Поиск камеры» выберите Multicast, Unicast (CIDR/диапазон) или IP-адрес и нажмите «Искать». В найденной строке нажмите «Подключиться», укажите логин/пароль, на шаге «Профили» при необходимости смените субпоток, на шаге «Сохранение» задайте имя и нажмите «Добавить камеру».
+5. Open "Cameras" → "+ Add". On the "Find camera" step choose Multicast, Unicast (CIDR/range) or IP address and click "Scan". In the found row click "Connect", enter the login and password, change the substream if needed on the "Profiles" step, set the name on the "Save" step and click "Add camera".
 
-6. Камера появится в «Прямой трансляции». Настройки открываются кнопкой-карандашом в списке камер или кнопкой «Настройки» на тайле; если камера не нужна в сетке — отключите её в списке камер. Кнопка «Назад» на странице настроек возвращает на предыдущую страницу.
+6. The camera appears in "Live". Settings are opened with the pencil button in the camera list or with the "Settings" button on the tile; if the camera should not be in the grid, disable it in the camera list. The "Back" button on the settings page returns to the previous page.
 
-## Локальный запуск (без Docker)
+## Local run (without Docker)
 
-Нужен для проверки **multicast-поиска**: в bridge-контейнере WS-Discovery/SSDP/mDNS/SADP не видят локальную сеть. На хосте приложение получает LAN напрямую.
+Needed to verify **multicast discovery**: inside a bridge container WS-Discovery/SSDP/mDNS/SADP cannot see the local network. On the host the application gets the LAN directly.
 
-Требования: .NET 10 SDK и `tools/go2rtc.exe` (уже в репозитории). Для камер Reolink по протоколу Baichuan — `tools/neolink/neolink.net.dll` (файлы релиза [neolink.net](https://github.com/borexola/neolink.net/releases)); без него модуль Reolink недоступен, остальное работает.
+Requirements: .NET 10 SDK and `tools/go2rtc.exe` (already in the repository). For Reolink cameras over the Baichuan protocol — `tools/neolink/neolink.net.dll` (files from the [neolink.net](https://github.com/borexola/neolink.net/releases) release); without it the Reolink module is unavailable, everything else works.
 
-1. Остановите контейнер, чтобы освободить порт 9080 и не блокировать БД:
+1. Stop the container to free port 9080 and avoid locking the database:
 
    ```powershell
    docker compose stop
    ```
 
-2. Запустите приложение на хосте:
+2. Start the application on the host:
 
    ```powershell
    .\scripts\run-local.ps1
    ```
 
-   Скрипт собирает UI (`ui/dist`), отдаёт его из ASP.NET Core, использует общий каталог `data/` (та же БД и ключ шифрования) и поднимает go2rtc из `tools/`. UI открывается на http://localhost:9080.
+   The script builds the UI (`ui/dist`), serves it from ASP.NET Core, uses the shared `data/` directory (the same database and encryption key) and starts go2rtc from `tools/`. The UI opens at http://localhost:9080.
 
-3. Проверьте Multicast на шаге «Поиск камеры». После теста верните контейнер:
+3. Check multicast on the "Find camera" step. After testing, bring the container back:
 
    ```powershell
    docker compose start
    ```
 
-Параметры скрипта: `-Port`, `-WebRtcPort`, `-RtspListen`, `-DataDirectory`, `-NoBuild` (не пересобирать .NET), `-SkipUiBuild` (использовать готовый `ui/dist`). Для запуска на другом порту без остановки контейнера используйте отдельный каталог данных, например `.\scripts\run-local.ps1 -Port 9081 -WebRtcPort 8556 -DataDirectory .\data-local`.
+Script parameters: `-Port`, `-WebRtcPort`, `-RtspListen`, `-DataDirectory`, `-NoBuild` (do not rebuild .NET), `-SkipUiBuild` (use the existing `ui/dist`). To run on another port without stopping the container, use a separate data directory, for example `.\scripts\run-local.ps1 -Port 9081 -WebRtcPort 8556 -DataDirectory .\data-local`.
 
-## Камеры Reolink без RTSP/ONVIF (мост Baichuan)
+## Reolink cameras without RTSP/ONVIF (Baichuan bridge)
 
-Часть Reolink (например, E1 с выключенными HTTP/ONVIF/RTSP) открывает только порт **9000** — проприетарный протокол Baichuan. Для них в compose добавлен отдельный сервис `reolink`: [neolink.net](https://github.com/borexola/neolink.net) (AGPL-3.0), который входит в камеру по Baichuan и отдаёт обычный RTSP.
+Some Reolink models (for example, E1 with HTTP/ONVIF/RTSP disabled) expose only port **9000** — the proprietary Baichuan protocol. For them compose includes a separate service `reolink`: [neolink.net](https://github.com/borexola/neolink.net) (AGPL-3.0), which connects to the camera over Baichuan and exposes regular RTSP.
 
-- В мастере выберите производителя **Reolink**: приложение сначала пробует ONVIF, затем — Baichuan через мост.
-- Камера автоматически добавляется в `data/reolink/config.json`; мост перезапускается и подхватывает её (несколько секунд).
-- Потоки отдаются как `rtsp://reolink:8654/cam-<ip>/mainStream` и `/subStream` внутри сети compose и наружу не публикуются.
-- Пароль камеры лежит в этом файле в открытом виде — иначе мост не сможет войти. Каталог `data/` исключён из git.
-- При локальном запуске мост поднимает `scripts/run-local.ps1`, если найден `tools/neolink/neolink.net.dll`.
-- Имя записи в мосте — `cam-<ip>`; при смене IP у камеры появится новая запись (старую можно удалить из `data/reolink/config.json`).
-- Ограничения: при выключенном HTTP на камере нет настроек изображения и «лёгких» стоп-кадров (кадр берётся с камеры по Baichuan). Подробности и лицензия — `docs/third-party/neolink.net.md`.
+- In the wizard select the vendor **Reolink**: the application tries ONVIF first, then Baichuan through the bridge.
+- The camera is added to `data/reolink/config.json` automatically; the bridge restarts and picks it up (a few seconds).
+- Streams are served as `rtsp://reolink:8654/cam-<ip>/mainStream` and `/subStream` inside the compose network and are not published externally.
+- The camera password is stored in that file in plain text — otherwise the bridge cannot sign in. The `data/` directory is excluded from git.
+- In a local run the bridge is started by `scripts/run-local.ps1` when `tools/neolink/neolink.net.dll` is present.
+- The bridge record name is `cam-<ip>`; when the camera IP changes, a new record appears (the old one can be removed from `data/reolink/config.json`).
+- Limitations: with HTTP disabled on the camera there are no image settings and no "light" snapshots (the frame is taken from the camera over Baichuan). Details and the license are in `docs/third-party/neolink.net.md`.
 
-## Запись видео
+## Video recording
 
-Настройка — на странице «Настройки камеры», блок **«Запись»**:
+Configuration is on the "Camera settings" page, the **"Recording"** block:
 
-- общий выключатель и поток для записи (любой профиль камеры);
-- **потоковая запись** — расписание 7×24: дни недели с понедельника, часовые слоты (0:00–24:00), отметка мышью;
-- **событийная запись** — типы обнаружений, которые сообщает камера (ONVIF PullPoint / Hikvision alertStream), своё расписание, запас **до** и **после** события (0/15/30/60 с, по умолчанию 0).
+- the master switch and the stream to record (any camera profile);
+- **continuous recording** — a 7x24 schedule: weekdays starting on Monday, hourly slots (0:00-24:00), selected with the mouse;
+- **event recording** — detection types reported by the camera (ONVIF PullPoint / Hikvision alertStream), its own schedule, and a margin **before** and **after** the event (0/15/30/60 s, 0 by default).
 
-Пул хранения — страница «Настройки» → **«Хранилище записей»**: каталог, квота в % от объёма тома (по умолчанию 90) и режим перезаписи:
+The storage pool is on the "Settings" page → **"Recording storage"**: directory, quota as a % of the volume capacity (90 by default) and the overwrite mode:
 
-- **кольцевой буфер (FIFO)** — как только превышена квота, удаляется самый старый сегмент;
-- **водяные знаки** — при достижении верхнего порога удаляем старое до нижнего.
+- **ring buffer (FIFO)** — the oldest segment is deleted as soon as the quota is exceeded;
+- **watermarking** — when the high watermark is reached, old data is deleted down to the low watermark.
 
-Файлы — fMP4-сегменты по 5 минут: `<каталог>/<id камеры>/<сессия>/seg-ГГГГММДД-ЧЧММСС.mp4`. Занятое место и список сегментов ведутся в SQLite. Рекомендуется отдельный том (`./recordings:/recordings` в compose) — он не попадёт в бэкап БД.
+Files are fMP4 segments of 5 minutes: `<directory>/<camera id>/<session>/seg-YYYYMMDD-HHMMSS.mp4`. The used space and the segment list are tracked in SQLite. A separate volume is recommended (`./recordings:/recordings` in compose) — it will not be included in the database backup.
 
-Требования: `ffmpeg` в PATH (в контейнере уже есть). Запись идёт через внутренний RTSP go2rtc: камера держит одно соединение, пароль не виден в списке процессов. Если у камеры выключены HTTP/ONVIF (например, Reolink через мост Baichuan), события недоступны — остаётся потоковая запись по расписанию.
+Requirements: `ffmpeg` in PATH (already present in the container). Recording goes through the internal go2rtc RTSP: the camera keeps a single connection and the password is not visible in the process list. If HTTP/ONVIF are disabled on the camera (for example, Reolink through the Baichuan bridge), events are unavailable — only scheduled continuous recording remains.
 
-## Просмотр архива
+## Archive playback
 
-Вкладка **«Архив»**: слева список камер, сверху плеер, ниже календарь (точки — дни с записями), фильтры «Расписание»/типы событий и таймлайн 0–24 ч.
+The **"Archive"** tab: the camera list on the left, the player on top, the calendar below (dots mark days with recordings), "Schedule"/event type filters and a 0-24 h timeline.
 
-- таймлайн: серые полосы — запись по расписанию, синие — события; колесо — зум, перетаскивание — прокрутка, клик — воспроизведение с ближайшей записи справа; красная риска — текущая позиция;
-- кнопки: предыдущая/следующая запись, пауза, скорость 1/2/4/8, отдельный счётчик реального времени кадра;
-- запись и скриншот выполняются в браузере (WebM на Chromium, MP4 на Safari; скриншот — PNG), fullscreen — на контейнер плеера;
-- HLS-воспроизведение: H.264 копируется, H.265/MJPEG перекодируются в H.264 только если браузер не поддерживает исходный кодек; временные сессии лежат в `<data>/playback-cache` и удаляются автоматически.
+- timeline: gray bars are scheduled recording, blue bars are events; wheel zooms, dragging scrolls, a click plays from the nearest recording to the right; the red playhead is the current position;
+- buttons: previous/next recording, pause, speed 1/2/4/8, a separate real-time counter of the frame;
+- recording and screenshots are done in the browser (WebM on Chromium, MP4 on Safari; screenshot — PNG), fullscreen applies to the player container;
+- HLS playback: H.264 is copied, H.265/MJPEG are transcoded to H.264 only when the browser does not support the source codec; temporary sessions live in `<data>/playback-cache` and are removed automatically.
 
-Дата по умолчанию — сегодня. Пропуски между записями на таймлайне воспроизводятся с автоматическим перескоком.
+The default date is today. Gaps between recordings on the timeline are played with an automatic jump.
 
-## Архив и воспроизведение
+## Archive and playback
 
-Страница **«Архив»** (`/archive`):
+The **"Archive"** page (`/archive`):
 
-- выбор камеры (список внизу) и даты — календарь с отметками дней, где есть записи;
-- плеер: перемотка по таймлайну, пауза, скорость 1×–8×, стоп-кадр, запись фрагмента в браузере, полный экран;
-- таймлайн 24 ч: синие полосы — записанные интервалы, голубые — события, красная линия — позиция; зум колесом/кнопками;
-- фильтры: показывать расписание и отдельные типы событий.
+- camera selection (list at the bottom) and date — a calendar with marks on days that have recordings;
+- player: timeline seeking, pause, speed 1x-8x, snapshot, in-browser fragment recording, fullscreen;
+- 24 h timeline: blue bars are recorded intervals, light blue bars are events, the red line is the position; zoom with the wheel or buttons;
+- filters: show the schedule and individual event types.
 
-Воспроизведение готовит сервер: ffmpeg собирает HLS из сегментов (copy для H.264; для H.265 — hvc1 или транскод, если браузер не умеет HEVC). Кэш — `<data>/playback-cache`, сессия закрывается через 5 минут простоя (максимум 60), одновременно не больше 12 сессий.
+The server prepares playback: ffmpeg builds HLS from the segments (copy for H.264; for H.265 either hvc1 or transcoding when the browser does not support HEVC). The cache is `<data>/playback-cache`, a session closes after 5 minutes of idle time (60 at most), and no more than 12 sessions run at once.
 
-## Переменные окружения
+## Environment variables
 
-| Переменная | Назначение | По умолчанию |
+| Variable | Purpose | Default |
 |---|---|---|
-| `HOST_LAN_IP` | LAN-адрес хоста для ICE-кандидата WebRTC | `192.168.1.151` |
-| `DISCOVERY_RANGE` | Диапазон автопоиска в мастере | `192.168.1.0/24` |
-| `Reolink__ApiBaseUrl` | HTTP-API моста Reolink | `http://127.0.0.1:8655` (в compose — `http://reolink:8655`) |
-| `Reolink__RtspBaseUrl` | RTSP моста Reolink | `rtsp://127.0.0.1:8654` (в compose — `rtsp://reolink:8654`) |
-| `Reolink__ConfigPath` | Файл конфигурации моста | `<data>/reolink/config.json` |
-| `TZ` | Часовой пояс контейнера (расписания записи и имена файлов) | `Europe/Moscow` |
-| `Recording__StoragePath` | Каталог пула записей | `/recordings` (иначе `<data>/recordings`) |
-| `Recording__SegmentSeconds` | Длина сегмента записи, с | `300` |
+| `HOST_LAN_IP` | Host LAN address for the WebRTC ICE candidate | `192.168.1.151` |
+| `DISCOVERY_RANGE` | Discovery range used by the wizard | `192.168.1.0/24` |
+| `Reolink__ApiBaseUrl` | Reolink bridge HTTP API | `http://127.0.0.1:8655` (in compose — `http://reolink:8655`) |
+| `Reolink__RtspBaseUrl` | Reolink bridge RTSP | `rtsp://127.0.0.1:8654` (in compose — `rtsp://reolink:8654`) |
+| `Reolink__ConfigPath` | Bridge configuration file | `<data>/reolink/config.json` |
+| `TZ` | Container time zone (recording schedules and file names) | `Europe/Moscow` |
+| `Recording__StoragePath` | Recording pool directory | `/recordings` (otherwise `<data>/recordings`) |
+| `Recording__SegmentSeconds` | Recording segment length, s | `300` |
 
-Внутри контейнера также можно задать `Storage__DataDirectory`, `Storage__DatabasePath`, `Go2Rtc__*`, `Discovery__DefaultRange`.
+Inside the container you can also set `Storage__DataDirectory`, `Storage__DatabasePath`, `Go2Rtc__*`, `Discovery__DefaultRange`.
 
-## Эксплуатация
+## Operations
 
 ```powershell
 docker compose ps
 docker compose logs -f mollynvr
 docker compose restart mollynvr
-docker compose down          # данные в ./data сохраняются
-docker compose up -d --build # обновление
+docker compose down          # data in ./data is preserved
+docker compose up -d --build # upgrade
 ```
 
-Порты: `9080/tcp` — UI/API/WHEP; `8555/tcp` и `8555/udp` — WebRTC-медиа. API go2rtc доступен только на loopback внутри контейнера.
+Ports: `9080/tcp` — UI/API/WHEP; `8555/tcp` and `8555/udp` — WebRTC media. The go2rtc API is reachable only on loopback inside the container.
 
-## Данные и безопасность
+## Data and security
 
-- `./data` монтируется в `/data`: SQLite `mollynvr.db`, ключ `secret.key`, служебные файлы.
-- Пароли камер хранятся только в зашифрованном виде (AES-GCM). Ключ создаётся при первом запуске; потеря `secret.key` делает сохранённые пароли нечитаемыми.
-- Конфиг go2rtc с рабочими URL камер держится вне `/data` (tmpfs/временный каталог) и не попадает в volume.
-- Не коммитьте `.env`, `data/` и `Task.md` — они в `.gitignore`.
-- Аутентификация UI в v1 отключена: предполагается доверенная локальная сеть.
+- `./data` is mounted to `/data`: the SQLite `mollynvr.db`, the `secret.key` key and service files.
+- Camera passwords are stored only encrypted (AES-GCM). The key is created on first start; losing `secret.key` makes the stored passwords unreadable.
+- The go2rtc config with working camera URLs is kept outside `/data` (tmpfs or a temporary directory) and never reaches the volume.
+- Do not commit `.env`, `data/` and `Task.md` — they are in `.gitignore`.
+- UI authentication is disabled: a trusted local network is assumed.
 
-## Разработка
+## Development
 
 ```powershell
 dotnet build MollyNvr.slnx
@@ -174,26 +174,26 @@ npm --prefix ui run build
 npm --prefix ui run lint
 ```
 
-Запуск API без Docker (контейнер должен быть остановлен, иначе порт 9080 занят):
+Running the API without Docker (the container must be stopped, otherwise port 9080 is busy):
 
 ```powershell
 docker compose stop mollynvr
 dotnet run --project src/MollyNvr.Api --no-launch-profile
 ```
 
-UI в dev-режиме (второй терминал): `npm --prefix ui run dev` — Vite проксирует `/api` на `http://localhost:9080`. Для локального API нужен `tools/go2rtc.exe` (в контейнере он уже есть).
+UI in dev mode (second terminal): `npm --prefix ui run dev` — Vite proxies `/api` to `http://localhost:9080`. A local API run needs `tools/go2rtc.exe` (it is already present in the container).
 
-## Ограничения v1
+## v1 limitations
 
-- Multicast-поиск из bridge-контейнера обычно не получает ответы LAN (WS-Discovery/SSDP/mDNS/SADP): UI подсказывает использовать скан подсети. На хосте/Linux multicast работает.
-- Скан /24 занимает ~20–30 с: сначала ICMP-опрос (живые хосты), затем порты. Камеры с Wi-Fi power save иногда отвечают на TCP SYN через 1–3 с — такие порты проверяются с таймаутом 4 с.
-- Hikvision DS-KV9503 отдаёт аудио G.722.1, которого нет в FFmpeg; для звука переключите аудиокодек камеры на G.711ulaw/PCMU (или AAC).
-- Снапшот ONVIF-камеры при закрытом HTTP-порте берётся кадром из RTSP — около 8 секунд.
-- Камеры Reolink без RTSP/ONVIF работают только через мост `reolink` (Baichuan, порт 9000). Если HTTP на камере выключен, недоступны настройки изображения; первый опрос после добавления занимает ~5–10 секунд (мост перезапускается).
-- Просмотр и скачивание записей в UI не реализованы (файлы лежат на диске); MQTT и детекция на сервере — нет.
-- Транскод H.265 использует `#hardware` (CUDA/NVENC). На машине без NVIDIA аппаратное ускорение недоступно.
+- Multicast discovery from a bridge container usually gets no LAN responses (WS-Discovery/SSDP/mDNS/SADP): the UI suggests using a subnet scan. On the host or on Linux multicast works.
+- A /24 scan takes about 20-30 s: an ICMP probe of live hosts first, then the ports. Cameras with Wi-Fi power save sometimes answer a TCP SYN after 1-3 s — such ports are checked with a 4 s timeout.
+- Hikvision DS-KV9503 provides G.722.1 audio, which FFmpeg cannot decode; for sound, switch the camera audio codec to G.711ulaw/PCMU (or AAC).
+- An ONVIF camera snapshot with a closed HTTP port is taken as a frame from RTSP — about 8 seconds.
+- Reolink cameras without RTSP/ONVIF work only through the `reolink` bridge (Baichuan, port 9000). With HTTP disabled on the camera, image settings are unavailable; the first probe after adding takes about 5-10 seconds (the bridge restarts).
+- Watching and downloading recordings in the UI is not implemented (the files are on disk); MQTT and server-side detection are absent.
+- H.265 transcoding uses `#hardware` (CUDA/NVENC). Hardware acceleration is unavailable on a machine without NVIDIA.
 
-## Документация
+## Documentation
 
-- Архитектура и решения: [`docs/architecture.md`](docs/architecture.md).
-- Статус этапов: M0–M6 завершены.
+- Architecture and decisions: [`docs/architecture.md`](docs/architecture.md).
+- Stage status: M0-M6 are complete.

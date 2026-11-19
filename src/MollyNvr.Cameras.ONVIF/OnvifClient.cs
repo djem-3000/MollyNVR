@@ -5,10 +5,10 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Cameras.ONVIF;
 
-/// <summary>Отправка SOAP-запросов ONVIF и разбор ошибок.</summary>
+/// <summary>Sending ONVIF SOAP requests and parsing errors.</summary>
 internal static class OnvifClient
 {
-    /// <summary>Отправляет запрос и возвращает тело ответа (ошибки HTTP не выбрасываются).</summary>
+        /// <summary>Sends the request and returns the response body (HTTP errors are not thrown).</summary>
     public static async Task<string> SendAsync(
         HttpClient client,
         Uri serviceUri,
@@ -31,7 +31,7 @@ internal static class OnvifClient
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
-    /// <summary>Выбрасывает исключение, если ответ содержит SOAP Fault.</summary>
+        /// <summary>Throws when the response contains a SOAP Fault.</summary>
     public static void EnsureSuccess(string body, string operation)
     {
         var fault = OnvifSoap.ReadFault(body);
@@ -42,13 +42,13 @@ internal static class OnvifClient
 
         if (IsAuthorizationFault(fault))
         {
-            throw new CameraAuthenticationException($"ONVIF отклонил учётные данные при операции «{operation}».");
+                        throw new CameraAuthenticationException($"ONVIF rejected the credentials for the '{operation}' operation.");
         }
 
-        throw new CameraUnavailableException($"ONVIF: операция «{operation}» завершилась ошибкой: {fault}");
+                throw new CameraUnavailableException($"ONVIF: the '{operation}' operation failed: {fault}");
     }
 
-    /// <summary>Проверяет, является ли ошибка отказом в авторизации.</summary>
+        /// <summary>Checks whether the error is an authorization rejection.</summary>
     public static bool IsAuthorizationFault(string fault) =>
         fault.Contains("NotAuthorized", StringComparison.OrdinalIgnoreCase) ||
         fault.Contains("NotAuthenticated", StringComparison.OrdinalIgnoreCase) ||

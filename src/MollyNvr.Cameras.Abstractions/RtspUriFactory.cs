@@ -1,9 +1,9 @@
 namespace MollyNvr.Cameras.Abstractions;
 
-/// <summary>Сборка RTSP-URL с учётными данными (пароль кодируется для userinfo).</summary>
+/// <summary>Building an RTSP URL with credentials (the password is encoded for userinfo).</summary>
 public static class RtspUriFactory
 {
-    /// <summary>Вставляет логин и пароль в RTSP-URL устройства.</summary>
+        /// <summary>Inserts the login and password into the device RTSP URL.</summary>
     public static string WithCredentials(Uri rtspUri, CameraCredentials credentials)
     {
         ArgumentNullException.ThrowIfNull(rtspUri);

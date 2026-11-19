@@ -1,345 +1,45 @@
+import { en } from './locales/en'
+import { ru } from './locales/ru'
+
 export type Dictionary = Record<string, string>
 
-const ru: Dictionary = {
-  'nav.live': 'Прямая трансляция',
-  'nav.archive': 'Архив',
-  'archive.loading': 'Загружаем архив…',
-  'nav.cameras': 'Камеры',
-  'nav.settings': 'Настройки',
-  'menu.open': 'Меню',
-  'menu.close': 'Закрыть меню',
-  'live.title': 'Прямая трансляция',
-  'api.unavailable': 'API недоступно',
-  'system.go2rtc.ok': 'go2rtc: работает',
-  'system.go2rtc.unavailable': 'go2rtc: недоступен',
-  'grid.layout': 'Раскладка',
-  'grid.fullscreen': 'На весь экран',
-  'grid.fullscreen.exit': 'Выйти из полноэкранного режима',
-  'grid.fullscreen.failed': 'Не удалось открыть полноэкранный режим.',
-  'grid.stretch': 'Растянуть изображение',
-  'grid.mute': 'Звук включён',
-  'grid.unmute': 'Звук отключён',
-  'tile.settings': 'Настройки',
-  'tile.archive': 'Архив',
-  'event.motion': 'Движение',
-  'event.person': 'Человек',
-  'event.vehicle': 'Транспорт',
-  'event.animal': 'Животное',
-  'event.face': 'Лицо',
-  'event.linecrossing': 'Пересечение линии',
-  'event.intrusion': 'Вторжение в зону',
-  'event.regionentrance': 'Вход в область',
-  'event.regionexiting': 'Выход из области',
-  'event.loitering': 'Задержка в зоне',
-  'event.tamper': 'Вандализм',
-  'event.sound': 'Звук',
-  'grid.rec.active': 'Идёт запись',
-  'grid.rec.schedule': 'Запись по расписанию',
-  'grid.sort': 'Сортировка',
-  'grid.sort.title': 'Сортировка камер',
-  'grid.sort.cancel': 'Отмена',
-  'grid.sort.save': 'Сохранить',
-  'grid.sort.handle': 'Перетащить',
-  'cameraSettings.title': 'Настройки камеры',
-  'cameraSettings.back': 'Назад',
-  'cameraSettings.notFound': 'Камера не найдена.',
-  'cameraSettings.preview': 'Предпросмотр',
-  'cameraSettings.metadata': 'Параметры устройства',
-  'cameraSettings.streams': 'Потоки',
-  'cameraSettings.saved': 'Настройки сохранены',
-  'cameraSettings.save': 'Сохранить',
-  'cameraSettings.save.busy': 'Сохранение…',
-  'cameraSettings.dhcp': 'DHCP',
-  'cameraSettings.useStream': 'Использовать поток',
-  'cameraSettings.mainStreamAlwaysUsed': 'Основной поток используется всегда',
-  'cameraSettings.play': 'Воспроизвести',
-  'camera.dhcp.loading': '…',
-  'camera.dhcp.yes': 'Да',
-  'camera.dhcp.no': 'Нет',
-  'camera.preview.connecting': 'Подключение…',
-  'camera.preview.failed': 'Нет сигнала',
-  'camera.preview.retry': 'Повторить',
-  'camera.preview.soundOn': 'Включить звук',
-  'camera.preview.soundOff': 'Выключить звук',
-  'camera.preview.audioUnavailable': 'Аудио недоступно',
-  'camera.preview.none': 'Без живого preview',
-  'wizard.title': 'Добавление камеры',
-  'wizard.back': 'Назад',
-  'wizard.steps': 'Этапы добавления камеры',
-  'wizard.steps.goTo': 'Вернуться к шагу {step}: {label}',
-  'wizard.step.search': 'Поиск камеры',
-  'wizard.step.verify': 'Подключение',
-  'wizard.step.profiles': 'Профили',
-  'wizard.step.save': 'Сохранение',
-  'wizard.searchMode': 'Способ поиска',
-  'wizard.mode.multicast': 'Multicast',
-  'wizard.mode.unicast': 'Unicast',
-  'wizard.mode.ip': 'IP-адрес',
-  'wizard.multicast.hint': 'Один multicast-запрос ищет камеры в локальной сети: WS-Discovery, SSDP/UPnP, mDNS и Hikvision SADP.',
-  'wizard.multicast.dockerHint': 'В Docker (bridge) multicast может быть недоступен: контейнер не видит локальную сеть напрямую. Если камеры не найдены, просканируйте подсеть.',
-  'wizard.multicast.emptyAction': 'Просканировать подсеть',
-  'wizard.unicast.emptyHint': 'Проверьте диапазон и доступность подсети.',
-  'wizard.ip.hint': 'Проверка камеры по конкретному адресу.',
-  'wizard.ip.address': 'IP-адрес',
-  'wizard.ip.ports.empty': 'Порты не обнаружены — подключение всё равно возможно.',
-  'wizard.search.busy': 'Поиск…',
-  'wizard.search.results': 'Найденные камеры',
-  'wizard.search.actions': 'Действия',
-  'wizard.search.connect': 'Подключиться к {host}',
-  'wizard.search.found': 'Найдено камер: {count}',
-  'wizard.search.rangeInvalid': 'Укажите CIDR или диапазон, например 192.168.1.0/24.',
-  'wizard.search.ipInvalid': 'Введите IP-адрес, например 192.168.1.10.',
-  'wizard.search.errorTitle': 'Поиск не удался',
-  'wizard.connect.title': 'Подключение к камере',
-  'wizard.connect.success': 'Камера ответила',
-  'wizard.connect.errorTitle': 'Не удалось подключиться',
-  'wizard.connect.errorHint': 'Проверьте адрес, логин и пароль. Некоторые камеры временно блокируют вход после нескольких неудачных попыток.',
-  'wizard.connect.changed': 'Параметры изменены — подключитесь заново.',
-  'wizard.connect.ip': 'IP-адрес',
-  'wizard.vendor.onvif': 'ONVIF',
-  'wizard.vendor.hikvision': 'Hikvision',
-  'wizard.profiles.title': 'Профили потоков',
-  'wizard.profiles.hint': 'Основной поток выбирается автоматически по максимальному разрешению. Для сетки выберите субпоток.',
-  'wizard.profiles.mainAuto': 'Основной поток выбирается автоматически',
-  'wizard.profiles.selectSub': 'Выбрать субпоток: {profile}',
-  'wizard.profiles.snapshot': 'Стоп-кадр: {profile}',
-  'wizard.profiles.snapshotError': 'Не удалось получить стоп-кадр.',
-  'wizard.profiles.empty': 'Камера не вернула профили. Проверьте подключение и повторите.',
-  'wizard.save.title': 'Сохранение камеры',
-  'wizard.save.hint': 'Проверьте данные и укажите имя камеры.',
-  'wizard.save.preview': 'Стоп-кадр с основного потока',
-  'wizard.save.snapshotLoading': 'Загрузка…',
-  'wizard.save.snapshotEmpty': 'Стоп-кадр недоступен — камера добавится без предпросмотра.',
-  'wizard.save.snapshotRetry': 'Получить стоп-кадр',
-  'wizard.save.submit': 'Добавить камеру',
-  'wizard.save.busy': 'Добавление…',
-  'wizard.save.errorTitle': 'Не удалось добавить камеру',
-  'wizard.name': 'Имя камеры',
-  'wizard.name.required': 'Укажите имя камеры.',
-  'wizard.probeRequired': 'Сначала проверьте подключение.',
-  'wizard.next': 'Далее',
-  'wizard.retry': 'Повторить',
-  'grid.loading': 'Загрузка настроек…',
-  'grid.tile.empty': 'Свободный тайл',
-  'grid.noActive': 'Нет активных камер — включите их в разделе «Сохранённые камеры».',
-  'grid.hidden': 'Не помещаются в сетку:',
-  'grid.volume': 'Громкость',
-  'grid.audioUnavailable': 'Звук недоступен',
-  'grid.info.quality': 'Качество',
-  'grid.info.bitrate': 'Битрейт',
-  'grid.info.videoShort': 'Видео',
-  'grid.info.audioShort': 'Аудио',
-  'grid.info.videoTranscoded': 'Видео транскодировано',
-  'grid.info.audioTranscoded': 'Аудио транскодировано',
-  'grid.info.unsupportedShort': 'не поддерживается',
-  'grid.info.audioDisabled': 'аудио отключено',
-  'grid.transcode': 'транскод',
-  'grid.info.fps': 'кадр/с',
-  'grid.info.kbps': 'кбит/с',
-  'grid.info.khz': 'кГц',
-  'settings.system': 'Система',
-  'settings.version': 'Версия',
-  'settings.go2rtc': 'go2rtc',
-  'settings.about': 'О системе',
-  'settings.about.text': 'MollyNVR — это программа для видеонаблюдения, простая настройка и использование. Просмотр с камер и запись по расписанию.',
-  'cameras.title': 'Сохранённые камеры',
-  'cameras.add': 'Добавить',
-  'cameras.tab.list': 'Сохранённые',
-  'cameras.tab.discovery': 'Автопоиск',
-  'cameras.tab.add': 'Добавление',
-  'cameras.empty': 'Камер пока нет',
-  'cameras.vendor': 'Производитель',
-  'cameras.name': 'Название',
-  'cameras.model': 'Модель',
-  'cameras.serial': 'Серийный номер',
-  'cameras.address': 'Адрес',
-  'cameras.active': 'Активна',
-  'cameras.inactive': 'Выключена',
-  'cameras.edit': 'Изменить',
-  'cameras.edit.title': 'Изменить камеру',
-  'cameras.edit.user': 'Логин',
-  'cameras.edit.user.placeholder': 'Заполните, только если меняете пароль',
-  'cameras.edit.password': 'Новый пароль',
-  'cameras.edit.password.placeholder': 'Оставьте пустым, чтобы не менять',
-  'cameras.edit.hint': 'Сохранение заново опросит камеру и обновит профили.',
-  'cameras.edit.hostRequired': 'Укажите IP-адрес камеры.',
-  'cameras.edit.loginRequired': 'Укажите логин, чтобы сменить пароль.',
-  'cameras.edit.save': 'Сохранить',
-  'cameras.edit.busy': 'Сохранение…',
-  'cameras.edit.cancel': 'Отмена',
-  'cameras.delete': 'Удалить',
-  'cameras.delete.confirm': 'Удалить камеру из реестра?',
-  'discovery.title': 'Автопоиск камер',
-  'discovery.range': 'Диапазон адресов',
-  'discovery.range.hint': 'CIDR или диапазон: 192.168.1.0/24, 192.168.1.10-50.',
-  'discovery.scan': 'Искать',
-  'discovery.scan.busy': 'Сканирование…',
-  'discovery.empty': 'Устройства не найдены.',
-  'discovery.empty.saved': 'Новые камеры не найдены — уже добавленные не показываются.',
-  'discovery.device': 'Адрес',
-  'discovery.vendor': 'Производитель',
-  'discovery.ports': 'Открытые порты',
-  'discovery.connect': 'Подключиться',
-  'discovery.unsupported': 'Не поддерживается',
-  'discovery.use': 'Заполнить',
-  'discovery.unknown': 'Не определён',
-  'player.connecting': 'Подключение…',
-  'player.failed': 'Нет связи',
-  'camera.title': 'Проверка камеры',
-  'camera.name': 'Название',
-  'camera.name.placeholder': 'Крыльцо',
-  'camera.name.required': 'Укажите название камеры.',
-  'camera.host': 'Адрес камеры',
-  'camera.host.placeholder': '192.168.1.10',
-  'camera.user': 'Логин',
-  'camera.password': 'Пароль',
-  'camera.vendor': 'Производитель',
-  'camera.vendor.auto': 'Определить автоматически',
-  'camera.probe': 'Подключить',
-  'camera.probe.busy': 'Подключение…',
-  'camera.snapshot': 'Стоп-кадр',
-  'camera.snapshot.busy': 'Загрузка…',
-  'camera.save': 'Сохранить камеру',
-  'camera.save.busy': 'Сохранение…',
-  'camera.saved': 'Камера сохранена.',
-  'camera.device': 'Устройство',
-  'camera.model': 'Модель',
-  'camera.firmware': 'Прошивка',
-  'camera.serial': 'Серийный номер',
-  'camera.profiles': 'Профили потоков',
-  'camera.profile.kind': 'Профиль',
-  'camera.profile.codec': 'Кодек',
-  'camera.profile.resolution': 'Разрешение',
-  'camera.profile.fps': 'Кадров/с',
-  'camera.profile.bitrate': 'Битрейт',
-  'camera.profile.audio': 'Аудио',
-  'camera.profile.main': 'Основной',
-  'camera.profile.sub': 'Дополнительный',
-  'camera.profile.secondary': 'Дополнительный',
-  'camera.profile.secondaryNumbered': 'Дополнительный {number}',
-  'camera.selectedProfiles': 'Выбранные потоки',
-  'camera.protocols': 'Протоколы и порты',
-  'camera.protocol.video': 'Видеопоток',
-  'camera.protocol.control': 'Управление',
-  'camera.protocol.port': 'Порт',
-  'camera.substream': 'Субпоток',
-  'camera.substream.hint': 'Используется для сетки и быстрого просмотра.',
-  'camera.substream.empty': 'Субпотоки не найдены — будет использован только основной поток.',
-  'camera.bitrate.unit': 'кбит/с',
-  'camera.bitrate.bpp': 'бит/пиксель',
-  'camera.bitrate.legend': 'Битрейт',
-  'camera.bitrate.good': 'оптимальный',
-  'camera.bitrate.warn': 'низкий',
-  'camera.bitrate.bad': 'недостаточный',
-  'camera.audio.rate': 'кГц',
-  'camera.megapixels': 'Мп',
-  'camera.resolution.4k': '4K UHD',
-  'camera.resolution.2k': 'QHD',
-  'camera.resolution.fullHd': 'Full HD',
-  'camera.resolution.hd': 'HD',
-  'camera.resolution.sd': 'SD',
-  'camera.codec.supported': 'Браузер поддерживает {codec}.',
-  'camera.codec.transcoded.video': 'Браузер не поддерживает {codec}; видео будет транскодировано ffmpeg в {target}.',
-  'camera.codec.transcoded.audio': 'Браузер не поддерживает {codec}; аудио будет транскодировано ffmpeg в {target}.',
-  'camera.codec.unsupported': 'Браузер не поддерживает {codec}; транскодирование ffmpeg недоступно.',
-  'camera.codec.audioDisabled': 'Аудио в этом профиле отключено.',
-  'camera.unknown': '-',
+export type Locale = 'en' | 'ru'
 
-  'recording.title': 'Запись',
-  'recording.enabled': 'Запись включена',
-  'recording.loading': 'Загружаем настройки записи…',
-  'recording.loadError': 'Не удалось загрузить настройки записи.',
-  'recording.stream': 'Поток для записи',
-  'recording.continuous': 'Потоковая запись',
-  'recording.continuous.hint': 'Запись по расписанию в указанное время.',
-  'recording.event': 'Событийная запись',
-  'recording.event.hint': 'Регистрируем события, распознанные AI-камерой.',
-  'recording.event.unsupported': 'Камера не сообщает типы обнаружений — событийная запись недоступна.',
-  'recording.event.types': 'Типы обнаружения',
-  'recording.preRoll': 'До события',
-  'recording.space': '≈ {size} в сутки',
-  'recording.postRoll': 'После события',
-  'recording.seconds': '{seconds} с',
-  'recording.status.error': 'Ошибка записи: {error}',
+const DICTIONARIES: Record<Locale, Dictionary> = { en, ru }
+const STORAGE_KEY = 'mollynvr.locale'
+const DEFAULT_LOCALE: Locale = 'en'
 
-  'schedule.time': 'Время',
-  'schedule.all': 'Всё',
-  'schedule.none': 'Очистить',
-  'schedule.day.mon': 'Пн',
-  'schedule.day.tue': 'Вт',
-  'schedule.day.wed': 'Ср',
-  'schedule.day.thu': 'Чт',
-  'schedule.day.fri': 'Пт',
-  'schedule.day.sat': 'Сб',
-  'schedule.day.sun': 'Вс',
+type Listener = () => void
 
-  'storage.title': 'Хранилище записей',
-  'storage.loading': 'Загружаем настройки хранилища…',
-  'storage.loadError': 'Не удалось загрузить настройки хранилища.',
-  'storage.saveError': 'Не удалось сохранить настройки хранилища.',
-  'storage.path': 'Каталог',
-  'storage.path.hint': 'Отдельный том, смонтированный в контейнер (например, /recordings).',
-  'storage.quota': 'Квота, % от места на диске',
-  'storage.mode': 'Режим перезаписи',
-  'storage.mode.fifo': 'Кольцевой буфер (удалять самое старое)',
-  'storage.mode.watermark': 'Водяные знаки',
-  'storage.high': 'Верхний порог, % квоты',
-  'storage.low': 'Нижний порог, % квоты',
-  'storage.used': 'Занято {used} из {quota}',
-  'storage.diskFree': 'Свободно на диске {free} из {total}',
-  'storage.save': 'Сохранить хранилище',
-  'storage.save.busy': 'Сохранение…',
-  'storage.saved': 'Настройки хранилища сохранены.',
+const listeners = new Set<Listener>()
 
-  'archive.cameras': 'Камеры',
-  'archive.cameras.loading': 'Загрузка камер…',
-  'archive.cameras.empty': 'Камер нет.',
-  'archive.cameras.loadError': 'Не удалось загрузить список камер.',
-  'archive.cameras.today': 'Есть записи за сегодня',
-  'archive.cameras.none': 'Камера не выбрана',
-  'archive.calendar.prev': 'Предыдущий месяц',
-  'archive.calendar.next': 'Следующий месяц',
-  'archive.calendar.today': 'Сегодня',
-  'archive.calendar.count': 'Записей за день: {count}',
-  'archive.calendar.loadError': 'Не удалось загрузить календарь.',
-  'archive.filters.title': 'Фильтры',
-  'archive.filter.schedule': 'Расписание',
-  'archive.timeline.loading': 'Загружаем записи…',
-  'archive.timeline.loadError': 'Не удалось загрузить записи за день.',
-  'archive.player.placeholder': 'Выберите запись на таймлайне',
-  'archive.player.loading': 'Подготовка воспроизведения…',
-  'archive.player.error': 'Не удалось воспроизвести запись: {error}',
-  'archive.player.unsupported': 'Браузер не поддерживает воспроизведение HLS.',
-  'archive.play': 'Воспроизвести',
-  'archive.pause': 'Пауза',
-  'archive.prev': 'Предыдущая запись',
-  'archive.next': 'Следующая запись',
-  'archive.speed': 'Скорость воспроизведения',
-  'archive.record.start': 'Начать запись',
-  'archive.record.stop': 'Остановить запись',
-  'archive.record.unsupported': 'Браузер не поддерживает запись видео.',
-  'archive.screenshot': 'Стоп кадр',
-  'archive.screenshot.empty': 'Кадр ещё не готов.',
-  'archive.screenshot.failed': 'Не удалось сохранить стоп-кадр.',
-  'archive.fullscreen': 'На весь экран',
-  'archive.fullscreen.exit': 'Выйти из полноэкранного режима',
-  'archive.fullscreen.failed': 'Не удалось открыть полноэкранный режим.',
-  'archive.transcoded': 'транскод',
-  'archive.transcoded.hint': 'Видео перекодировано в H.264: браузер не поддерживает исходный кодек.',
-  'archive.selectCamera': 'Выберите камеру в меню слева.',
-  'archive.date.select': 'Выбрать дату',
-  'archive.grid.title': 'Просмотр нескольких камер',
-  'archive.grid.empty': 'Перетащите сюда камеру',
-  'archive.grid.replace': 'Заменить камеру'
+let currentLocale: Locale = readStoredLocale()
+
+export function getLocale(): Locale {
+  return currentLocale
 }
 
-const dictionaries: Record<string, Dictionary> = { ru }
+export function setLocale(locale: Locale): void {
+  if (locale === currentLocale) {
+    return
+  }
 
-// Задел под i18n: словарь подключается по локали, сейчас реализован только ru.
-export const locale = 'ru'
+  currentLocale = locale
+  persistLocale(locale)
+  applyDocumentLocale()
+  listeners.forEach((listener) => listener())
+}
+
+export function subscribeLocale(listener: Listener): () => void {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
 
 export function t(key: string, values?: Record<string, string | number>): string {
-  const template = dictionaries[locale][key] ?? key
+  const template = DICTIONARIES[currentLocale][key] ?? DICTIONARIES.en[key] ?? key
+
   if (!values) {
     return template
   }
@@ -349,6 +49,29 @@ export function t(key: string, values?: Record<string, string | number>): string
     template
   )
 }
+
+function readStoredLocale(): Locale {
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY)
+    return stored === 'en' || stored === 'ru' ? stored : DEFAULT_LOCALE
+  } catch {
+    return DEFAULT_LOCALE
+  }
+}
+
+function persistLocale(locale: Locale): void {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, locale)
+  } catch {
+    // private mode or blocked storage — the language stays for this session
+  }
+}
+
+function applyDocumentLocale(): void {
+  document.documentElement.lang = currentLocale
+}
+
+applyDocumentLocale()
 
 const EVENT_LABEL_KEYS: Record<string, string> = {
   motion: 'event.motion',

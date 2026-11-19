@@ -1,12 +1,12 @@
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Политика видеотранскода: H.265 не везде поддерживается браузерами.</summary>
+/// <summary>Video transcode policy: H.265 is not supported by every browser.</summary>
 public static class VideoPlaybackPolicy
 {
-    /// <summary>Целевой кодек перекодирования (принимают все браузеры).</summary>
+        /// <summary>Target transcoding codec (accepted by all browsers).</summary>
     public const string TargetCodec = "H264";
 
-    /// <summary>Нужен ли резервный H.264-источник для кодека камеры.</summary>
+        /// <summary>Whether a fallback H.264 source is needed for the camera codec.</summary>
     public static bool NeedsTranscode(string? videoCodec)
     {
         if (string.IsNullOrWhiteSpace(videoCodec))
@@ -22,11 +22,11 @@ public static class VideoPlaybackPolicy
         return normalized is "H265" or "HEVC";
     }
 
-    /// <summary>Строковое значение для API.</summary>
+        /// <summary>String value for the API.</summary>
     public static string ToApiValue(string? videoCodec) =>
         NeedsTranscode(videoCodec) ? "transcode-available" : "passthrough";
 
-    /// <summary>Целевой кодек, если транскод доступен.</summary>
+        /// <summary>Target codec when transcoding is available.</summary>
     public static string? TargetCodecFor(string? videoCodec) =>
         NeedsTranscode(videoCodec) ? TargetCodec : null;
 }

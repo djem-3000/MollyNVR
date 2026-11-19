@@ -443,6 +443,6 @@ export async function stopArchivePlayback(sessionId: string): Promise<void> {
   try {
     await fetch(`/api/archive/playback/${encodeURIComponent(sessionId)}`, { method: 'DELETE' })
   } catch {
-    // сессия уже могла быть остановлена
+    // the session may already be stopped
   }
 }

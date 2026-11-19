@@ -101,7 +101,7 @@ export default function CameraWizard({ savedHosts, onSaved, onBackToCameras }: P
         }
       })
       .catch(() => {
-        // Диапазон можно ввести вручную.
+        // The range can also be entered manually.
       })
 
     getCameraModules()
@@ -115,7 +115,7 @@ export default function CameraWizard({ savedHosts, onSaved, onBackToCameras }: P
         }
       })
       .catch(() => {
-        // Оставляем встроенный список модулей.
+        // Keep the built-in module list.
       })
 
     return () => {

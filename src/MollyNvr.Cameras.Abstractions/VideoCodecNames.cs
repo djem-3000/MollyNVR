@@ -1,6 +1,6 @@
 namespace MollyNvr.Cameras.Abstractions;
 
-/// <summary>Нормализация названий видеокодеков к единому виду (H.264, H.265, MJPEG).</summary>
+/// <summary>Normalization of video codec names to a single form (H.264, H.265, MJPEG).</summary>
 public static class VideoCodecNames
 {
     public const string H264 = "H.264";
@@ -8,7 +8,7 @@ public static class VideoCodecNames
     public const string Mjpeg = "MJPEG";
     public const string Unknown = "Unknown";
 
-    /// <summary>Приводит название кодека из ISAPI/ONVIF/SDP к единому виду.</summary>
+        /// <summary>Normalizes a codec name from ISAPI/ONVIF/SDP to a single form.</summary>
     public static string Normalize(string? codec)
     {
         if (string.IsNullOrWhiteSpace(codec))
@@ -39,7 +39,7 @@ public static class VideoCodecNames
     }
 }
 
-/// <summary>Нормализация названий аудиокодеков.</summary>
+/// <summary>Normalization of audio codec names.</summary>
 public static class AudioCodecNames
 {
     public const string Aac = "AAC";
@@ -47,7 +47,7 @@ public static class AudioCodecNames
     public const string G711Alaw = "G.711alaw";
     public const string Opus = "Opus";
 
-    /// <summary>Приводит название аудиокодека из ISAPI/ONVIF/SDP к единому виду.</summary>
+        /// <summary>Normalizes an audio codec name from ISAPI/ONVIF/SDP to a single form.</summary>
     public static string? Normalize(string? codec)
     {
         if (string.IsNullOrWhiteSpace(codec))
@@ -82,7 +82,7 @@ public static class AudioCodecNames
         return value;
     }
 
-    /// <summary>Частота дискретизации, если она однозначно определена кодеком (G.711 — 8 кГц).</summary>
+        /// <summary>Sample rate when it is uniquely determined by the codec (G.711 — 8 kHz).</summary>
     public static int? KnownSampleRate(string? codec) => Normalize(codec) switch
     {
         G711Ulaw or G711Alaw => 8000,

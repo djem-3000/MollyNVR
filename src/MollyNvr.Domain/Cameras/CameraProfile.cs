@@ -1,6 +1,6 @@
 namespace MollyNvr.Domain.Cameras;
 
-/// <summary>Слепок профиля потока, сохранённый при добавлении камеры (без учётных данных).</summary>
+/// <summary>Snapshot of a stream profile saved when the camera was added (without credentials).</summary>
 public sealed record CameraProfile(
     string Id,
     string Name,
@@ -8,7 +8,7 @@ public sealed record CameraProfile(
     CameraProfileAudio? Audio,
     string RtspUrl);
 
-/// <summary>Параметры видеокодека профиля.</summary>
+/// <summary>Video codec parameters of a profile.</summary>
 public sealed record CameraProfileVideo(
     string Codec,
     int Width,
@@ -16,7 +16,7 @@ public sealed record CameraProfileVideo(
     double FrameRate,
     int BitrateKbps);
 
-/// <summary>Параметры аудиокодека профиля.</summary>
+/// <summary>Audio codec parameters of a profile.</summary>
 public sealed record CameraProfileAudio(
     string AudioCodec,
     int AudioSampleRate,

@@ -3,7 +3,7 @@ using MollyNvr.Application.Recording;
 
 namespace MollyNvr.Api.Endpoints;
 
-/// <summary>Настройки записи камер и общего пула хранения.</summary>
+/// <summary>Camera recording settings and the shared storage pool.</summary>
 public static class RecordingEndpoints
 {
     public static IEndpointRouteBuilder MapRecordingEndpoints(this IEndpointRouteBuilder app)
@@ -104,7 +104,7 @@ public static class RecordingEndpoints
     }
 }
 
-/// <summary>Тело запроса настроек записи камеры.</summary>
+/// <summary>Request body for camera recording settings.</summary>
 public sealed record RecordingSettingsBody(
     bool Enabled,
     string? ProfileId,
@@ -116,7 +116,7 @@ public sealed record RecordingSettingsBody(
     int PreRollSeconds,
     int PostRollSeconds);
 
-/// <summary>Тело запроса настроек пула.</summary>
+/// <summary>Request body for the storage pool settings.</summary>
 public sealed record StorageSettingsBody(
     string? Path,
     int QuotaPercent,

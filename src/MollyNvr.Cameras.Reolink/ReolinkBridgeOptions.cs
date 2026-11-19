@@ -1,20 +1,20 @@
 namespace MollyNvr.Cameras.Reolink;
 
 /// <summary>
-/// Параметры моста neolink.net: он говорит с камерой по Baichuan (порт 9000)
-/// и отдаёт обычный RTSP с HTTP-API.
+/// neolink.net bridge parameters: it talks to the camera over Baichuan (port 9000)
+/// and exposes regular RTSP plus an HTTP API.
 /// </summary>
 public sealed record ReolinkBridgeOptions
 {
-    /// <summary>Базовый адрес HTTP-API моста (со слэшем на конце).</summary>
+        /// <summary>Base address of the bridge HTTP API (with a trailing slash).</summary>
     public required Uri ApiBaseUrl { get; init; }
 
-    /// <summary>Базовый адрес RTSP моста; к нему добавляется имя камеры и поток.</summary>
+        /// <summary>Base RTSP address of the bridge; the camera name and stream are appended to it.</summary>
     public required Uri RtspBaseUrl { get; init; }
 
-    /// <summary>Файл конфигурации моста; его изменение перезапускает мост.</summary>
+        /// <summary>Bridge configuration file; changing it restarts the bridge.</summary>
     public required string ConfigPath { get; init; }
 
-    /// <summary>Сколько ждать появления камеры в сети после записи конфигурации.</summary>
+        /// <summary>How long to wait for the camera to appear on the network after the configuration is written.</summary>
     public TimeSpan OnlineTimeout { get; init; } = TimeSpan.FromSeconds(35);
 }

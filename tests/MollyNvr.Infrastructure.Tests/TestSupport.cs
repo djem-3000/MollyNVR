@@ -50,11 +50,11 @@ internal sealed class TempDirectory : IDisposable
         }
         catch (IOException)
         {
-            // Временные файлы могли остаться заблокированными — каталог в TEMP безопасен.
+                        // Temporary files may still be locked — a directory in TEMP is safe.
         }
         catch (UnauthorizedAccessException)
         {
-            // То же самое: тестовый мусор не влияет на результат.
+                        // Same here: test garbage does not affect the result.
         }
     }
 }

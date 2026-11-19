@@ -126,7 +126,7 @@ public class OnvifXmlTests
     [Fact]
     public void ComputePasswordDigest_MatchesOnvifExample()
     {
-        // RFC 2617-подобный пример: nonce + created + password, SHA1, Base64.
+                // RFC 2617-like example: nonce + created + password, SHA1, Base64.
         var nonce = Convert.FromBase64String("Dtbk3B2Fpzqo6RDWZWrlZw==");
 
         var digest = OnvifSoap.ComputePasswordDigest(nonce, "2026-10-19T08:54:42.419Z", "secret");

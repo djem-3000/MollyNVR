@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.StaticFiles;
 using MollyNvr.Api.Endpoints;
 using MollyNvr.Infrastructure;
 
-// Docker Desktop (host networking) не пропускает IPv4-mapped соединения (::ffff:127.0.0.1)
-// к v4-only слушателям — например, к API go2rtc на 127.0.0.1:1984. Принудительно используем IPv4.
+// Docker Desktop (host networking) does not pass IPv4-mapped connections (::ffff:127.0.0.1)
+// to v4-only listeners — for example, to the go2rtc API on 127.0.0.1:1984. Force IPv4.
 AppContext.SetSwitch("System.Net.DisableIPv6", true);
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +21,7 @@ app.UseStaticFiles(new StaticFileOptions
     ContentTypeProvider = contentTypes,
     OnPrepareResponse = context =>
     {
-        // Манифест и service worker не кешируем, чтобы обновления PWA подхватывались сразу.
+                // Do not cache the manifest and service worker so PWA updates are picked up immediately.
         if (context.File.Name is "sw.js" or "manifest.webmanifest")
         {
             context.Context.Response.Headers.CacheControl = "no-cache";

@@ -389,7 +389,7 @@ public class DiscoveryServiceTests
         {
             if (Throws)
             {
-                throw new HttpRequestException("сбой");
+                                throw new HttpRequestException("failure");
             }
 
             return Task.FromResult(canHandle);

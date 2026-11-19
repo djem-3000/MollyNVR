@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace MollyNvr.Infrastructure.Storage;
 
-/// <summary>Каталоги хранения: БД, ключ шифрования учётных данных.</summary>
+/// <summary>Storage directories: database, credential encryption key.</summary>
 public sealed class StorageOptions
 {
     public const string SectionName = "Storage";
@@ -22,8 +22,8 @@ public sealed class StorageOptions
     public string SecretKeyPath { get; }
 
     /// <summary>
-    /// Определяет каталог данных: <c>Storage:DataDirectory</c> из конфигурации,
-    /// иначе <c>/data</c> (контейнер), иначе <c>data</c> рядом с приложением.
+        /// Determines the data directory: <c>Storage:DataDirectory</c> from configuration,
+        /// otherwise <c>/data</c> (container), otherwise <c>data</c> next to the application.
     /// </summary>
     public static StorageOptions Resolve(IConfiguration configuration, IHostEnvironment environment)
     {

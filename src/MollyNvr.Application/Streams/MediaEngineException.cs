@@ -1,6 +1,6 @@
 namespace MollyNvr.Application.Streams;
 
-/// <summary>Медиа-ядро недоступно или вернуло ошибку.</summary>
+/// <summary>The media engine is unavailable or returned an error.</summary>
 public sealed class MediaEngineException : Exception
 {
     public MediaEngineException(string message)

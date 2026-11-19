@@ -6,7 +6,7 @@ using MollyNvr.Application.Discovery;
 
 namespace MollyNvr.Infrastructure.Discovery;
 
-/// <summary>Поиск живых адресов ICMP echo (без прав — <c>null</c>, вызывающий код делает полный скан).</summary>
+/// <summary>ICMP echo discovery of live addresses (without privileges — <c>null</c>, the caller does a full scan).</summary>
 public sealed class PingHostScanner : IAliveHostScanner
 {
     private const int MaxConcurrency = 64;
@@ -47,7 +47,7 @@ public sealed class PingHostScanner : IAliveHostScanner
                     }
                     catch (PingException)
                     {
-                        // хост не ответил
+                                                // host did not respond
                     }
                     catch (SocketException)
                     {
@@ -55,7 +55,7 @@ public sealed class PingHostScanner : IAliveHostScanner
                     }
                     catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
                     {
-                        // таймаут одного хоста
+                                                // single host timeout
                     }
                 });
         }
@@ -64,7 +64,7 @@ public sealed class PingHostScanner : IAliveHostScanner
             return null;
         }
 
-        // Ни один хост не ответил, а каждый вызов упал с ошибкой сокета — ICMP недоступен.
+                // No host responded and every call failed with a socket error — ICMP is unavailable.
         return permissionErrors > 0 && alive.IsEmpty ? null : alive.ToHashSet();
     }
 }

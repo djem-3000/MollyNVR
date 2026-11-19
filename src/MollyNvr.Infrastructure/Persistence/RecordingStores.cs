@@ -3,7 +3,7 @@ using MollyNvr.Application.Recording;
 
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>SQLite-хранилище настроек записи камер.</summary>
+/// <summary>SQLite storage of camera recording settings.</summary>
 public sealed class RecordingSettingsStore(IDbContextFactory<MollyNvrDbContext> factory) : IRecordingSettingsStore
 {
     public async Task<RecordingSettings?> FindAsync(Guid cameraId, CancellationToken cancellationToken)
@@ -73,7 +73,7 @@ public sealed class RecordingSettingsStore(IDbContextFactory<MollyNvrDbContext> 
     };
 }
 
-/// <summary>SQLite-хранилище настроек пула (одна строка).</summary>
+/// <summary>SQLite storage of the pool settings (a single row).</summary>
 public sealed class StorageSettingsStore(IDbContextFactory<MollyNvrDbContext> factory) : IStorageSettingsStore
 {
     private const int SingletonId = 1;
@@ -119,7 +119,7 @@ public sealed class StorageSettingsStore(IDbContextFactory<MollyNvrDbContext> fa
     }
 }
 
-/// <summary>SQLite-индекс сегментов записи.</summary>
+/// <summary>SQLite index of recording segments.</summary>
 public sealed class RecordingSegmentStore(IDbContextFactory<MollyNvrDbContext> factory) : IRecordingSegmentStore
 {
     public async Task AddAsync(RecordingSegment segment, CancellationToken cancellationToken)
@@ -201,7 +201,7 @@ public sealed class RecordingSegmentStore(IDbContextFactory<MollyNvrDbContext> f
         record.SizeBytes);
 }
 
-/// <summary>SQLite-окна событий камер.</summary>
+/// <summary>SQLite camera event windows.</summary>
 public sealed class RecordingEventStore(IDbContextFactory<MollyNvrDbContext> factory) : IRecordingEventStore
 {
     public async Task AddAsync(RecordingEvent recordingEvent, CancellationToken cancellationToken)
@@ -290,7 +290,7 @@ public sealed class RecordingEventStore(IDbContextFactory<MollyNvrDbContext> fac
         RecordingTime.ToOffset(record.EndedAt));
 }
 
-/// <summary>Перевод времени между доменом (со смещением) и БД (UTC).</summary>
+/// <summary>Time conversion between the domain (with offset) and the database (UTC).</summary>
 internal static class RecordingTime
 {
     public static DateTime ToUtc(DateTimeOffset value) => value.UtcDateTime;

@@ -10,8 +10,8 @@ using MollyNvr.Infrastructure.Media;
 namespace MollyNvr.Infrastructure.Recording;
 
 /// <summary>
-/// Держит процессы ffmpeg запущенными по расписанию камер, индексирует готовые
-/// сегменты и следит за квотой пула.
+/// Keeps ffmpeg processes running according to camera schedules, indexes finished
+/// segments and watches the pool quota.
 /// </summary>
 public sealed class RecordingWorker(
     IRecordingSettingsStore settingsStore,
@@ -71,7 +71,7 @@ public sealed class RecordingWorker(
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Ошибка цикла записи");
+                                logger.LogError(exception, "Recording loop error");
             }
 
             try
@@ -103,7 +103,7 @@ public sealed class RecordingWorker(
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            logger.LogWarning(exception, "Каталог записей недоступен: {Path}", options.DefaultStoragePath);
+                        logger.LogWarning(exception, "The recordings directory is unavailable: {Path}", options.DefaultStoragePath);
         }
     }
 
@@ -147,11 +147,11 @@ public sealed class RecordingWorker(
                 }
 
                 await StopRecorderAsync(camera.Id, cancellationToken, clearError: false);
-                statusRegistry.SetRecording(camera.Id, false, running.LastError ?? "ffmpeg завершился");
+                                statusRegistry.SetRecording(camera.Id, false, running.LastError ?? "ffmpeg exited");
                 logger.LogWarning(
-                    "ffmpeg камеры «{Camera}» завершился: {Error}",
+                                        "ffmpeg of camera '{Camera}' exited: {Error}",
                     camera.Name,
-                    running.LastError ?? "без сообщения");
+                                        running.LastError ?? "no message");
                 _retryAfter[camera.Id] = DateTimeOffset.UtcNow + RetryDelay;
             }
 
@@ -181,14 +181,14 @@ public sealed class RecordingWorker(
 
         if (profile is null)
         {
-            statusRegistry.SetRecording(camera.Id, false, "У камеры нет профилей потоков");
+                        statusRegistry.SetRecording(camera.Id, false, "The camera has no stream profiles");
             return;
         }
 
         var credentials = await cameraRepository.GetCredentialsAsync(camera.Id, cancellationToken);
         if (credentials is null)
         {
-            statusRegistry.SetRecording(camera.Id, false, "Не найдены учётные данные камеры");
+                        statusRegistry.SetRecording(camera.Id, false, "Camera credentials not found");
             return;
         }
 
@@ -207,21 +207,21 @@ public sealed class RecordingWorker(
             statusRegistry.SetRecording(camera.Id, true);
 
             logger.LogInformation(
-                "Запись камеры «{Camera}» запущена (профиль {Profile})",
+                                "Recording of camera '{Camera}' started (profile {Profile})",
                 camera.Name,
                 profile.Id);
         }
         catch (Exception exception) when (exception is IOException or InvalidOperationException or System.ComponentModel.Win32Exception)
         {
             _retryAfter[camera.Id] = DateTimeOffset.UtcNow + RetryDelay;
-            statusRegistry.SetRecording(camera.Id, false, $"ffmpeg не запустился: {exception.Message}");
-            logger.LogError(exception, "Не удалось запустить ffmpeg для камеры «{Camera}»", camera.Name);
+                        statusRegistry.SetRecording(camera.Id, false, $"ffmpeg failed to start: {exception.Message}");
+                        logger.LogError(exception, "Failed to start ffmpeg for camera '{Camera}'", camera.Name);
         }
     }
 
     /// <summary>
-    /// Пишем с внутреннего RTSP go2rtc: камера держит одно соединение, а в списке
-    /// процессов нет пароля камеры. Для профилей вне main/sub — прямой URL.
+        /// Record from the internal go2rtc RTSP: the camera keeps a single connection, and the process list
+        /// contains no camera password. Profiles outside main/sub use a direct URL.
     /// </summary>
     private string ResolveInputUrl(
         Domain.Cameras.Camera camera,
@@ -242,7 +242,7 @@ public sealed class RecordingWorker(
         }
 
         logger.LogInformation(
-            "Профиль {Profile} камеры «{Camera}» не опубликован в go2rtc — пишем напрямую с камеры",
+                        "Profile {Profile} of camera '{Camera}' is not published in go2rtc — recording directly from the camera",
             profile.Id,
             camera.Name);
 
@@ -270,14 +270,14 @@ public sealed class RecordingWorker(
     {
         if (!_recorders.TryRemove(cameraId, out var recorder))
         {
-            // Процесса уже нет: состояние записи всё равно снимаем, иначе индикатор REC
-            // в UI останется висеть до перезапуска сервиса.
+                        // The process is gone already: clear the recording state anyway, otherwise the REC indicator
+                        // in the UI stays until the service restarts.
             statusRegistry.SetRecording(cameraId, false, clearError ? null : statusRegistry.LastError(cameraId));
             return;
         }
 
-        // Снимаем признак записи сразу: ffmpeg может завершаться несколько секунд,
-        // а индикатор REC в UI не должен висеть после отключения записи.
+                // Clear the recording flag immediately: ffmpeg may take a few seconds to exit,
+                // and the REC indicator in the UI must not linger after recording is disabled.
         statusRegistry.SetRecording(cameraId, false, clearError ? null : recorder.LastError);
 
         try
@@ -286,10 +286,10 @@ public sealed class RecordingWorker(
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            logger.LogWarning(exception, "Ошибка остановки ffmpeg камеры {CameraId}", cameraId);
+                        logger.LogWarning(exception, "Failed to stop ffmpeg of camera {CameraId}", cameraId);
         }
 
-        logger.LogInformation("Запись камеры {CameraId} остановлена", cameraId);
+                logger.LogInformation("Recording of camera {CameraId} stopped", cameraId);
     }
 
     private async Task StopAllAsync(CancellationToken cancellationToken)

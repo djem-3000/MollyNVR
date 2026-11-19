@@ -5,7 +5,7 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Application.Discovery;
 
-/// <summary>Поиск камер: multicast-протоколы, сканирование подсети и проверка одного адреса.</summary>
+/// <summary>Camera discovery: multicast protocols, subnet scanning and single-address checks.</summary>
 public sealed class DiscoveryService(
     IPortScanner portScanner,
     IEnumerable<IDiscoveryProtocol> protocols,
@@ -24,8 +24,8 @@ public sealed class DiscoveryService(
     private readonly IReadOnlyList<ICameraModule> _modules = modules.ToList();
 
     /// <summary>
-    /// Сканирует подсеть или диапазон: сначала быстрый набор портов камер,
-    /// затем полный список портов у найденных хостов. Сохранённые камеры тоже показываются.
+        /// Scans a subnet or range: first the fast camera port set,
+        /// then the full port list on the discovered hosts. Saved cameras are shown too.
     /// </summary>
     public async Task<IReadOnlyList<DiscoveredCameraView>> ScanUnicastAsync(
         string? range,
@@ -43,7 +43,7 @@ public sealed class DiscoveryService(
 
         if (alive is { Count: > 0 } && found.Count == 0)
         {
-            // ICMP ответили не все устройства — перебираем весь диапазон, как раньше.
+                        // Not all devices answered ICMP — walk the whole range as before.
             found = await ScanHostsAsync(hosts, macAddresses, cancellationToken);
         }
 
@@ -51,8 +51,8 @@ public sealed class DiscoveryService(
     }
 
     /// <summary>
-    /// Сканирует порты указанных хостов. Полный перебор /24 портами дорог и теряется
-    /// в NAT Docker Desktop, поэтому список хостов заранее сужается ICMP-опросом.
+        /// Scans ports of the specified hosts. A full /24 port sweep is expensive and gets lost
+        /// in Docker Desktop NAT, so the host list is narrowed by an ICMP probe first.
     /// </summary>
     private async Task<IReadOnlyList<DiscoveredCandidate>> ScanHostsAsync(
         IReadOnlyList<IPAddress> hosts,
@@ -106,7 +106,7 @@ public sealed class DiscoveryService(
                 return alive;
             }
 
-            // Известные соседи из ARP тоже заслуживают проверки: ICMP на них мог не пройти.
+                        // Known ARP neighbours are worth checking too: ICMP to them may have failed.
             var withNeighbours = new HashSet<IPAddress>(alive);
             withNeighbours.UnionWith((await GetMacAddressesAsync(cancellationToken)).Keys);
             return withNeighbours;
@@ -121,7 +121,7 @@ public sealed class DiscoveryService(
         }
     }
 
-    /// <summary>Ищет камеры multicast-протоколами и сканирует порты найденных устройств.</summary>
+        /// <summary>Finds cameras with multicast protocols and scans the ports of discovered devices.</summary>
     public async Task<IReadOnlyList<DiscoveredCameraView>> ScanMulticastAsync(
         CancellationToken cancellationToken)
     {
@@ -164,7 +164,7 @@ public sealed class DiscoveryService(
         return await ToViewsAsync(candidates, cancellationToken);
     }
 
-    /// <summary>Проверяет один адрес и возвращает найденное устройство (или пустой список).</summary>
+        /// <summary>Checks a single address and returns the discovered device (or an empty list).</summary>
     public async Task<IReadOnlyList<DiscoveredCameraView>> ScanAddressAsync(
         string? host,
         string? vendorKey,
@@ -174,7 +174,7 @@ public sealed class DiscoveryService(
             !IPAddress.TryParse(host.Trim(), out var address) ||
             address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
         {
-            throw new ArgumentException("Укажите корректный IPv4-адрес.", nameof(host));
+                        throw new ArgumentException("Specify a valid IPv4 address.", nameof(host));
         }
 
         var (moduleKey, vendor) = ResolveVendor(vendorKey);
@@ -252,7 +252,7 @@ public sealed class DiscoveryService(
             OpenPorts: candidate.OpenPorts);
     }
 
-    /// <summary>«ONVIF» — название протокола, а не производитель: такое значение уточняется по MAC/OUI.</summary>
+        /// <summary>"ONVIF" is a protocol name, not a vendor: such a value is refined by MAC/OUI.</summary>
     private static string? NormalizeVendor(string? vendor) =>
         string.IsNullOrWhiteSpace(vendor) ||
         string.Equals(vendor, "ONVIF", StringComparison.OrdinalIgnoreCase)
@@ -280,7 +280,7 @@ public sealed class DiscoveryService(
             }
             catch (Exception)
             {
-                // Устройство не ответило по протоколу модуля — пробуем следующий.
+                                // The device did not respond over the module protocol — try the next one.
             }
         }
 
@@ -301,7 +301,7 @@ public sealed class DiscoveryService(
         }
         catch (Exception)
         {
-            // Протокол недоступен в текущей сети (например, multicast в bridge-контейнере).
+                        // The protocol is unavailable in the current network (for example, multicast in a bridge container).
             return [];
         }
     }
@@ -378,7 +378,7 @@ public sealed class DiscoveryService(
             string.Equals(candidate.Key, vendorKey.Trim(), StringComparison.OrdinalIgnoreCase));
 
         return module is null
-            ? throw new ArgumentException($"Модуль производителя «{vendorKey}» не найден.", nameof(vendorKey))
+                        ? throw new ArgumentException($"Vendor module '{vendorKey}' was not found.", nameof(vendorKey))
             : (module.Key, module.DisplayName);
     }
 

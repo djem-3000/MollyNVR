@@ -3,15 +3,15 @@ using System.Net;
 namespace MollyNvr.Application.Discovery;
 
 /// <summary>
-/// Быстрая проверка, какие адреса диапазона вообще отвечают (ICMP echo).
-/// Нужна, чтобы сканировать порты только у живых хостов: полный перебор портов
-/// по /24 создаёт лавину соединений, которую теряет NAT Docker Desktop.
+/// Fast check of which addresses in a range respond at all (ICMP echo).
+/// Needed to scan ports only on live hosts: a full port sweep
+/// across a /24 creates a connection burst that Docker Desktop NAT drops.
 /// </summary>
 public interface IAliveHostScanner
 {
     /// <summary>
-    /// Возвращает отвечающие адреса; <c>null</c> — проверка недоступна на этой платформе
-    /// или без прав, тогда вызывающий код сканирует весь диапазон.
+        /// Returns the responding addresses; <c>null</c> means the check is unavailable on this platform
+        /// or without privileges, and the caller scans the whole range.
     /// </summary>
     Task<IReadOnlySet<IPAddress>?> FindAliveHostsAsync(
         IReadOnlyList<IPAddress> hosts,

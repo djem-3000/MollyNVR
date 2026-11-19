@@ -5,7 +5,7 @@ using MollyNvr.Application.Recording;
 
 namespace MollyNvr.Infrastructure.Recording;
 
-/// <summary>Индексирует готовые сегменты и удаляет те, что не попали в расписание или события.</summary>
+/// <summary>Indexes finished segments and deletes those outside the schedule or events.</summary>
 public sealed class SegmentIndexer(
     IRecordingSegmentStore segmentStore,
     IRecordingEventStore eventStore,
@@ -31,7 +31,7 @@ public sealed class SegmentIndexer(
 
         if (!Directory.Exists(storage.Path))
         {
-            // Каталог пула пропал (том отключён) — чистим индекс, чтобы квота не врала.
+                        // The pool directory is gone (volume detached) — clear the index so the quota is not wrong.
             await RemoveMissingAsync(storage.Path, known.Values, cancellationToken);
             return;
         }
@@ -72,7 +72,7 @@ public sealed class SegmentIndexer(
 
             var end = new DateTimeOffset(info.LastWriteTime);
 
-            // Файл ещё пишется: ffmpeg закрывает сегмент только после segment_time.
+                        // The file is still being written: ffmpeg closes a segment only after segment_time.
             if (now - end < TimeSpan.FromSeconds(options.SegmentSeconds + 15))
             {
                 continue;
@@ -106,7 +106,7 @@ public sealed class SegmentIndexer(
                 continue;
             }
 
-            // Сегмент может понадобиться как pre-roll для события, которое начнётся вот-вот.
+                        // The segment may be needed as pre-roll for an event that is about to start.
             if (now - end > TimeSpan.FromSeconds(settings.PreRollSeconds + 120))
             {
                 TryDelete(info, ref deletedAny);
@@ -211,7 +211,7 @@ public sealed class SegmentIndexer(
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            logger.LogWarning(exception, "Не удалось удалить сегмент {Path}", info.FullName);
+                        logger.LogWarning(exception, "Failed to delete segment {Path}", info.FullName);
         }
     }
 
@@ -230,12 +230,12 @@ public sealed class SegmentIndexer(
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            // не критично: пустые каталоги уберутся в следующий раз
+                        // not critical: empty directories are removed next time
         }
     }
 }
 
-/// <summary>Перезапись пула: FIFO или водяные знаки.</summary>
+/// <summary>Pool overwrite: FIFO or watermarks.</summary>
 public sealed class StorageRetention(
     IRecordingSegmentStore segmentStore,
     IStorageProbe storageProbe,
@@ -298,7 +298,7 @@ public sealed class StorageRetention(
                 }
                 catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
                 {
-                    logger.LogWarning(exception, "Не удалось удалить старый сегмент {Path}", segment.Path);
+                                        logger.LogWarning(exception, "Failed to delete the old segment {Path}", segment.Path);
                 }
             }
 

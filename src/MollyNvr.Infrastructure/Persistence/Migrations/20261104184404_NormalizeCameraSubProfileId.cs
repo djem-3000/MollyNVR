@@ -4,7 +4,7 @@
 
 namespace MollyNvr.Infrastructure.Persistence.Migrations
 {
-    /// <summary>Заполняет выбранный субпоток основным профилем, если он не был задан.</summary>
+        /// <summary>Fills the selected substream with the main profile when it was not set.</summary>
     public partial class NormalizeCameraSubProfileId : Migration
     {
         /// <inheritdoc />

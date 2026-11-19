@@ -2,14 +2,14 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Информация о медиапотоке, полученная из SDP (RTSP DESCRIBE).</summary>
+/// <summary>Media stream information obtained from SDP (RTSP DESCRIBE).</summary>
 public sealed record RtspMediaInfo(string? VideoCodec, string? AudioCodec, int? AudioSampleRate);
 
-/// <summary>Определение фактических кодеков RTSP-потока (SDP).</summary>
+/// <summary>Detection of the actual RTSP stream codecs (SDP).</summary>
 public interface IRtspMediaProbe
 {
     /// <summary>
-    /// Запрашивает SDP потока. Возвращает <c>null</c>, если поток недоступен или ответ не разобран.
+        /// Requests the stream SDP. Returns <c>null</c> when the stream is unavailable or the response cannot be parsed.
     /// </summary>
     Task<RtspMediaInfo?> ProbeAsync(Uri rtspUri, CameraCredentials credentials, CancellationToken cancellationToken);
 }

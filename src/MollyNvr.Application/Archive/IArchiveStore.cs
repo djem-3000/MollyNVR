@@ -2,53 +2,53 @@ using MollyNvr.Application.Recording;
 
 namespace MollyNvr.Application.Archive;
 
-/// <summary>Чтение индекса записей для архива.</summary>
+/// <summary>Reading the recording index for the archive.</summary>
 public interface IArchiveStore
 {
-    /// <summary>Сегменты камеры, пересекающиеся с интервалом, по возрастанию времени начала.</summary>
+        /// <summary>Camera segments intersecting the interval, ordered by start time.</summary>
     Task<IReadOnlyList<RecordingSegment>> SegmentsAsync(
         Guid cameraId,
         DateTimeOffset from,
         DateTimeOffset to,
         CancellationToken cancellationToken);
 
-    /// <summary>События камеры, пересекающиеся с интервалом, по возрастанию времени начала.</summary>
+        /// <summary>Camera events intersecting the interval, ordered by start time.</summary>
     Task<IReadOnlyList<RecordingEvent>> EventsAsync(
         Guid cameraId,
         DateTimeOffset from,
         DateTimeOffset to,
         CancellationToken cancellationToken);
 
-    /// <summary>Камеры, у которых есть записи в интервале.</summary>
+        /// <summary>Cameras that have recordings in the interval.</summary>
     Task<IReadOnlyList<Guid>> CameraIdsWithRecordingsAsync(
         DateTimeOffset from,
         DateTimeOffset to,
         CancellationToken cancellationToken);
 }
 
-/// <summary>Файл исходного сегмента для playback-сессии.</summary>
+/// <summary>Source segment file for a playback session.</summary>
 public sealed record PlaybackSourceFile(string Path);
 
-/// <summary>Сессия воспроизведения, подготовленная менеджером.</summary>
+/// <summary>Playback session prepared by the manager.</summary>
 public sealed record ArchivePlaybackSession(Guid Id, string Directory);
 
-/// <summary>Файл HLS, который отдаёт API.</summary>
+/// <summary>HLS file served by the API.</summary>
 public sealed record ArchivePlaybackFile(string ContentType, byte[] Content);
 
-/// <summary>Как отдавать видео в HLS.</summary>
+/// <summary>How video is served over HLS.</summary>
 public enum ArchiveVideoMode
 {
-    /// <summary>Копировать H.264 без перекодирования.</summary>
+        /// <summary>Copy H.264 without transcoding.</summary>
     Copy,
 
-    /// <summary>Копировать H.265 с тегом hvc1 (браузер поддерживает HEVC).</summary>
+        /// <summary>Copy H.265 with the hvc1 tag (the browser supports HEVC).</summary>
     CopyHevc,
 
-    /// <summary>Перекодировать в H.264.</summary>
+        /// <summary>Transcode to H.264.</summary>
     Transcode,
 }
 
-/// <summary>Подготовка и остановка HLS-сессий воспроизведения архива.</summary>
+/// <summary>Preparation and shutdown of archive HLS playback sessions.</summary>
 public interface IArchivePlaybackManager
 {
     Task<ArchivePlaybackSession> StartAsync(

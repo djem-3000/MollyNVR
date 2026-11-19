@@ -7,8 +7,8 @@ using MollyNvr.Infrastructure.Storage;
 namespace MollyNvr.Infrastructure.Security;
 
 /// <summary>
-/// Шифрование учётных данных камер AES-GCM. Ключ (32 байта) создаётся при первом запуске
-/// и хранится в файле <c>/data/secret.key</c>; в БД попадает только шифротекст.
+/// AES-GCM encryption of camera credentials. The key (32 bytes) is created on first start
+/// and stored in <c>/data/secret.key</c>; only ciphertext reaches the database.
 /// </summary>
 public sealed class AesGcmCameraSecretStore : ICameraSecretStore
 {
@@ -51,7 +51,7 @@ public sealed class AesGcmCameraSecretStore : ICameraSecretStore
     {
         if (string.IsNullOrWhiteSpace(payload))
         {
-            throw new InvalidOperationException("Зашифрованные учётные данные камеры пусты.");
+                        throw new InvalidOperationException("The encrypted camera credentials are empty.");
         }
 
         byte[] data;
@@ -61,12 +61,12 @@ public sealed class AesGcmCameraSecretStore : ICameraSecretStore
         }
         catch (FormatException exception)
         {
-            throw new InvalidOperationException("Учётные данные камеры повреждены.", exception);
+                        throw new InvalidOperationException("The camera credentials are corrupted.", exception);
         }
 
         if (data.Length <= 1 + NonceSize + TagSize || data[0] != FormatVersion)
         {
-            throw new InvalidOperationException("Учётные данные камеры повреждены.");
+                        throw new InvalidOperationException("The camera credentials are corrupted.");
         }
 
         var nonce = data.AsSpan(1, NonceSize);
@@ -82,20 +82,20 @@ public sealed class AesGcmCameraSecretStore : ICameraSecretStore
         catch (CryptographicException exception)
         {
             throw new InvalidOperationException(
-                "Не удалось расшифровать учётные данные камеры: ключ не совпадает или данные повреждены.",
+                                "Failed to decrypt the camera credentials: the key does not match or the data is corrupted.",
                 exception);
         }
 
         try
         {
             var secret = JsonSerializer.Deserialize<SecretPayload>(plaintext)
-                ?? throw new InvalidOperationException("Учётные данные камеры повреждены.");
+                                ?? throw new InvalidOperationException("The camera credentials are corrupted.");
 
             return new CameraCredentials(secret.UserName, secret.Password);
         }
         catch (JsonException exception)
         {
-            throw new InvalidOperationException("Учётные данные камеры повреждены.", exception);
+                        throw new InvalidOperationException("The camera credentials are corrupted.", exception);
         }
     }
 
@@ -113,7 +113,7 @@ public sealed class AesGcmCameraSecretStore : ICameraSecretStore
             if (existing.Length != KeySize)
             {
                 throw new InvalidOperationException(
-                    $"Файл ключа «{path}» повреждён: ожидается {KeySize} байт, получено {existing.Length}.");
+                                        $"The key file '{path}' is corrupted: {KeySize} bytes expected, {existing.Length} received.");
             }
 
             return existing;

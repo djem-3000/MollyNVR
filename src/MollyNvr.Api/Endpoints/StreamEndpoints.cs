@@ -3,7 +3,7 @@ using MollyNvr.Application.Streams;
 
 namespace MollyNvr.Api.Endpoints;
 
-/// <summary>Управление медиа-потоками: список, добавление, удаление и WebRTC-подключение (WHEP).</summary>
+/// <summary>Media stream management: list, add, remove and WebRTC connection (WHEP).</summary>
 public static class StreamEndpoints
 {
     public static IEndpointRouteBuilder MapStreamEndpoints(this IEndpointRouteBuilder app)
@@ -18,15 +18,15 @@ public static class StreamEndpoints
         return group;
     }
 
-    /// <summary>Список потоков реестра.</summary>
-    /// <remarks>Пароли в URL источников маскируются — наружу креды не отдаются.</remarks>
+        /// <summary>List of streams in the registry.</summary>
+        /// <remarks>Passwords in source URLs are masked — credentials are never exposed.</remarks>
     private static IResult ListStreams(StreamRegistry registry) => Results.Ok(registry.List());
 
-    /// <summary>Добавляет поток в реестр и в go2rtc.</summary>
+        /// <summary>Adds a stream to the registry and to go2rtc.</summary>
     /// <remarks>
-    /// Тело — <see cref="AddStreamRequest"/>: идентификатор (латиница, цифры, <c>-</c>, <c>_</c>) и URL источника
-    /// (RTSP или шаблон <c>ffmpeg:</c>). Ответы: 201 — поток создан; 400 — некорректный запрос;
-    /// 409 — поток с таким идентификатором уже есть; 502 — go2rtc отклонил источник.
+        /// Body is <see cref="AddStreamRequest"/>: identifier (letters, digits, <c>-</c>, <c>_</c>) and the source URL
+        /// (RTSP or an <c>ffmpeg:</c> template). Responses: 201 — stream created; 400 — invalid request;
+        /// 409 — a stream with this identifier already exists; 502 — go2rtc rejected the source.
     /// </remarks>
     private static async Task<IResult> AddStreamAsync(
         AddStreamRequest request,
@@ -52,8 +52,8 @@ public static class StreamEndpoints
         }
     }
 
-    /// <summary>Удаляет поток из реестра и из go2rtc.</summary>
-    /// <remarks>Ответы: 204 — удалён; 400 — некорректный идентификатор; 404 — потока нет.</remarks>
+        /// <summary>Removes the stream from the registry and from go2rtc.</summary>
+        /// <remarks>Responses: 204 — removed; 400 — invalid identifier; 404 — no such stream.</remarks>
     private static async Task<IResult> RemoveStreamAsync(
         string id,
         StreamRegistry registry,
@@ -74,12 +74,12 @@ public static class StreamEndpoints
         }
     }
 
-    /// <summary>WHEP-прокси: принимает SDP offer браузера и возвращает SDP answer go2rtc.</summary>
+        /// <summary>WHEP proxy: accepts the browser SDP offer and returns the go2rtc SDP answer.</summary>
     /// <remarks>
-    /// Тело запроса — SDP offer (<c>application/sdp</c>), ответ — SDP answer с выбранным кодеком.
-    /// Так наружу открыт только порт :9080, а API go2rtc остаётся на loopback.
-    /// Ответы: 200 — сессия установлена; 400 — пустой/некорректный offer; 404 — потока нет;
-    /// 502 — go2rtc отклонил WebRTC-запрос.
+        /// The request body is an SDP offer (<c>application/sdp</c>), the response is an SDP answer with the selected codec.
+        /// This way only port :9080 is exposed while the go2rtc API stays on loopback.
+        /// Responses: 200 — session established; 400 — empty or invalid offer; 404 — no such stream;
+        /// 502 — go2rtc rejected the WebRTC request.
     /// </remarks>
     private static async Task<IResult> NegotiateWhepAsync(
         string id,
@@ -91,7 +91,7 @@ public static class StreamEndpoints
         var offer = await reader.ReadToEndAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(offer))
         {
-            return Results.BadRequest(new { error = "Тело запроса должно содержать SDP offer." });
+                        return Results.BadRequest(new { error = "The request body must contain an SDP offer." });
         }
 
         try
@@ -114,7 +114,7 @@ public static class StreamEndpoints
     }
 }
 
-/// <summary>Запрос на добавление потока: идентификатор и URL источника.</summary>
-/// <param name="Id">Идентификатор потока (латиница, цифры, <c>-</c>, <c>_</c>); null — ошибка 400.</param>
-/// <param name="Url">URL источника: RTSP или шаблон <c>ffmpeg:</c>.</param>
+/// <summary>Stream add request: identifier and source URL.</summary>
+/// <param name="Id">Stream identifier (letters, digits, <c>-</c>, <c>_</c>); null — 400 error.</param>
+/// <param name="Url">Source URL: RTSP or an <c>ffmpeg:</c> template.</param>
 public sealed record AddStreamRequest(string? Id, string? Url);

@@ -18,8 +18,8 @@ if (-not (Test-Path -LiteralPath $ConfigPath)) {
     '{ "webui": false, "cameras": [] }' | Set-Content -LiteralPath $ConfigPath -Encoding utf8NoBOM
 }
 
-# neolink.net читает конфигурацию только при старте, поэтому при её изменении
-# процесс перезапускается — так же, как entrypoint контейнера.
+# neolink.net reads the configuration only at startup, so when it changes
+# the process is restarted — just like the container entrypoint.
 while ($true) {
     $stdout = Join-Path $configDirectory 'bridge.log'
     $stderr = Join-Path $configDirectory 'bridge.error.log'
@@ -40,7 +40,7 @@ while ($true) {
                 $process.Kill($true)
             }
             catch {
-                # процесс уже завершился
+                                # the process has already exited
             }
 
             break

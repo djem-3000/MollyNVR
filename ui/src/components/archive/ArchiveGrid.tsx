@@ -54,7 +54,7 @@ function ArchiveGridTile({
     }
 
     void containerRef.current?.requestFullscreen().catch(() => {
-      console.warn('Не удалось открыть полноэкранный режим')
+      console.warn('Could not enter fullscreen')
     })
   }
 
@@ -117,7 +117,7 @@ function ArchiveGridTile({
         }
 
         event.preventDefault()
-        // dropEffect должен совпадать с effectAllowed источника, иначе drop не произойдёт.
+        // dropEffect must match the source effectAllowed, otherwise the drop is ignored.
         event.dataTransfer.dropEffect = cameraDrag ? 'copy' : 'move'
         setDragOver(true)
       }}

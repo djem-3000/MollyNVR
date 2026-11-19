@@ -1,6 +1,6 @@
 namespace MollyNvr.Application.Streams;
 
-/// <summary>Маскирование кредов в URL перед логированием и отдачей наружу.</summary>
+/// <summary>Masking credentials in URLs before logging and exposing them.</summary>
 public static class StreamUrlMasker
 {
     public static string Mask(string url)

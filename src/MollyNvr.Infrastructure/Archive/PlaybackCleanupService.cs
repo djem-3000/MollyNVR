@@ -2,7 +2,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace MollyNvr.Infrastructure.Archive;
 
-/// <summary>Периодически убирает завершённые и простаивающие playback-сессии.</summary>
+/// <summary>Periodically removes finished and idle playback sessions.</summary>
 public sealed class PlaybackCleanupService(PlaybackSessionManager manager) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -18,7 +18,7 @@ public sealed class PlaybackCleanupService(PlaybackSessionManager manager) : Bac
         }
         catch (OperationCanceledException)
         {
-            // остановка приложения
+                        // application shutdown
         }
     }
 

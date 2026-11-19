@@ -1,6 +1,6 @@
 namespace MollyNvr.Cameras.Abstractions;
 
-/// <summary>Сведения об устройстве, полученные модулем производителя.</summary>
+/// <summary>Device details obtained by the vendor module.</summary>
 public sealed record CameraDeviceInfo(
     string Vendor,
     string Model,
@@ -8,17 +8,17 @@ public sealed record CameraDeviceInfo(
     string? SerialNumber,
     string? DeviceName);
 
-/// <summary>Назначение профиля потока.</summary>
+/// <summary>Purpose of the stream profile.</summary>
 public enum CameraStreamProfileKind
 {
-    /// <summary>Основной поток — максимальное разрешение.</summary>
+        /// <summary>Main stream — maximum resolution.</summary>
     Main = 0,
 
-    /// <summary>Субпоток — низкое разрешение для сетки тайлов.</summary>
+        /// <summary>Substream — low resolution for the tile grid.</summary>
     Sub = 1,
 }
 
-/// <summary>Параметры видеокодека профиля.</summary>
+/// <summary>Video codec parameters of a profile.</summary>
 public sealed record CameraVideoSettings(
     string Codec,
     int Width,
@@ -26,10 +26,10 @@ public sealed record CameraVideoSettings(
     double FrameRate,
     int BitrateKbps);
 
-/// <summary>Параметры аудиокодека профиля.</summary>
+/// <summary>Audio codec parameters of a profile.</summary>
 public sealed record CameraAudioSettings(bool Enabled, string? Codec, int? SampleRate, int? Bitrate);
 
-/// <summary>Профиль потока камеры (основной или субпоток).</summary>
+/// <summary>Camera stream profile (main stream or substream).</summary>
 public sealed record CameraProfile(
     CameraStreamProfileKind Kind,
     string Id,
@@ -38,10 +38,10 @@ public sealed record CameraProfile(
     CameraAudioSettings Audio,
     string RtspUrl)
 {
-    public string DisplayName => Name ?? (Kind == CameraStreamProfileKind.Main ? "Основной поток" : "Субпоток");
+        public string DisplayName => Name ?? (Kind == CameraStreamProfileKind.Main ? "Main stream" : "Substream");
 }
 
-/// <summary>Результат опроса камеры модулем производителя.</summary>
+/// <summary>Camera probe result produced by a vendor module.</summary>
 public sealed record CameraProbeResult(
     CameraDeviceInfo Device,
     IReadOnlyList<CameraProfile> Profiles)

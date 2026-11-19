@@ -1,5 +1,5 @@
 import type { CameraProfile } from './api'
-import { t } from './i18n'
+import { getLocale, t } from './i18n'
 
 export function profileLabel(profile: CameraProfile): string {
   return t(profile.kind === 'main' ? 'camera.profile.main' : 'camera.profile.secondary')
@@ -49,7 +49,7 @@ function aspectRatioLabel(width: number, height: number): string | null {
 
 function megapixelsLabel(width: number, height: number): string {
   const megapixels = (width * height) / 1_000_000
-  const formatted = megapixels.toLocaleString('ru-RU', {
+  const formatted = megapixels.toLocaleString(getLocale() === 'ru' ? 'ru-RU' : 'en-US', {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1
   })
@@ -77,7 +77,7 @@ export function resolutionLabel(profile: CameraProfile): string {
   return parts.join(' · ')
 }
 
-/** Короткая подпись для оверлея: «640×480 · SD». */
+/** Short label for the tile overlay: "640×480 · SD". */
 export function resolutionShortLabel(profile: CameraProfile): string {
   if (profile.width <= 0 || profile.height <= 0) {
     return t('camera.unknown')

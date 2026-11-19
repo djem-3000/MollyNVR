@@ -1,6 +1,6 @@
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Параметры добавления или изменения камеры (пароль не возвращается наружу).</summary>
+/// <summary>Parameters for adding or updating a camera (the password is never returned).</summary>
 public sealed record CameraRegistration(
     string? Name,
     string? Host,

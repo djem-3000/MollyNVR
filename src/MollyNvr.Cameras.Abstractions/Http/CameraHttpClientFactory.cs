@@ -3,12 +3,12 @@ using System.Net;
 namespace MollyNvr.Cameras.Abstractions.Http;
 
 /// <summary>
-/// Создание HTTP-клиентов для запросов к камере. Учётные данные передаются обработчику,
-/// который сам проходит Digest/Basic-аутентификацию (HTTP 401 + повтор запроса).
+/// Creation of HTTP clients for camera requests. Credentials are passed to the handler,
+/// which performs Digest/Basic authentication itself (HTTP 401 + request retry).
 /// </summary>
 public static class CameraHttpClientFactory
 {
-    /// <summary>Создаёт клиент с базовым адресом камеры и (опционально) учётными данными.</summary>
+        /// <summary>Creates a client with the camera base address and (optionally) credentials.</summary>
     public static HttpClient Create(Uri baseAddress, CameraCredentials? credentials, TimeSpan timeout)
     {
         ArgumentNullException.ThrowIfNull(baseAddress);

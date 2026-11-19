@@ -99,8 +99,8 @@ function SpeakerIcon({ muted }: { muted: boolean }) {
 }
 
 /**
- * Размещает активные камеры по слотам: сохранённые позиции сохраняются,
- * освободившиеся места заполняются камерами, которых ещё нет в сетке.
+  * Places active cameras into slots: saved positions are kept,
+  * freed slots are filled with cameras that are not in the grid yet.
  */
 function resolveSlots(
   saved: (string | null)[] | undefined,
@@ -178,7 +178,7 @@ export default function LiveGrid({ cameras, onOpenCameraSettings, onOpenArchive 
         }
       } catch (statusError) {
         if (!cancelled) {
-          console.warn('Не удалось получить состояние записи', statusError)
+          console.warn('Could not get the recording status', statusError)
         }
       }
     }

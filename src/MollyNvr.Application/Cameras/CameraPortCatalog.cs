@@ -1,6 +1,6 @@
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Типовые порты камер и их сопоставление с протоколами по умолчанию.</summary>
+/// <summary>Typical camera ports and their mapping to default protocols.</summary>
 public static class CameraPortCatalog
 {
     private const int HttpPort = 80;
@@ -9,7 +9,7 @@ public static class CameraPortCatalog
     private const int RtspPort = 554;
     private const int RtspAltPort = 8554;
 
-    /// <summary>Порты, которые проверяются при опросе устройства.</summary>
+        /// <summary>Ports checked during a device probe.</summary>
     public static IReadOnlyList<int> ScanPorts { get; } =
     [
         HttpPort,
@@ -32,9 +32,9 @@ public static class CameraPortCatalog
     ];
 
     /// <summary>
-    /// Быстрый набор портов для поиска хостов в подсети: только вероятные видеосервисы камер.
-    /// Полный <see cref="ScanPorts"/> проверяется затем только у найденных хостов.
-    /// HTTP-порты здесь не нужны: хост только с веб-интерфейсом камерой не считается.
+        /// Fast port set for host discovery in a subnet: only the likely camera video services.
+        /// The full <see cref="ScanPorts"/> is then checked only on the discovered hosts.
+        /// HTTP ports are not needed here: a host with only a web interface is not considered a camera.
     /// </summary>
     public static IReadOnlyList<int> DiscoveryPorts { get; } =
     [
@@ -46,7 +46,7 @@ public static class CameraPortCatalog
         37777,
     ];
 
-    /// <summary>Протоколы, работающие на порту по умолчанию для указанного вендора.</summary>
+        /// <summary>Protocols running on the default port for the specified vendor.</summary>
     public static IReadOnlyList<CameraProtocolMatch> Match(string vendorKey, int port)
     {
         var matches = new List<CameraProtocolMatch>();
@@ -99,5 +99,5 @@ public static class CameraPortCatalog
             : vendorKey.ToLowerInvariant();
 }
 
-/// <summary>Протокол, работающий на порту по умолчанию.</summary>
+/// <summary>Protocol running on the default port.</summary>
 public sealed record CameraProtocolMatch(string Name, string Role);

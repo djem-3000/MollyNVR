@@ -7,7 +7,7 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Infrastructure.Media;
 
-/// <summary>Определяет фактические кодеки RTSP-потока через DESCRIBE и SDP.</summary>
+/// <summary>Detects the actual RTSP stream codecs through DESCRIBE and SDP.</summary>
 public sealed class RtspMediaProbe(ILogger<RtspMediaProbe> logger) : IRtspMediaProbe
 {
     private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(6);
@@ -30,8 +30,8 @@ public sealed class RtspMediaProbe(ILogger<RtspMediaProbe> logger) : IRtspMediaP
             await client.ConnectAsync(rtspUri.Host, rtspUri.Port, timeout.Token);
             await using var stream = client.GetStream();
 
-            // Некоторые камеры привязывают nonce к соединению: повторный DESCRIBE
-            // с авторизацией должен идти в том же TCP-соединении.
+                        // Some cameras bind the nonce to the connection: the repeated DESCRIBE
+                        // with authorization must go over the same TCP connection.
             var first = await DescribeAsync(stream, rtspUri, authorization: null, cseq: 1, timeout.Token);
             if (first.StatusCode == 200)
             {
@@ -55,7 +55,7 @@ public sealed class RtspMediaProbe(ILogger<RtspMediaProbe> logger) : IRtspMediaP
         catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             logger.LogDebug(
-                "RTSP DESCRIBE не удался для {Host}:{Port}: {Error}",
+                                "RTSP DESCRIBE failed for {Host}:{Port}: {Error}",
                 rtspUri.Host,
                 rtspUri.Port,
                 exception.Message);

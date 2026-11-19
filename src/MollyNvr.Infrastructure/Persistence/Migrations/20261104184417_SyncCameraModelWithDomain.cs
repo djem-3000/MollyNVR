@@ -4,7 +4,7 @@
 
 namespace MollyNvr.Infrastructure.Persistence.Migrations
 {
-    /// <summary>Удаляет порты камеры, переименовывает прошивку и делает субпоток обязательным.</summary>
+        /// <summary>Removes the camera port, renames the firmware column and makes the substream mandatory.</summary>
     public partial class SyncCameraModelWithDomain : Migration
     {
         /// <inheritdoc />

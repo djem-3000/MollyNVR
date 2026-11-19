@@ -5,8 +5,8 @@ using MollyNvr.Cameras.Abstractions;
 namespace MollyNvr.Application.Cameras;
 
 /// <summary>
-/// Сценарии работы с камерами: опрос модулем производителя и снапшот.
-/// В M2 камеры не сохраняются — параметры подключения передаются в каждом запросе.
+/// Camera scenarios: probing with a vendor module and taking a snapshot.
+/// Cameras are not stored here — connection parameters are supplied with every request.
 /// </summary>
 public sealed class CameraProbeService(
     IEnumerable<ICameraModule> modules,
@@ -20,10 +20,10 @@ public sealed class CameraProbeService(
 
     private static readonly string[] ReolinkProbeOrder = ["onvif", ReolinkVendorKey];
 
-    /// <summary>Ключи зарегистрированных модулей производителей.</summary>
+        /// <summary>Keys of the registered vendor modules.</summary>
     public IReadOnlyList<string> ModuleKeys => _modules.Select(static module => module.Key).ToList();
 
-    /// <summary>Опрашивает камеру, определяя модуль производителя автоматически (или по подсказке).</summary>
+        /// <summary>Probes the camera, detecting the vendor module automatically (or from the hint).</summary>
     public async Task<CameraProbeView> ProbeAsync(CameraTarget target, CancellationToken cancellationToken)
     {
         var (vendorKey, result) = await ProbeRawAsync(target, cancellationToken);
@@ -31,7 +31,7 @@ public sealed class CameraProbeService(
         return CameraProbeView.From(vendorKey, result, openPorts);
     }
 
-    /// <summary>Опрашивает камеру и возвращает сырые профили (URL без кредов) — для сохранения в реестр.</summary>
+        /// <summary>Probes the camera and returns raw profiles (credential-free URLs) for the registry.</summary>
     public async Task<(string VendorKey, CameraProbeResult Result)> ProbeRawAsync(
         CameraTarget target,
         CancellationToken cancellationToken)
@@ -40,7 +40,7 @@ public sealed class CameraProbeService(
         return (module.Key, result);
     }
 
-    /// <summary>Сканирует типовые порты устройства; ошибки сканирования не прерывают опрос.</summary>
+        /// <summary>Scans the typical device ports; scan errors do not interrupt the probe.</summary>
     private async Task<IReadOnlyList<int>> FindOpenPortsAsync(
         IPAddress host,
         CancellationToken cancellationToken)
@@ -60,8 +60,8 @@ public sealed class CameraProbeService(
     }
 
     /// <summary>
-    /// Запрашивает у камеры состояние DHCP. Если модуль или камера не сообщают параметр,
-    /// возвращает <c>null</c>.
+        /// Requests the DHCP state from the camera. When the module or the camera does not report
+        /// the parameter, returns <c>null</c>.
     /// </summary>
     public async Task<bool?> GetDhcpEnabledAsync(CameraTarget target, CancellationToken cancellationToken)
     {
@@ -99,7 +99,7 @@ public sealed class CameraProbeService(
         return null;
     }
 
-    /// <summary>Возвращает JPEG-снапшот: нативный метод модуля, иначе — кадр из RTSP.</summary>
+        /// <summary>Returns a JPEG snapshot: the module's native method, otherwise a frame from RTSP.</summary>
     public async Task<byte[]> GetSnapshotAsync(
         CameraTarget target,
         CameraStreamProfileKind kind,
@@ -119,14 +119,14 @@ public sealed class CameraProbeService(
         }
         catch (CameraModuleException)
         {
-            // Камера не умеет нативный снапшот (например, HTTP-порт закрыт) — берём кадр из RTSP.
+                        // The camera has no native snapshot (for example, the HTTP port is closed) — take a frame from RTSP.
         }
 
         var sourceUrl = RtspUriFactory.WithCredentials(new Uri(profile.RtspUrl), target.Credentials);
         return await frameGrabber.GrabJpegAsync(sourceUrl, cancellationToken);
     }
 
-    /// <summary>Типы событий, которые камера сообщает; пустой список — источник недоступен.</summary>
+        /// <summary>Event types reported by the camera; an empty list means the source is unavailable.</summary>
     public async Task<IReadOnlyList<CameraEventType>> GetEventTypesAsync(
         CameraTarget target,
         CancellationToken cancellationToken)
@@ -151,7 +151,7 @@ public sealed class CameraProbeService(
         }
     }
 
-    /// <summary>Поток событий камеры; пустой, если модуль не умеет события.</summary>
+        /// <summary>Camera event stream; empty when the module does not support events.</summary>
     public async IAsyncEnumerable<CameraEvent> WatchEventsAsync(
         CameraTarget target,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -223,7 +223,7 @@ public sealed class CameraProbeService(
         }
 
         throw new CameraUnavailableException(
-            $"Камера {target.Endpoint.Host} не ответила ни одному из поддерживаемых протоколов.",
+                        $"Camera {target.Endpoint.Host} did not respond over any supported protocol.",
             errors.Count == 1 ? errors[0] : null);
     }
 
@@ -234,7 +234,7 @@ public sealed class CameraProbeService(
             return _modules;
         }
 
-        // Reolink: сначала стандартный ONVIF, затем проприетарный Baichuan через мост.
+                // Reolink: standard ONVIF first, then proprietary Baichuan through the bridge.
         var keys = string.Equals(vendorKey, ReolinkVendorKey, StringComparison.OrdinalIgnoreCase)
             ? ReolinkProbeOrder
             : [vendorKey];
@@ -248,7 +248,7 @@ public sealed class CameraProbeService(
         if (modules.Count == 0)
         {
             throw new CameraOperationNotSupportedException(
-                $"Модуль производителя «{vendorKey}» не поддерживается. Доступны: {string.Join(", ", ModuleKeys)}.");
+                                $"Vendor module '{vendorKey}' is not supported. Available: {string.Join(", ", ModuleKeys)}.");
         }
 
         return modules;
@@ -338,11 +338,11 @@ public sealed class CameraProbeService(
             return result.Profiles.FirstOrDefault(profile =>
                        string.Equals(profile.Id, profileId, StringComparison.Ordinal))
                    ?? throw new CameraOperationNotSupportedException(
-                       $"Профиль «{profileId}» не найден у камеры.");
+                                              $"Profile '{profileId}' was not found on the camera.");
         }
 
         return (kind == CameraStreamProfileKind.Main ? result.MainProfile : result.SubProfile)
             ?? throw new CameraOperationNotSupportedException(
-                $"У камеры нет профиля {(kind == CameraStreamProfileKind.Main ? "основного потока" : "субпотока")}.");
+                                $"The camera has no {(kind == CameraStreamProfileKind.Main ? "main stream" : "substream")} profile.");
     }
 }

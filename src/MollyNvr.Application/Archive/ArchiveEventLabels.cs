@@ -1,26 +1,26 @@
 namespace MollyNvr.Application.Archive;
 
-/// <summary>Подписи типов событий для фильтров архива (без обращения к камере).</summary>
+/// <summary>Event type labels for archive filters (without contacting the camera).</summary>
 public static class ArchiveEventLabels
 {
     private static readonly IReadOnlyDictionary<string, string> Labels =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["motion"] = "Движение",
-            ["linecrossing"] = "Пересечение линии",
-            ["intrusion"] = "Вторжение в зону",
-            ["regionentrance"] = "Вход в область",
-            ["regionexiting"] = "Выход из области",
-            ["loitering"] = "Задержка в зоне",
-            ["face"] = "Лицо",
-            ["person"] = "Человек",
-            ["vehicle"] = "Транспорт",
-            ["tamper"] = "Вандализм",
-            ["animal"] = "Животное",
-            ["sound"] = "Звук",
+                        ["motion"] = "Motion",
+                        ["linecrossing"] = "Line crossing",
+                        ["intrusion"] = "Intrusion",
+                        ["regionentrance"] = "Region entrance",
+                        ["regionexiting"] = "Region exit",
+                        ["loitering"] = "Loitering",
+                        ["face"] = "Face",
+                        ["person"] = "Person",
+                        ["vehicle"] = "Vehicle",
+                        ["tamper"] = "Tamper",
+                        ["animal"] = "Animal",
+                        ["sound"] = "Sound",
         };
 
-    /// <summary>Подпись типа события; неизвестный ключ возвращается как есть.</summary>
+        /// <summary>Event type label; an unknown key is returned as is.</summary>
     public static string Label(string key) =>
         Labels.TryGetValue(key, out var label) ? label : key;
 }

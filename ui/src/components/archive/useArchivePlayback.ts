@@ -26,8 +26,8 @@ type Options = {
 }
 
 /**
- * Воспроизведение архива через HLS. Ref на video — колбэк: слушатели и hls.js
- * переподключаются, когда элемент появляется (например, после выбора камеры).
+  * Archive playback over HLS. The video ref is a callback: listeners and hls.js
+  * reconnect when the element appears (for example, after a camera is selected).
  */
 export function useArchivePlayback({ cameraId, onEnded }: Options): ArchivePlaybackController {
   const videoElementRef = useRef<HTMLVideoElement | null>(null)
@@ -121,7 +121,7 @@ export function useArchivePlayback({ cameraId, onEnded }: Options): ArchivePlayb
         try {
           element.currentTime = target
         } catch {
-          // медиа ещё не готово
+          // media is not ready yet
         }
       }
 
@@ -149,7 +149,7 @@ export function useArchivePlayback({ cameraId, onEnded }: Options): ArchivePlayb
   }, [applyWall, releaseSession])
 
   useEffect(() => {
-    // Смена камеры в слоте должна освобождать прежнюю HLS-сессию.
+    // Switching the camera in a slot must release the previous HLS session.
     return () => {
       requestRef.current += 1
       releaseSession()
@@ -227,7 +227,7 @@ export function useArchivePlayback({ cameraId, onEnded }: Options): ArchivePlayb
         try {
           element.currentTime = offset
         } catch {
-          // браузер ещё не готов к перемотке — повторим по timeupdate
+          // the browser is not ready to seek yet — retry on timeupdate
         }
       }
 
@@ -255,7 +255,7 @@ export function useArchivePlayback({ cameraId, onEnded }: Options): ArchivePlayb
 
         const now = Date.now()
 
-        // Сеть/пропавшие фрагменты: перезапускаем сессию с текущей позиции.
+        // Network or gap in fragments: restart the session from the current position.
         if (recoverAttemptsRef.current < 2 && now - recoverAtRef.current > 3000) {
           recoverAtRef.current = now
           recoverAttemptsRef.current += 1

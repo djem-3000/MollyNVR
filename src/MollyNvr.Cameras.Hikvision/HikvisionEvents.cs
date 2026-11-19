@@ -6,7 +6,7 @@ using MollyNvr.Cameras.Abstractions.Http;
 
 namespace MollyNvr.Cameras.Hikvision;
 
-/// <summary>События Hikvision: поток ISAPI alertStream (multipart) с VMD/детекциями.</summary>
+/// <summary>Hikvision events: ISAPI alertStream (multipart) with VMD and detections.</summary>
 internal static class HikvisionEvents
 {
     private const string AlertStreamPath = "/ISAPI/Event/notification/alertStream";
@@ -16,16 +16,16 @@ internal static class HikvisionEvents
 
     private static readonly IReadOnlyList<CameraEventType> SupportedTypes =
     [
-        new("motion", "Движение"),
-        new("linecrossing", "Пересечение линии"),
-        new("intrusion", "Вторжение в зону"),
-        new("regionentrance", "Вход в область"),
-        new("regionexiting", "Выход из области"),
-        new("loitering", "Задержка в зоне"),
-        new("face", "Лицо"),
-        new("person", "Человек"),
-        new("vehicle", "Транспорт"),
-        new("tamper", "Вандализм"),
+                new("motion", "Motion"),
+                new("linecrossing", "Line crossing"),
+                new("intrusion", "Intrusion"),
+                new("regionentrance", "Region entrance"),
+                new("regionexiting", "Region exit"),
+                new("loitering", "Loitering"),
+                new("face", "Face"),
+                new("person", "Person"),
+                new("vehicle", "Vehicle"),
+                new("tamper", "Tamper"),
     ];
 
     public static Task<IReadOnlyList<CameraEventType>> GetEventTypesAsync(
@@ -52,7 +52,7 @@ internal static class HikvisionEvents
 
         if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
         {
-            throw new CameraAuthenticationException("Hikvision отклонил учётные данные при подписке на события.");
+                        throw new CameraAuthenticationException("Hikvision rejected the credentials when subscribing to events.");
         }
 
         response.EnsureSuccessStatusCode();
@@ -99,7 +99,7 @@ internal static class HikvisionEvents
 
         if (start < 0)
         {
-            // Мусор до первого события (multipart-заголовки) можно выбросить.
+                        // Garbage before the first event (multipart headers) can be discarded.
             if (text.Length > 4096)
             {
                 buffer.Clear();

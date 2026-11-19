@@ -1,21 +1,21 @@
 namespace MollyNvr.Cameras.Abstractions;
 
-/// <summary>Тип события, который умеет отдавать модуль камеры (движение, человек, машина…).</summary>
+/// <summary>Event type a camera module can report (motion, person, vehicle, ...).</summary>
 public sealed record CameraEventType(string Key, string Label);
 
-/// <summary>Событие камеры: тип, момент и признак начала/окончания.</summary>
+/// <summary>Camera event: type, moment and start/end flag.</summary>
 public sealed record CameraEvent(string Type, DateTimeOffset Timestamp, bool Active);
 
-/// <summary>Источник событий камеры (ONVIF PullPoint, ISAPI alert stream и т.п.).</summary>
+/// <summary>Camera event source (ONVIF PullPoint, ISAPI alert stream, etc.).</summary>
 public interface ICameraEventSource
 {
-    /// <summary>Типы событий, которые камера сообщает. Пустой список — источник недоступен.</summary>
+        /// <summary>Event types reported by the camera. An empty list means the source is unavailable.</summary>
     Task<IReadOnlyList<CameraEventType>> GetEventTypesAsync(
         CameraEndpoint endpoint,
         CameraCredentials credentials,
         CancellationToken cancellationToken);
 
-    /// <summary>Поток событий камеры; должен завершаться при отмене токена.</summary>
+        /// <summary>Camera event stream; must complete when the token is cancelled.</summary>
     IAsyncEnumerable<CameraEvent> WatchEventsAsync(
         CameraEndpoint endpoint,
         CameraCredentials credentials,

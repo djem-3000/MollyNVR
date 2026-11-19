@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 
 $mkcert = Get-Command mkcert -ErrorAction SilentlyContinue
 if (-not $mkcert) {
-    throw 'mkcert не найден. Установите: choco install mkcert (или scoop install mkcert).'
+        throw 'mkcert not found. Install it: choco install mkcert (or scoop install mkcert).'
 }
 
 if ([string]::IsNullOrWhiteSpace($HostIp)) {
@@ -16,17 +16,17 @@ if ([string]::IsNullOrWhiteSpace($HostIp)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($HostIp)) {
-    throw 'Не удалось определить LAN IP. Укажите: .\scripts\make-cert.ps1 -HostIp 192.168.1.151'
+        throw 'Could not determine the LAN IP. Specify it: .\scripts\make-cert.ps1 -HostIp 192.168.1.151'
 }
 
 $root = Split-Path -Parent $PSScriptRoot
 $certDir = Join-Path $root 'certs'
 New-Item -ItemType Directory -Force -Path $certDir -PathType Container | Out-Null
 
-Write-Host 'Устанавливаем локальный CA mkcert в доверенные (может потребоваться подтверждение)...'
+Write-Host 'Installing the local mkcert CA into the trusted store (confirmation may be required)...'
 & $mkcert.Source -install
 
-Write-Host "Выпускаем сертификат для $HostIp, localhost, 127.0.0.1..."
+Write-Host "Issuing a certificate for $HostIp, localhost, 127.0.0.1..."
 & $mkcert.Source `
     -cert-file (Join-Path $certDir 'mollynvr.pem') `
     -key-file (Join-Path $certDir 'mollynvr-key.pem') `
@@ -36,6 +36,6 @@ $caRoot = (& $mkcert.Source -CAROOT).Trim()
 Copy-Item (Join-Path $caRoot 'rootCA.pem') (Join-Path $certDir 'rootCA.crt') -Force
 
 Write-Host ''
-Write-Host 'Готово. Сертификаты в ./certs (в git не попадают).'
-Write-Host "Телефон: установите корневой сертификат .\certs\rootCA.crt (Android: Настройки → Безопасность → Шифрование и учётные данные → Установить сертификат → Сертификат CA)."
-Write-Host "Затем откройте https://${HostIp}:9443 и установите приложение из меню Chrome."
+Write-Host 'Done. Certificates are in ./certs (not committed to git).'
+Write-Host "Phone: install the root certificate .\certs\rootCA.crt (Android: Settings -> Security -> Encryption & credentials -> Install a certificate -> CA certificate)."
+Write-Host "Then open https://${HostIp}:9443 and install the app from the Chrome menu."

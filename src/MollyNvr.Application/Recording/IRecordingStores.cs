@@ -1,6 +1,6 @@
 namespace MollyNvr.Application.Recording;
 
-/// <summary>Хранилище настроек записи камер.</summary>
+/// <summary>Storage of camera recording settings.</summary>
 public interface IRecordingSettingsStore
 {
     Task<RecordingSettings?> FindAsync(Guid cameraId, CancellationToken cancellationToken);
@@ -12,7 +12,7 @@ public interface IRecordingSettingsStore
     Task RemoveAsync(Guid cameraId, CancellationToken cancellationToken);
 }
 
-/// <summary>Хранилище настроек общего пула записей (одна запись).</summary>
+/// <summary>Storage of the shared recording pool settings (a single record).</summary>
 public interface IStorageSettingsStore
 {
     Task<StorageSettings> GetAsync(CancellationToken cancellationToken);
@@ -20,7 +20,7 @@ public interface IStorageSettingsStore
     Task SaveAsync(StorageSettings settings, CancellationToken cancellationToken);
 }
 
-/// <summary>Индекс сегментов записи на диске.</summary>
+/// <summary>Index of recording segments on disk.</summary>
 public interface IRecordingSegmentStore
 {
     Task AddAsync(RecordingSegment segment, CancellationToken cancellationToken);
@@ -38,41 +38,41 @@ public interface IRecordingSegmentStore
     Task RemoveAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 }
 
-/// <summary>Окна событий камеры (для pre/post-roll и очистки непривязанных сегментов).</summary>
+/// <summary>Camera event windows (for pre/post-roll and cleanup of unbound segments).</summary>
 public interface IRecordingEventStore
 {
     Task AddAsync(RecordingEvent recordingEvent, CancellationToken cancellationToken);
 
     Task CloseAsync(Guid cameraId, string type, DateTimeOffset endedAt, CancellationToken cancellationToken);
 
-    /// <summary>События, пересекающиеся с интервалом (с учётом открытых).</summary>
+        /// <summary>Events intersecting the interval (including open ones).</summary>
     Task<IReadOnlyList<RecordingEvent>> BetweenAsync(
         DateTimeOffset from,
         DateTimeOffset to,
         CancellationToken cancellationToken);
 
-    /// <summary>Открытые окна событий (без времени окончания).</summary>
+        /// <summary>Open event windows (without an end time).</summary>
     Task<IReadOnlyList<RecordingEvent>> ActiveAsync(CancellationToken cancellationToken);
 
     Task<IReadOnlyList<RecordingEvent>> ListForCameraAsync(Guid cameraId, CancellationToken cancellationToken);
 }
 
-/// <summary>Сведения о томе и каталоге пула.</summary>
+/// <summary>Details of the pool volume and directory.</summary>
 public interface IStorageProbe
 {
-    /// <summary>Проверяет, что каталог существует или создаётся и доступен для записи.</summary>
+        /// <summary>Checks that the directory exists or can be created and is writable.</summary>
     bool EnsureWritable(string path, out string? error);
 
-    /// <summary>Объём тома и свободное место для каталога.</summary>
+        /// <summary>Volume capacity and free space for the directory.</summary>
     (long TotalBytes, long FreeBytes) GetVolumeSpace(string path);
 }
 
-/// <summary>Текущее состояние процессов записи (заполняет фоновый сервис).</summary>
+/// <summary>Current state of the recording processes (filled by the background service).</summary>
 public interface IRecordingStatusRegistry
 {
     bool IsRecording(Guid cameraId);
 
-    /// <summary>Момент запуска текущего процесса записи.</summary>
+        /// <summary>Start moment of the current recording process.</summary>
     DateTimeOffset? StartedAt(Guid cameraId);
 
     string? LastError(Guid cameraId);

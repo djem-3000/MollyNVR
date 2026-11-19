@@ -3,18 +3,18 @@ using MollyNvr.Infrastructure.Storage;
 
 namespace MollyNvr.Infrastructure.Recording;
 
-/// <summary>Параметры записи: путь к ffmpeg, длина сегмента, каталог пула по умолчанию.</summary>
+/// <summary>Recording parameters: ffmpeg path, segment length, default pool directory.</summary>
 public sealed class RecordingOptions
 {
     public const string SectionName = "Recording";
 
-    /// <summary>Исполняемый файл ffmpeg (в контейнере — из PATH, локально — ffmpeg.exe).</summary>
+        /// <summary>ffmpeg executable (from PATH in the container, ffmpeg.exe locally).</summary>
     public string FfmpegPath { get; set; } = "ffmpeg";
 
-    /// <summary>Длина сегмента в секундах.</summary>
+        /// <summary>Segment length in seconds.</summary>
     public int SegmentSeconds { get; set; } = 300;
 
-    /// <summary>Каталог пула, если в настройках пула ещё ничего не выбрано.</summary>
+        /// <summary>Pool directory when nothing is selected in the pool settings yet.</summary>
     public string DefaultStoragePath { get; set; } = string.Empty;
 
     public static RecordingOptions Resolve(IConfiguration configuration, StorageOptions storage)

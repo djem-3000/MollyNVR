@@ -6,8 +6,8 @@ using MollyNvr.Cameras.Abstractions;
 namespace MollyNvr.Cameras.Reolink;
 
 /// <summary>
-/// Клиент моста neolink.net: добавляет камеру в его конфигурацию, ждёт подключения,
-/// читает профили потоков и забирает стоп-кадры.
+/// neolink.net bridge client: adds a camera to its configuration, waits for the connection,
+/// reads stream profiles and fetches snapshots.
 /// </summary>
 public sealed class ReolinkBridgeClient(HttpClient httpClient, ReolinkBridgeOptions options)
 {
@@ -21,15 +21,15 @@ public sealed class ReolinkBridgeClient(HttpClient httpClient, ReolinkBridgeOpti
 
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(1.5);
 
-    /// <summary>Стабильное имя камеры в мосте (используется в RTSP-пути).</summary>
+        /// <summary>Stable camera name in the bridge (used in the RTSP path).</summary>
     public static string CameraName(IPAddress address) =>
         $"cam-{address.ToString().Replace('.', '-')}";
 
-    /// <summary>RTSP-адрес потока камеры на мосте.</summary>
+        /// <summary>RTSP address of the camera stream on the bridge.</summary>
     public Uri BuildRtspUrl(string cameraName, string stream) =>
         new(EnsureSlash(options.RtspBaseUrl), $"{cameraName}/{stream}");
 
-    /// <summary>Доступен ли HTTP-API моста (процесс запущен и отвечает).</summary>
+        /// <summary>Whether the bridge HTTP API is available (the process is running and responds).</summary>
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
         try
@@ -47,8 +47,8 @@ public sealed class ReolinkBridgeClient(HttpClient httpClient, ReolinkBridgeOpti
         }
     }
 
-    /// <summary>Добавляет или обновляет камеру в конфигурации моста (мост перезапустится сам).</summary>
-    /// <exception cref="ReolinkBridgeException">Конфигурацию не удалось прочитать или записать.</exception>
+        /// <summary>Adds or updates the camera in the bridge configuration (the bridge restarts itself).</summary>
+        /// <exception cref="ReolinkBridgeException">The configuration could not be read or written.</exception>
     public async Task ProvisionAsync(
         IPAddress address,
         CameraCredentials credentials,
@@ -66,7 +66,7 @@ public sealed class ReolinkBridgeClient(HttpClient httpClient, ReolinkBridgeOpti
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             throw new ReolinkBridgeException(
-                $"Не удалось записать конфигурацию моста Reolink ({options.ConfigPath}): {exception.Message}",
+                                $"Failed to write the Reolink bridge configuration ({options.ConfigPath}): {exception.Message}",
                 exception);
         }
         catch (InvalidOperationException exception)
@@ -75,7 +75,7 @@ public sealed class ReolinkBridgeClient(HttpClient httpClient, ReolinkBridgeOpti
         }
     }
 
-    /// <summary>Ждёт, пока мост подключится к камере (после перезапуска с новой конфигурацией).</summary>
+        /// <summary>Waits until the bridge connects to the camera (after a restart with the new configuration).</summary>
     public async Task<bool> WaitUntilOnlineAsync(string cameraName, CancellationToken cancellationToken)
     {
         var deadline = DateTimeOffset.UtcNow + options.OnlineTimeout;
@@ -115,7 +115,7 @@ public sealed class ReolinkBridgeClient(HttpClient httpClient, ReolinkBridgeOpti
         return capabilities?.Version;
     }
 
-    /// <summary>JPEG-стоп-кадр с камеры; <c>null</c>, если мост его не отдал.</summary>
+        /// <summary>JPEG snapshot from the camera; <c>null</c> when the bridge did not provide one.</summary>
     public async Task<byte[]?> GetSnapshotAsync(string cameraName, CancellationToken cancellationToken)
     {
         try

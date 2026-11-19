@@ -101,7 +101,7 @@ public class ReolinkCameraModuleTests
     public async Task IsAvailableAsync_BridgeThrows_ReturnsFalse()
     {
         using var workspace = new ConfigWorkspace();
-        var bridge = CreateBridge(workspace, _ => throw new HttpRequestException("нет моста"));
+                var bridge = CreateBridge(workspace, _ => throw new HttpRequestException("no bridge"));
 
         Assert.False(await bridge.IsAvailableAsync(CancellationToken.None));
     }

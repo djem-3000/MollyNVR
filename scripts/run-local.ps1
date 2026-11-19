@@ -20,12 +20,12 @@ $DataDirectory = (Resolve-Path -LiteralPath $DataDirectory).Path
 
 $go2rtc = Join-Path $root 'tools\go2rtc.exe'
 if (-not (Test-Path -LiteralPath $go2rtc)) {
-    throw "Не найден go2rtc: $go2rtc. Положите бинарник в tools\go2rtc.exe."
+        throw "go2rtc not found: $go2rtc. Put the binary into tools\go2rtc.exe."
 }
 
 $busyPort = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue
 if ($busyPort) {
-    throw "Порт $Port уже занят. Остановите контейнер (docker compose stop) или укажите другой порт: .\scripts\run-local.ps1 -Port 9081"
+        throw "Port $Port is already in use. Stop the container (docker compose stop) or specify another port: .\scripts\run-local.ps1 -Port 9081"
 }
 
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
@@ -46,20 +46,20 @@ if (Test-Path -LiteralPath $reolinkBridge) {
     $env:Reolink__ConfigPath = Join-Path $DataDirectory 'reolink\config.json'
 }
 
-Write-Host "MollyNVR (локальный запуск)" -ForegroundColor Cyan
+Write-Host "MollyNVR (local run)" -ForegroundColor Cyan
 Write-Host "  UI/API:   http://127.0.0.1:$Port"
 Write-Host "  UI:       $uiDist"
-Write-Host "  Данные:   $DataDirectory"
+Write-Host "  Data:     $DataDirectory"
 Write-Host "  go2rtc:   $go2rtc (WebRTC :$WebRtcPort)"
 if (Test-Path -LiteralPath $reolinkBridge) {
     Write-Host "  Reolink:  $reolinkBridge (RTSP :8654, API :8655)"
 }
 else {
-    Write-Host "  Reolink:  мост не найден ($reolinkBridge) — модуль Reolink недоступен." -ForegroundColor Yellow
+        Write-Host "  Reolink:  bridge not found ($reolinkBridge) — the Reolink module is unavailable." -ForegroundColor Yellow
 }
-Write-Host "  Multicast-поиск доступен, пока приложение запущено на хосте." -ForegroundColor DarkGray
+Write-Host "  Multicast discovery is available while the app runs on the host." -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "Если контейнер mollynvr запущен, остановите его: docker compose stop" -ForegroundColor Yellow
+Write-Host "If the mollynvr container is running, stop it: docker compose stop" -ForegroundColor Yellow
 Write-Host ""
 
 $arguments = @('run', '--project', 'src/MollyNvr.Api')
@@ -72,12 +72,12 @@ try {
     if (-not $SkipUiBuild) {
         npm --prefix ui run build
         if ($LASTEXITCODE -ne 0) {
-            throw "Сборка UI завершилась с ошибкой (npm exit code $LASTEXITCODE)."
+                        throw "UI build failed (npm exit code $LASTEXITCODE)."
         }
     }
 
     if (-not (Test-Path -LiteralPath (Join-Path $uiDist 'index.html'))) {
-        throw "Не найдена UI-сборка: $uiDist\index.html. Запустите без -SkipUiBuild."
+                throw "UI build not found: $uiDist\index.html. Run without -SkipUiBuild."
     }
 
     if (Test-Path -LiteralPath $reolinkBridge) {

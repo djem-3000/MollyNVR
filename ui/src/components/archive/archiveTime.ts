@@ -45,7 +45,7 @@ export function formatRecordingTimer(totalSeconds: number): string {
   return `${pad2(hours)}:${pad2(Math.floor((totalSeconds % 3600) / 60))}:${pad2(totalSeconds % 60)}`
 }
 
-/** Время в склейке → реальное время записи. */
+/** Timeline (stitched) time -> real recording time. */
 export function mediaToWallMs(playback: ArchivePlayback, mediaTime: number): number {
   const segments = playback.segments
 
@@ -63,7 +63,7 @@ export function mediaToWallMs(playback: ArchivePlayback, mediaTime: number): num
   return startMs + offset * 1000
 }
 
-/** Реальное время записи → время в склейке; null, если точки нет в текущем окне. */
+/** Real recording time -> timeline time; null when the current window has no such point. */
 export function wallToMedia(playback: ArchivePlayback, wallMs: number): number | null {
   for (const segment of playback.segments) {
     const startMs = Date.parse(segment.start)
@@ -77,7 +77,7 @@ export function wallToMedia(playback: ArchivePlayback, wallMs: number): number |
   return null
 }
 
-/** Объединяет интервалы расписания и события в один список для навигации. */
+/** Merges schedule and event intervals into a single list for navigation. */
 export function buildRanges(
   intervals: Array<{ start: string; end: string }>,
   events: Array<{ type: string; start: string; end: string }>,
@@ -132,7 +132,7 @@ export function buildRanges(
   return merged
 }
 
-/** Ближайшая запись справа (или текущая, если точка внутри записи). */
+/** Nearest recording to the right (or the current one when the point is inside a recording). */
 export function findStartRight(ranges: TimeRange[], wallMs: number): number | null {
   for (const range of ranges) {
     if (wallMs >= range.startMs && wallMs < range.endMs) {
@@ -147,7 +147,7 @@ export function findStartRight(ranges: TimeRange[], wallMs: number): number | nu
   return null
 }
 
-/** Предыдущая запись: начало ближайшего интервала левее текущей точки. */
+/** Previous recording: start of the nearest interval left of the current point. */
 export function findPreviousStart(ranges: TimeRange[], wallMs: number): number | null {
   let result: number | null = null
 
@@ -163,7 +163,7 @@ export function findPreviousStart(ranges: TimeRange[], wallMs: number): number |
   return result
 }
 
-/** Следующая запись: начало интервала правее текущей точки. */
+/** Next recording: start of the interval right of the current point. */
 export function findNextStart(ranges: TimeRange[], wallMs: number): number | null {
   for (const range of ranges) {
     if (range.startMs > wallMs + 1000) {
@@ -174,7 +174,7 @@ export function findNextStart(ranges: TimeRange[], wallMs: number): number | nul
   return null
 }
 
-/** Поддерживает ли браузер HEVC в MSE/нативном HLS. */
+/** Whether the browser supports HEVC in MSE/native HLS. */
 export function browserSupportsHevc(): boolean {
   if (typeof MediaSource !== 'undefined' && typeof MediaSource.isTypeSupported === 'function') {
     try {
@@ -182,7 +182,7 @@ export function browserSupportsHevc(): boolean {
         return true
       }
     } catch {
-      // некоторые браузеры бросают исключение на неизвестном codec string
+      // some browsers throw on an unknown codec string
     }
   }
 

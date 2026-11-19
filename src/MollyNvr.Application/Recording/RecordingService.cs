@@ -4,7 +4,7 @@ using MollyNvr.Domain.Cameras;
 
 namespace MollyNvr.Application.Recording;
 
-/// <summary>Настройки записи камеры (запрос из UI).</summary>
+/// <summary>Camera recording settings (request from the UI).</summary>
 public sealed record RecordingSettingsRequest(
     bool Enabled,
     string? ProfileId,
@@ -16,7 +16,7 @@ public sealed record RecordingSettingsRequest(
     int PreRollSeconds,
     int PostRollSeconds);
 
-/// <summary>Настройки пула (запрос из UI).</summary>
+/// <summary>Pool settings (request from the UI).</summary>
 public sealed record StorageSettingsRequest(
     string? Path,
     int QuotaPercent,
@@ -24,7 +24,7 @@ public sealed record StorageSettingsRequest(
     int HighWatermarkPercent,
     int LowWatermarkPercent);
 
-/// <summary>Настройки записи камеры + состояние.</summary>
+/// <summary>Camera recording settings and state.</summary>
 public sealed record RecordingView(
     Guid CameraId,
     bool Enabled,
@@ -41,10 +41,10 @@ public sealed record RecordingView(
     bool IsRecording,
     string? LastError);
 
-/// <summary>Пул записей и его заполнение.</summary>
+/// <summary>Recording pool and its utilization.</summary>
 public sealed record StorageView(StorageSettings Settings, StoragePoolStatus Status);
 
-/// <summary>Настройки записи: чтение, сохранение, пул и состояние.</summary>
+/// <summary>Recording settings: reading, saving, pool and state.</summary>
 public sealed class RecordingService(
     IRecordingSettingsStore settingsStore,
     IStorageSettingsStore storageStore,
@@ -82,7 +82,7 @@ public sealed class RecordingService(
 
         if (!camera.Profiles.Any(profile => string.Equals(profile.Id, profileId, StringComparison.Ordinal)))
         {
-            throw new ArgumentException($"Профиль «{profileId}» не найден у камеры.", nameof(request));
+                        throw new ArgumentException($"Profile '{profileId}' was not found on the camera.", nameof(request));
         }
 
         var settings = new RecordingSettings
@@ -117,12 +117,12 @@ public sealed class RecordingService(
         CancellationToken cancellationToken)
     {
         var path = string.IsNullOrWhiteSpace(request.Path)
-            ? throw new ArgumentException("Укажите каталог для записей.", nameof(request))
+                        ? throw new ArgumentException("Specify a directory for recordings.", nameof(request))
             : Path.GetFullPath(request.Path.Trim());
 
         if (!storageProbe.EnsureWritable(path, out var error))
         {
-            throw new ArgumentException(error ?? "Каталог недоступен для записи.", nameof(request));
+                        throw new ArgumentException(error ?? "The directory is not writable.", nameof(request));
         }
 
         var quota = Math.Clamp(request.QuotaPercent, 10, 99);
@@ -143,7 +143,7 @@ public sealed class RecordingService(
         return new StorageView(settings, await BuildStatusAsync(settings, cancellationToken));
     }
 
-    /// <summary>Текущее состояние пула (используется фоновой очисткой и UI).</summary>
+        /// <summary>Current pool state (used by background cleanup and the UI).</summary>
     public async Task<StoragePoolStatus> BuildStatusAsync(
         StorageSettings settings,
         CancellationToken cancellationToken)

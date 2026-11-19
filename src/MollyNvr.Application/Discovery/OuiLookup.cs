@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MollyNvr.Application.Discovery;
 
-/// <summary>Справочник OUI камер и сетевого оборудования (подмножество IEEE oui.csv).</summary>
+/// <summary>OUI reference for cameras and network equipment (a subset of the IEEE oui.csv).</summary>
 public sealed class OuiLookup : IOuiLookup
 {
     private const string ResourceName = "MollyNvr.Application.Discovery.oui-cameras.csv";
@@ -38,7 +38,7 @@ public sealed class OuiLookup : IOuiLookup
     private static IReadOnlyDictionary<string, string> Load()
     {
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(ResourceName)
-            ?? throw new InvalidOperationException($"Не найден встроенный ресурс OUI: {ResourceName}.");
+                        ?? throw new InvalidOperationException($"Embedded OUI resource not found: {ResourceName}.");
 
         using var reader = new StreamReader(stream);
         var vendors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

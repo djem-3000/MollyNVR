@@ -37,7 +37,7 @@ public class StreamRegistryTests
     [InlineData("cam 1", SourceUrl)]
     [InlineData("cam1", "")]
     [InlineData("cam1", "http://192.168.1.10/stream")]
-    [InlineData("cam1", "не-url")]
+        [InlineData("cam1", "not-a-url")]
     public async Task AddAsync_InvalidInput_Throws(string id, string url)
     {
         var registry = new StreamRegistry(new FakeMediaEngine());
@@ -61,7 +61,7 @@ public class StreamRegistryTests
     [Fact]
     public async Task AddAsync_EngineFailure_DoesNotKeepStream()
     {
-        var engine = new FakeMediaEngine { FailOnUpsert = new MediaEngineException("сбой") };
+                var engine = new FakeMediaEngine { FailOnUpsert = new MediaEngineException("failure") };
         var registry = new StreamRegistry(engine);
 
         await Assert.ThrowsAsync<MediaEngineException>(() => registry.AddAsync("cam1", SourceUrl, CancellationToken.None));

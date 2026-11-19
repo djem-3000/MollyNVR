@@ -1,14 +1,14 @@
 namespace MollyNvr.Application.Recording;
 
 /// <summary>
-/// Сигнал об изменении настроек записи: цикл записи просыпается сразу, не дожидаясь
-/// очередного опроса расписания.
+/// Signal that recording settings changed: the recording loop wakes up immediately instead of
+/// waiting for the next schedule poll.
 /// </summary>
 public interface IRecordingSettingsNotifier
 {
-    /// <summary>Сообщает циклу записи, что настройки могли измениться.</summary>
+        /// <summary>Tells the recording loop that the settings may have changed.</summary>
     void Notify();
 
-    /// <summary>Ждёт сигнал не дольше <paramref name="timeout"/>.</summary>
+        /// <summary>Waits for the signal no longer than <paramref name="timeout"/>.</summary>
     Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken);
 }

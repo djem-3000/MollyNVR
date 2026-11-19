@@ -28,7 +28,7 @@ public class WeeklyScheduleTests
     [Fact]
     public void Parse_LegacyHalfHourSchedule_CollapsesToHours()
     {
-        // Старый формат 7×48: понедельник, 08:30 (второй получасовой слот часа 8).
+                // Old 7x48 format: Monday, 08:30 (the second half-hour slot of hour 8).
         var legacy = new string('0', 17) + "1" + new string('0', 336 - 18);
         var schedule = WeeklySchedule.Parse(legacy);
 

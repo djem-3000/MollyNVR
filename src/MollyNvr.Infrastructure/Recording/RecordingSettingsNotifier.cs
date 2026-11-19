@@ -3,8 +3,8 @@ using MollyNvr.Application.Recording;
 namespace MollyNvr.Infrastructure.Recording;
 
 /// <summary>
-/// Реализация сигнала изменения настроек записи. Один ожидающий на цикл записи:
-/// если сигнал пришёл во время обработки, следующий <see cref="WaitAsync"/> не ждёт.
+/// Implementation of the recording settings change signal. One waiter per recording loop:
+/// if the signal arrived while processing, the next <see cref="WaitAsync"/> does not wait.
 /// </summary>
 public sealed class RecordingSettingsNotifier : IRecordingSettingsNotifier
 {
@@ -57,7 +57,7 @@ public sealed class RecordingSettingsNotifier : IRecordingSettingsNotifier
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            // интервал опроса истёк — это штатное завершение ожидания
+                        // the poll interval expired — a normal end of the wait
         }
         finally
         {

@@ -1,10 +1,10 @@
 namespace MollyNvr.Cameras.Abstractions;
 
-/// <summary>Дополнительные сетевые параметры, которые модуль может запросить у камеры.</summary>
+/// <summary>Additional network parameters a module can request from the camera.</summary>
 public interface ICameraNetworkInfoProvider
 {
     /// <summary>
-    /// Возвращает состояние DHCP или <c>null</c>, если камера не сообщает этот параметр.
+        /// Returns the DHCP state, or <c>null</c> when the camera does not report the parameter.
     /// </summary>
     Task<bool?> GetDhcpEnabledAsync(
         CameraEndpoint endpoint,

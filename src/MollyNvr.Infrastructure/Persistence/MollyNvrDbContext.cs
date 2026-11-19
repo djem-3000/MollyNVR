@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>Контекст SQLite: камеры, профили, запись и пул хранения.</summary>
+/// <summary>SQLite context: cameras, profiles, recording and the storage pool.</summary>
 public sealed class MollyNvrDbContext(DbContextOptions<MollyNvrDbContext> options) : DbContext(options)
 {
     public DbSet<CameraRecord> Cameras => Set<CameraRecord>();

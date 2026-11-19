@@ -4,7 +4,7 @@ using MollyNvr.Application.Recording;
 
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>Чтение сегментов и событий записей для архива.</summary>
+/// <summary>Reading recording segments and events for the archive.</summary>
 public sealed class ArchiveStore(IDbContextFactory<MollyNvrDbContext> factory) : IArchiveStore
 {
     public async Task<IReadOnlyList<RecordingSegment>> SegmentsAsync(

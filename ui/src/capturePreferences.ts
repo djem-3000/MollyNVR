@@ -27,7 +27,7 @@ export function loadCapturePreferences(): CapturePreferences {
 
     return { snapshotFormat, recordFormat }
   } catch (error) {
-    console.warn('Не удалось прочитать настройки снимков', error)
+    console.warn('Could not read the snapshot settings', error)
     return DEFAULT_CAPTURE_PREFERENCES
   }
 }

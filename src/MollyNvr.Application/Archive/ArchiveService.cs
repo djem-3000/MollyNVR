@@ -4,7 +4,7 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Application.Archive;
 
-/// <summary>Календарь, таймлайн и запуск воспроизведения архива.</summary>
+/// <summary>Calendar, timeline and archive playback start.</summary>
 public sealed class ArchiveService(
     IArchiveStore store,
     ICameraRepository cameraRepository,
@@ -41,12 +41,12 @@ public sealed class ArchiveService(
     {
         if (year is < 2000 or > 2100)
         {
-            throw new ArgumentException("Год вне допустимого диапазона.", nameof(year));
+                        throw new ArgumentException("Year is out of the allowed range.", nameof(year));
         }
 
         if (month is < 1 or > 12)
         {
-            throw new ArgumentException("Месяц должен быть от 1 до 12.", nameof(month));
+                        throw new ArgumentException("Month must be between 1 and 12.", nameof(month));
         }
 
         await RequireCameraAsync(cameraId, cancellationToken);
@@ -126,13 +126,13 @@ public sealed class ArchiveService(
 
         if (first is null)
         {
-            // Точка попала в пропуск: ищем ближайшую запись до конца дня.
+                        // The point falls into a gap: find the nearest recording before the end of the day.
             candidates = await LoadExistingAsync(cameraId, from, dayEnd, cancellationToken);
             first = candidates.FirstOrDefault(segment => segment.EndedAt > from);
 
             if (first is null)
             {
-                throw new ArgumentException("На выбранное время записей нет.", nameof(from));
+                                throw new ArgumentException("There are no recordings at the selected time.", nameof(from));
             }
 
             windowEnd = first.StartedAt.Add(PlaybackWindow);
@@ -149,7 +149,7 @@ public sealed class ArchiveService(
 
         if (slices.Count == 0)
         {
-            throw new ArgumentException("На выбранное время записей нет.", nameof(from));
+                        throw new ArgumentException("There are no recordings at the selected time.", nameof(from));
         }
 
         var windowStart = slices[0].Start;

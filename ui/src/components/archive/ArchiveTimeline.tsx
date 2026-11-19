@@ -207,7 +207,7 @@ export default function ArchiveTimeline({
       majorTicks.push(minute)
     }
 
-    // Между часовыми отметками — только три риски: 15, 30 и 45 минут.
+    // Between the hour marks there are only three ticks: 15, 30 and 45 minutes.
     for (let hour = 0; hour < 24; hour++) {
       minorTicks.push(hour * 60 + 15, hour * 60 + 30, hour * 60 + 45)
     }
@@ -249,7 +249,7 @@ export default function ArchiveTimeline({
     try {
       event.currentTarget.setPointerCapture(event.pointerId)
     } catch {
-      // синтетические события и некоторые браузеры не поддерживают capture
+      // synthetic events and some browsers do not support capture
     }
   }
 

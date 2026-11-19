@@ -2,12 +2,12 @@ using System.Net;
 
 namespace MollyNvr.Application.Discovery;
 
-/// <summary>Устройство, найденное multicast-протоколом.</summary>
-/// <param name="Address">IPv4-адрес устройства.</param>
-/// <param name="Mac">MAC-адрес, если протокол его вернул.</param>
-/// <param name="VendorKey">Ключ модуля производителя, если он известен.</param>
-/// <param name="Vendor">Название производителя, если оно известно.</param>
-/// <param name="Model">Модель устройства, если она известна.</param>
+/// <summary>Device found by a multicast protocol.</summary>
+/// <param name="Address">Device IPv4 address.</param>
+/// <param name="Mac">MAC address, when the protocol returned it.</param>
+/// <param name="VendorKey">Vendor module key, when known.</param>
+/// <param name="Vendor">Vendor name, when known.</param>
+/// <param name="Model">Device model, when known.</param>
 public sealed record DiscoveryResponse(
     IPAddress Address,
     string? Mac = null,
@@ -15,12 +15,12 @@ public sealed record DiscoveryResponse(
     string? Vendor = null,
     string? Model = null);
 
-/// <summary>Multicast-протокол поиска камер в локальной сети.</summary>
+/// <summary>Multicast protocol for finding cameras on the local network.</summary>
 public interface IDiscoveryProtocol
 {
-    /// <summary>Отображаемое имя протокола.</summary>
+        /// <summary>Display name of the protocol.</summary>
     string Name { get; }
 
-    /// <summary>Ищет устройства; ошибки сети пробрасываются вызывающему коду.</summary>
+        /// <summary>Finds devices; network errors are propagated to the caller.</summary>
     Task<IReadOnlyList<DiscoveryResponse>> DiscoverAsync(CancellationToken cancellationToken);
 }

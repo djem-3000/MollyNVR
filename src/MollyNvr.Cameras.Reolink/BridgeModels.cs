@@ -1,10 +1,10 @@
 namespace MollyNvr.Cameras.Reolink;
 
-/// <summary>Мост neolink.net недоступен или его конфигурация не применилась.</summary>
+/// <summary>The neolink.net bridge is unavailable or its configuration was not applied.</summary>
 public sealed class ReolinkBridgeException(string message, Exception? innerException = null)
     : Exception(message, innerException);
 
-/// <summary>Ответы HTTP-API моста neolink.net (поля — как в его JSON).</summary>
+/// <summary>Responses of the neolink.net HTTP API (fields follow its JSON).</summary>
 internal sealed record BridgeCamera(string? Name, bool Online);
 
 internal sealed record BridgeStreamInfo(IReadOnlyList<BridgeStreamProfile>? Profiles);

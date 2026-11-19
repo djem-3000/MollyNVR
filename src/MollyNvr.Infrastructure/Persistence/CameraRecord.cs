@@ -1,6 +1,6 @@
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>Строка таблицы камер; учётные данные хранятся зашифрованными.</summary>
+/// <summary>Row of the cameras table; credentials are stored encrypted.</summary>
 public sealed class CameraRecord
 {
     public Guid Id { get; set; }
@@ -21,20 +21,20 @@ public sealed class CameraRecord
 
     public string? SerialNumber { get; set; }
 
-    /// <summary>Активна ли камера (неактивные не показываются в live-сетке).</summary>
+        /// <summary>Whether the camera is active (inactive cameras are hidden in the live grid).</summary>
     public bool IsActive { get; set; } = true;
 
-    /// <summary>Идентификатор основного профиля камеры.</summary>
+        /// <summary>Identifier of the camera main profile.</summary>
     public string MainProfileId { get; set; } = string.Empty;
 
-    /// <summary>Идентификатор субпотока; при отсутствии субпотоков совпадает с основным профилем.</summary>
+        /// <summary>Substream identifier; when there are no substreams it matches the main profile.</summary>
     public string SubProfileId { get; set; } = string.Empty;
 
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
-    /// <summary>Зашифрованный логин и пароль (AES-GCM).</summary>
+        /// <summary>Encrypted login and password (AES-GCM).</summary>
     public string Credentials { get; set; } = string.Empty;
 
     public List<CameraProfileRecord> Profiles { get; set; } = [];

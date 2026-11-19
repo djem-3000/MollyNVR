@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace MollyNvr.Infrastructure.Discovery;
 
-/// <summary>Общие операции UDP-поиска: рассылка запроса и сбор ответов до таймаута.</summary>
+/// <summary>Common UDP discovery operations: sending a request and collecting responses until the timeout.</summary>
 internal static class UdpDiscovery
 {
     public static async Task<IReadOnlyList<(byte[] Data, IPEndPoint Remote)>> QueryAsync(

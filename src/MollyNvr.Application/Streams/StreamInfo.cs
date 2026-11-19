@@ -1,4 +1,4 @@
 namespace MollyNvr.Application.Streams;
 
-/// <summary>Поток для отдачи в API (URL — с маскированными кредами).</summary>
+/// <summary>Stream served by the API (URL with masked credentials).</summary>
 public sealed record StreamInfo(string Id, string Url);

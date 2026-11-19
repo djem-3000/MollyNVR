@@ -5,10 +5,10 @@ using MollyNvr.Infrastructure.Media;
 
 namespace MollyNvr.Infrastructure.Media;
 
-/// <summary>Разбор SDP (RFC 4566): кодеки видео- и аудиопотоков.</summary>
+/// <summary>SDP parsing (RFC 4566): video and audio stream codecs.</summary>
 public static class RtspSdpParser
 {
-    /// <summary>Извлекает кодеки из SDP-описания сессии.</summary>
+        /// <summary>Extracts codecs from the session SDP description.</summary>
     public static RtspMediaInfo? Parse(string? sdp)
     {
         if (string.IsNullOrWhiteSpace(sdp))
@@ -93,6 +93,6 @@ public static class RtspSdpParser
         return new RtspMediaInfo(videoCodec, audioCodec, audioSampleRate);
     }
 
-    /// <summary>Извлекает кодеки из заголовка <c>Content-Type</c> SDP, если он передан как строка.</summary>
+        /// <summary>Extracts codecs from the SDP <c>Content-Type</c> header when it is passed as a string.</summary>
     public static RtspMediaInfo? Parse(ReadOnlySpan<byte> sdp) => Parse(Encoding.UTF8.GetString(sdp));
 }

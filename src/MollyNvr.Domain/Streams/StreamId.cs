@@ -1,6 +1,6 @@
 namespace MollyNvr.Domain.Streams;
 
-/// <summary>Идентификатор потока в медиа-ядре: латинские буквы, цифры, дефис, подчёркивание.</summary>
+/// <summary>Stream identifier in the media engine: Latin letters, digits, hyphen, underscore.</summary>
 public sealed record StreamId
 {
     public const int MaxLength = 64;
@@ -13,14 +13,14 @@ public sealed record StreamId
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("Идентификатор потока не может быть пустым.", nameof(value));
+                        throw new ArgumentException("The stream identifier cannot be empty.", nameof(value));
         }
 
         var trimmed = value.Trim();
         if (trimmed.Length > MaxLength || !trimmed.All(static symbol => char.IsAsciiLetterOrDigit(symbol) || symbol is '-' or '_'))
         {
             throw new ArgumentException(
-                $"Идентификатор потока может содержать только латинские буквы, цифры, дефис и подчёркивание (не более {MaxLength} символов).",
+                                $"The stream identifier may contain only Latin letters, digits, hyphen and underscore (at most {MaxLength} characters).",
                 nameof(value));
         }
 

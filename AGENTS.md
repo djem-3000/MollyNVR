@@ -1,58 +1,58 @@
 # Working Preferences
 
 ## Communication
-- Отвечай по-русски, если запрос на русском.
-- Будь кратким: сначала решение, затем краткое объяснение.
-- Не повторяй мой запрос и не добавляй лишних вступлений.
-- Если задача неоднозначна — задай 1–5 уточняющих вопроса вместо предположений.
-- Для сложных изменений сначала предложи план и дождись подтверждения.
+- Reply in Russian when the request is in Russian.
+- Be concise: the solution first, then a short explanation.
+- Do not repeat the request and do not add unnecessary introductions.
+- If the task is ambiguous, ask 1-5 clarifying questions instead of guessing.
+- For complex changes, propose a plan first and wait for confirmation.
 
 ## Code style
-- Пиши чистый, читаемый код с осмысленными именами переменных и функций.
-- Используй code style от Microsoft
-- Используй строгую типизацию, где это возможно; избегай `any`.
-- Предпочитай ранние возвраты вместо глубокой вложенности.
-- Добавляй обработку ошибок; не игнорируй исключения молча.
-- Не добавляй комментарии, которые очевидны из кода.
-- Соблюдай существующий стиль проекта, даже если он отличается от твоих предпочтений.
+- Write clean, readable code with meaningful variable and function names.
+- Follow the Microsoft code style.
+- Use strict typing where possible; avoid `any`.
+- Prefer early returns over deep nesting.
+- Add error handling; never ignore exceptions silently.
+- Do not add comments that are obvious from the code.
+- Follow the existing project style, even if it differs from your preferences.
 
 ## Git
-- Используй Conventional Commits:
+- Use Conventional Commits:
   - `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
-- Формат: `type(scope): короткое описание`.
-- Пример: `feat(auth): add Google OAuth login`.
-- Не коммить секреты, `.env`, токены и личные данные.
+- Format: `type(scope): short description`.
+- Example: `feat(auth): add Google OAuth login`.
+- Never commit secrets, `.env` files, tokens or personal data.
 
 ## Documentation
-- Документацию пиши на русском, если проект не требует английского.
-- Для README указывай цель, быстрый старт, основные команды и известные ограничения.
-- Обновляй документацию вместе с изменением поведения кода.
+- Write documentation in English; keep the UI and user-facing texts localized through the i18n dictionaries.
+- For README, state the purpose, quick start, main commands and known limitations.
+- Update the documentation together with behavior changes.
 
 ## Testing
-- Для новой функциональности предлагай unit-тесты.
-- Для .Net используй xUnit
-- Для исправления бага сначала добавь тест, воспроизводящий проблему.
-- Не изменяй тесты только для того, чтобы они прошли; объясняй, почему изменение оправдано.
+- For new functionality, propose unit tests.
+- For .NET use xUnit.
+- To fix a bug, first add a test that reproduces the problem.
+- Do not change tests just to make them pass; explain why a change is justified.
 
 ## Security
-- Никогда не выводи и не сохраняй секреты, API-ключи и пароли в коде или логах.
-- Валидируй пользовательский ввод.
-- Используй минимально необходимые права доступа для сервисов и IAM-политик.
+- Never print or store secrets, API keys and passwords in code or logs.
+- Validate user input.
+- Use the least privilege necessary for services and IAM policies.
 
-## Важные правила
-- перед началом работ составить план действий, уточнить все непонятные моменты или двоякое толкование. Получить подтверждение от пользователя.
-- Когда работа готова, сообщить об этом явно. И указать с чего начать.
+## Important rules
+- Before starting work, make a plan and clarify every unclear or ambiguous point. Get confirmation from the user.
+- When the work is done, say so explicitly and point out where to start.
 
-## Инструменты
-- Использывать самые последнии версии инструментов. Если они отсутствуют на локальной машине, спросить меня.
-- PowerShell 7
+## Tools
+- Use the latest versions of the tools. If they are missing on the local machine, ask me.
+- PowerShell 7.
 
-## Проект MollyNVR (факты для агентов)
-- Архитектура согласована: `docs/architecture.md` — читать перед крупными изменениями. Исходное ТЗ — `Task.md` (в `.gitignore`, содержит пароли камер: не коммитить, не выводить креды в чат, код и логи).
-- Решение — `MollyNvr.slnx` (формат .slnx, .NET 10). Правило зависимостей: `Domain ← Application ← Infrastructure/Api`; модули производителей зависят только от `Cameras.Abstractions`; `TreatWarningsAsErrors` включён для Domain/Application.
-- Команды: сборка — `dotnet build MollyNvr.slnx`; тесты — `dotnet test MollyNvr.slnx`; запуск API — `dotnet run --project src/MollyNvr.Api` → http://localhost:9080.
-- Docker: один контейнер — `docker compose up -d --build` (из корня; project name `mollynvr`; сеть — **bridge + публикация портов** `9080/tcp`, `8555/tcp+udp`; host networking **не используется**: в Docker Desktop на Windows он не пробрасывает UDP внутрь контейнера, и WebRTC-медиа не проходит — проверено на M1).
-- Порты: UI/API — `9080`; WebRTC-медиа — `8555/tcp+udp` (публикуются); внутри контейнера go2rtc — `127.0.0.1:1984` (API) и `127.0.0.1:8554` (внутренний RTSP). UI (React + Vite) — в `ui/`; Docker (один контейнер, bridge) — в `docker/`.
-- Этапы работ — `docs/architecture.md` §14 (M0–M6); стек: go2rtc + ffmpeg, SQLite/EF Core, xUnit, WebRTC/WHEP.
-- Креды камер — только шифрованно (AES-GCM, ключ `/data/secret.key`); для отладки — переменные окружения / `appsettings.Development.json`, не в git.
-- UI — на русском, строки через словари локализации (i18n).
+## MollyNVR project (facts for agents)
+- The architecture is agreed in `docs/architecture.md` — read it before large changes. The original specification is `Task.md` (in `.gitignore`, contains camera passwords: never commit it and never print credentials to the chat, code or logs).
+- The solution is `MollyNvr.slnx` (.slnx format, .NET 10). Dependency rule: `Domain <- Application <- Infrastructure/Api`; vendor modules depend only on `Cameras.Abstractions`; `TreatWarningsAsErrors` is enabled for Domain/Application.
+- Commands: build — `dotnet build MollyNvr.slnx`; tests — `dotnet test MollyNvr.slnx`; run the API — `dotnet run --project src/MollyNvr.Api` → http://localhost:9080.
+- Docker: a single container — `docker compose up -d --build` (from the root; project name `mollynvr`; network — **bridge + published ports** `9080/tcp`, `8555/tcp+udp`; host networking is **not used**: in Docker Desktop on Windows it does not forward UDP into the container and WebRTC media does not pass — verified on M1).
+- Ports: UI/API — `9080`; WebRTC media — `8555/tcp+udp` (published); inside the container go2rtc uses `127.0.0.1:1984` (API) and `127.0.0.1:8554` (internal RTSP). UI (React + Vite) is in `ui/`; Docker (one container, bridge) is in `docker/`.
+- Work stages are in `docs/architecture.md` section 14 (M0-M6); stack: go2rtc + ffmpeg, SQLite/EF Core, xUnit, WebRTC/WHEP.
+- Camera credentials are stored only encrypted (AES-GCM, key `/data/secret.key`); for debugging use environment variables or `appsettings.Development.json`, never git.
+- UI: English is the default language, Russian is available in the settings; all strings go through the localization dictionaries (i18n).

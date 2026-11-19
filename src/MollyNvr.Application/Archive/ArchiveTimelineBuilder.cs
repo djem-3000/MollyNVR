@@ -2,13 +2,13 @@ using MollyNvr.Application.Recording;
 
 namespace MollyNvr.Application.Archive;
 
-/// <summary>Склейка сегментов в интервалы и расчёт карты времени воспроизведения.</summary>
+/// <summary>Stitches segments into intervals and builds the playback time map.</summary>
 public static class ArchiveTimelineBuilder
 {
-    /// <summary>Допустимый разрыв между сегментами, который считаем стыком, а не пропуском.</summary>
+        /// <summary>Allowed gap between segments treated as a joint rather than a gap.</summary>
     public static readonly TimeSpan SegmentGap = TimeSpan.FromSeconds(10);
 
-    /// <summary>Склеивает соседние сегменты в непрерывные интервалы.</summary>
+        /// <summary>Stitches adjacent segments into continuous intervals.</summary>
     public static IReadOnlyList<ArchiveInterval> Merge(
         IEnumerable<RecordingSegment> segments,
         TimeSpan? gap = null)
@@ -41,7 +41,7 @@ public static class ArchiveTimelineBuilder
         return result;
     }
 
-    /// <summary>Обрезает события по границам интервала; открытые события завершаются текущим моментом.</summary>
+        /// <summary>Clips events by the interval boundaries; open events end at the current moment.</summary>
     public static IReadOnlyList<ArchiveEventSlice> ClipEvents(
         IEnumerable<RecordingEvent> events,
         DateTimeOffset from,
@@ -68,8 +68,8 @@ public static class ArchiveTimelineBuilder
     }
 
     /// <summary>
-    /// Строит карту «реальное время → время в склейке». Конец сегмента берётся из начала
-    /// следующего файла: так накопленная ошибка не растёт от сегмента к сегменту.
+        /// Builds the "real time -> stitched time" map. A segment end is taken from the start of
+        /// the next file, so the accumulated error does not grow from segment to segment.
     /// </summary>
     public static IReadOnlyList<ArchiveSegmentSlice> BuildPlaybackSegments(
         IReadOnlyList<RecordingSegment> segments,

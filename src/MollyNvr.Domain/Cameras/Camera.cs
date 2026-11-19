@@ -1,6 +1,6 @@
 namespace MollyNvr.Domain.Cameras;
 
-/// <summary>Камера в реестре. Учётные данные в Domain не хранятся — они шифруются в инфраструктуре.</summary>
+/// <summary>Camera in the registry. Credentials are not stored in the domain — they are encrypted in the infrastructure.</summary>
 public sealed record Camera
 {
     public const int NameMaxLength = 100;
@@ -26,7 +26,7 @@ public sealed record Camera
     {
         if (id == Guid.Empty)
         {
-            throw new ArgumentException("Идентификатор камеры не может быть пустым.", nameof(id));
+                        throw new ArgumentException("The camera identifier cannot be empty.", nameof(id));
         }
 
         Id = id;
@@ -64,7 +64,7 @@ public sealed record Camera
 
     public string? SerialNumber { get; }
 
-    /// <summary>Активна ли камера: неактивные не показываются в live-сетке.</summary>
+        /// <summary>Whether the camera is active: inactive cameras are hidden in the live grid.</summary>
     public bool IsActive { get; }
 
     public DateTimeOffset CreatedAt { get; }
@@ -73,15 +73,15 @@ public sealed record Camera
 
     public IReadOnlyList<CameraProfile> Profiles { get; }
 
-    /// <summary>Идентификатор основного профиля камеры.</summary>
+        /// <summary>Identifier of the camera main profile.</summary>
     public string MainProfileId { get; }
 
     /// <summary>
-    /// Идентификатор субпотока для live-сетки. Если субпотоков нет, совпадает с <see cref="MainProfileId"/>.
+        /// Substream identifier for the live grid. When there are no substreams, it matches <see cref="MainProfileId"/>.
     /// </summary>
     public string SubProfileId { get; }
 
-    /// <summary>Создаёт новую камеру с новым идентификатором.</summary>
+        /// <summary>Creates a new camera with a new identifier.</summary>
     public static Camera Register(
         string name,
         string host,
@@ -112,7 +112,7 @@ public sealed record Camera
             mainProfileId,
             subProfileId);
 
-    /// <summary>Возвращает обновлённую копию камеры (идентификатор и дата создания сохраняются).</summary>
+        /// <summary>Returns an updated copy of the camera (identifier and creation date are preserved).</summary>
     public Camera Update(
         string name,
         string host,
@@ -143,7 +143,7 @@ public sealed record Camera
             mainProfileId,
             subProfileId);
 
-    /// <summary>Возвращает копию камеры с изменёнными именем и выбранным субпотоком.</summary>
+        /// <summary>Returns a copy of the camera with a changed name and selected substream.</summary>
     public Camera UpdateSettings(string name, string? subProfileId, DateTimeOffset now) =>
         new(
             Id,
@@ -162,7 +162,7 @@ public sealed record Camera
             MainProfileId,
             subProfileId);
 
-    /// <summary>Возвращает копию камеры с новым признаком активности.</summary>
+        /// <summary>Returns a copy of the camera with a new active flag.</summary>
     public Camera SetActive(bool isActive, DateTimeOffset now) =>
         new(
             Id,
@@ -187,13 +187,13 @@ public sealed record Camera
     {
         if (string.IsNullOrWhiteSpace(mainProfileId))
         {
-            throw new ArgumentException("Не указан основной профиль камеры.", nameof(mainProfileId));
+                        throw new ArgumentException("The camera main profile is not specified.", nameof(mainProfileId));
         }
 
         return profiles.Any(profile => string.Equals(profile.Id, mainProfileId, StringComparison.Ordinal))
             ? mainProfileId
             : throw new ArgumentException(
-                $"Основной профиль «{mainProfileId}» не найден у камеры.",
+                                $"Main profile '{mainProfileId}' was not found on the camera.",
                 nameof(mainProfileId));
     }
 
@@ -208,7 +208,7 @@ public sealed record Camera
             return profiles.Any(profile => string.Equals(profile.Id, subProfileId, StringComparison.Ordinal))
                 ? subProfileId
                 : throw new ArgumentException(
-                    $"Субпоток «{subProfileId}» не найден у камеры.",
+                                        $"Substream '{subProfileId}' was not found on the camera.",
                     nameof(subProfileId));
         }
 
@@ -220,13 +220,13 @@ public sealed record Camera
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("Значение не может быть пустым.", parameterName);
+                        throw new ArgumentException("The value cannot be empty.", parameterName);
         }
 
         var trimmed = value.Trim();
         if (trimmed.Length > maxLength)
         {
-            throw new ArgumentException($"Значение длиннее {maxLength} символов.", parameterName);
+                        throw new ArgumentException($"The value is longer than {maxLength} characters.", parameterName);
         }
 
         return trimmed;
@@ -235,5 +235,5 @@ public sealed record Camera
     private static int ValidatePort(int port, string parameterName) =>
         port is > 0 and <= 65535
             ? port
-            : throw new ArgumentOutOfRangeException(parameterName, port, "Порт должен быть в диапазоне 1–65535.");
+                        : throw new ArgumentOutOfRangeException(parameterName, port, "The port must be in the range 1-65535.");
 }

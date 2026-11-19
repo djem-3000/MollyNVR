@@ -5,7 +5,7 @@ using MollyNvr.Application.Discovery;
 
 namespace MollyNvr.Infrastructure.Discovery;
 
-/// <summary>Hikvision SADP: XML Probe на UDP 37020 (multicast и broadcast).</summary>
+/// <summary>Hikvision SADP: XML Probe over UDP 37020 (multicast and broadcast).</summary>
 public sealed class SadpDiscoveryProtocol : IDiscoveryProtocol
 {
     private static readonly IReadOnlyList<IPEndPoint> Targets =

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>Фабрика контекста для команд <c>dotnet ef</c> (миграции создаются без запуска приложения).</summary>
+/// <summary>Context factory for <c>dotnet ef</c> commands (migrations are created without running the app).</summary>
 internal sealed class MollyNvrDbContextFactory : IDesignTimeDbContextFactory<MollyNvrDbContext>
 {
     public MollyNvrDbContext CreateDbContext(string[] args) =>

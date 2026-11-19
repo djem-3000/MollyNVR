@@ -3,7 +3,7 @@ using MollyNvr.Application.Cameras;
 
 namespace MollyNvr.Api.Endpoints;
 
-/// <summary>Архив записей: камеры, календарь, таймлайн и HLS-воспроизведение.</summary>
+/// <summary>Recording archive: cameras, calendar, timeline and HLS playback.</summary>
 public static class ArchiveEndpoints
 {
     public static IEndpointRouteBuilder MapArchiveEndpoints(this IEndpointRouteBuilder app)
@@ -127,7 +127,7 @@ public static class ArchiveEndpoints
     }
 }
 
-/// <summary>Запрос воспроизведения: камера, момент и поддержка HEVC браузером.</summary>
+/// <summary>Playback request: camera, moment and browser HEVC support.</summary>
 public sealed record ArchivePlaybackRequest(
     Guid CameraId,
     DateTimeOffset From,

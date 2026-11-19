@@ -1,8 +1,8 @@
 {
   "name": "MollyNVR",
   "short_name": "MollyNVR",
-  "description": "Видеонаблюдение: просмотр с камер и запись по расписанию.",
-  "lang": "ru",
+  "description": "Video surveillance: watch your cameras and record on a schedule.",
+  "lang": "en",
   "dir": "ltr",
   "start_url": "/live",
   "scope": "/",

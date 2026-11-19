@@ -4,12 +4,12 @@ using MollyNvr.Cameras.Abstractions;
 
 namespace MollyNvr.Infrastructure.Media;
 
-/// <summary>Формирование заголовка Authorization для RTSP (Basic и Digest MD5).</summary>
+/// <summary>Building the Authorization header for RTSP (Basic and Digest MD5).</summary>
 public static class RtspAuthorization
 {
     /// <summary>
-    /// Строит значение заголовка <c>Authorization</c> по ответу <c>WWW-Authenticate</c>.
-    /// Возвращает <c>null</c>, если схема не поддерживается.
+        /// Builds the <c>Authorization</c> header value from the <c>WWW-Authenticate</c> response.
+        /// Returns <c>null</c> when the scheme is not supported.
     /// </summary>
     public static string? Create(
         string challenge,
@@ -101,7 +101,7 @@ public static class RtspAuthorization
         return simple.ToString();
     }
 
-    /// <summary>Разбирает параметры challenge вида <c>realm="x", nonce="y", qop="auth"</c>.</summary>
+        /// <summary>Parses challenge parameters like <c>realm="x", nonce="y", qop="auth"</c>.</summary>
     public static Dictionary<string, string> ParseParameters(string value)
     {
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -111,7 +111,7 @@ public static class RtspAuthorization
             var separator = part.IndexOf('=');
             if (separator <= 0)
             {
-                // Первый токен без «=» — название схемы (Digest/Basic).
+                                // The first token without '=' is the scheme name (Digest/Basic).
                 continue;
             }
 

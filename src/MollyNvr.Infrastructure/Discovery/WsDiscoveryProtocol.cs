@@ -5,7 +5,7 @@ using MollyNvr.Application.Discovery;
 
 namespace MollyNvr.Infrastructure.Discovery;
 
-/// <summary>WS-Discovery (ONVIF): SOAP Probe на multicast 239.255.255.250:3702.</summary>
+/// <summary>WS-Discovery (ONVIF): SOAP Probe to multicast 239.255.255.250:3702.</summary>
 public sealed class WsDiscoveryProtocol : IDiscoveryProtocol
 {
     private static readonly IPEndPoint Target = new(IPAddress.Parse("239.255.255.250"), 3702);

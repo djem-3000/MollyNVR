@@ -2,7 +2,7 @@ using MollyNvr.Domain.Cameras;
 
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Сохранённая камера для API (RTSP-URL без учётных данных).</summary>
+/// <summary>Saved camera for the API (RTSP URL without credentials).</summary>
 public sealed record CameraView(
     Guid Id,
     string Name,
@@ -49,10 +49,10 @@ public sealed record CameraView(
     }
 }
 
-/// <summary>Идентификаторы потоков камеры в медиа-ядре.</summary>
+/// <summary>Identifiers of the camera streams in the media engine.</summary>
 public static class CameraStreamNames
 {
-    /// <summary>Поток профиля камеры: <c>camera-{id}-main</c> или <c>camera-{id}-sub</c>.</summary>
+        /// <summary>Camera profile stream: <c>camera-{id}-main</c> or <c>camera-{id}-sub</c>.</summary>
     public static Domain.Streams.StreamId ForProfile(Guid cameraId, bool isMain) =>
         Domain.Streams.StreamId.Create($"camera-{cameraId:N}-{(isMain ? "main" : "sub")}");
 }

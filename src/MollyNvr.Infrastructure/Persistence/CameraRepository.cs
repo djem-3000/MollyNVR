@@ -5,7 +5,7 @@ using CameraCredentials = MollyNvr.Cameras.Abstractions.CameraCredentials;
 
 namespace MollyNvr.Infrastructure.Persistence;
 
-/// <summary>Репозиторий камер на EF Core/SQLite; учётные данные шифруются перед записью.</summary>
+/// <summary>Camera repository on EF Core/SQLite; credentials are encrypted before writing.</summary>
 public sealed class CameraRepository(
     IDbContextFactory<MollyNvrDbContext> contextFactory,
     ICameraSecretStore secretStore) : ICameraRepository
@@ -50,7 +50,7 @@ public sealed class CameraRepository(
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var record = await db.Cameras.FirstOrDefaultAsync(item => item.Id == camera.Id, cancellationToken)
-            ?? throw new InvalidOperationException($"Камера {camera.Id} отсутствует в базе данных.");
+                        ?? throw new InvalidOperationException($"Camera {camera.Id} is missing from the database.");
 
         record.Name = camera.Name;
         record.Host = camera.Host;

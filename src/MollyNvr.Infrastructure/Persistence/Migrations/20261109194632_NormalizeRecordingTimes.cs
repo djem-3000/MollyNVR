@@ -10,8 +10,8 @@ namespace MollyNvr.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Время записи теперь хранится в UTC. Старые значения SQLite хранил
-            // с локальным смещением, поэтому приводим их к UTC средствами SQLite.
+                        // Recording times are now stored in UTC. SQLite kept the old values
+                        // with a local offset, so they are converted to UTC using SQLite means.
             migrationBuilder.Sql(
                 "UPDATE recording_segments SET StartedAt = datetime(StartedAt), EndedAt = datetime(EndedAt);");
             migrationBuilder.Sql(
@@ -22,8 +22,8 @@ namespace MollyNvr.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Обратное преобразование к локальному смещению неоднозначно
-            // без знания часового пояса, поэтому данные остаются в UTC.
+                        // Converting back to a local offset is ambiguous
+                        // without knowing the time zone, so the data stays in UTC.
         }
     }
 }

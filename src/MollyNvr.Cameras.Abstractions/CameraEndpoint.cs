@@ -2,7 +2,7 @@ using System.Net;
 
 namespace MollyNvr.Cameras.Abstractions;
 
-/// <summary>Сетевой адрес камеры: хост и порты сервисов.</summary>
+/// <summary>Camera network address: host and service ports.</summary>
 public sealed record CameraEndpoint(IPAddress Address, int RtspPort = 554, int HttpPort = 80, int OnvifPort = 8000)
 {
     public string Host => Address.ToString();
@@ -23,6 +23,6 @@ public sealed record CameraEndpoint(IPAddress Address, int RtspPort = 554, int H
         return new UriBuilder(Uri.UriSchemeHttp, Host, port ?? HttpPort, normalized).Uri;
     }
 
-    /// <summary>URL ONVIF-сервиса устройства (SOAP-запросы).</summary>
+        /// <summary>URL of the device ONVIF service (SOAP requests).</summary>
     public Uri OnvifServiceUri => BuildHttpUri("/onvif/device_service", OnvifPort);
 }

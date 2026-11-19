@@ -1,9 +1,16 @@
+import { getLocale, type Locale } from './i18n'
+
+const UNITS: Record<Locale, string[]> = {
+  en: ['B', 'KB', 'MB', 'GB', 'TB'],
+  ru: ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ']
+}
+
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) {
     return '0'
   }
 
-  const units = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ']
+  const units = UNITS[getLocale()]
   let value = bytes
   let unit = 0
 

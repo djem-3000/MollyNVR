@@ -2,10 +2,10 @@ using System.Net;
 
 namespace MollyNvr.Application.Discovery;
 
-/// <summary>ARP-таблица хоста: IP → MAC. В контейнере может быть неполной.</summary>
+/// <summary>Host ARP table: IP -> MAC. May be incomplete inside a container.</summary>
 public interface IArpTableResolver
 {
-    /// <summary>Возвращает известные MAC-адреса; при недоступности таблицы — пустой словарь.</summary>
+        /// <summary>Returns known MAC addresses; an empty dictionary when the table is unavailable.</summary>
     Task<IReadOnlyDictionary<IPAddress, string>> GetMacAddressesAsync(
         CancellationToken cancellationToken);
 }

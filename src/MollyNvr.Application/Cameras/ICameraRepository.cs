@@ -3,29 +3,29 @@ using MollyNvr.Domain.Cameras;
 
 namespace MollyNvr.Application.Cameras;
 
-/// <summary>Хранилище камер. Учётные данные сохраняются отдельно и шифруются.</summary>
+/// <summary>Camera storage. Credentials are stored separately and encrypted.</summary>
 public interface ICameraRepository
 {
-    /// <summary>Все камеры, отсортированные по имени.</summary>
+        /// <summary>All cameras sorted by name.</summary>
     Task<IReadOnlyList<Camera>> ListAsync(CancellationToken cancellationToken);
 
-    /// <summary>Камера по идентификатору или <c>null</c>.</summary>
+        /// <summary>Camera by identifier, or <c>null</c>.</summary>
     Task<Camera?> FindAsync(Guid id, CancellationToken cancellationToken);
 
-    /// <summary>Сохраняет новую камеру вместе с учётными данными.</summary>
+        /// <summary>Saves a new camera together with its credentials.</summary>
     Task AddAsync(Camera camera, CameraCredentials credentials, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Обновляет камеру. <paramref name="credentials"/> = <c>null</c> — сохранить прежние учётные данные.
+        /// Updates the camera. <paramref name="credentials"/> = <c>null</c> keeps the current credentials.
     /// </summary>
     Task UpdateAsync(Camera camera, CameraCredentials? credentials, CancellationToken cancellationToken);
 
-    /// <summary>Удаляет камеру и её учётные данные.</summary>
+        /// <summary>Removes the camera and its credentials.</summary>
     Task RemoveAsync(Guid id, CancellationToken cancellationToken);
 
-    /// <summary>Расшифрованные учётные данные камеры или <c>null</c>.</summary>
+        /// <summary>Decrypted camera credentials, or <c>null</c>.</summary>
     Task<CameraCredentials?> GetCredentialsAsync(Guid id, CancellationToken cancellationToken);
 
-    /// <summary>Меняет признак активности; возвращает обновлённую камеру или <c>null</c>, если её нет.</summary>
+        /// <summary>Toggles the active flag; returns the updated camera, or <c>null</c> when it does not exist.</summary>
     Task<Camera?> SetActiveAsync(Guid id, bool isActive, CancellationToken cancellationToken);
 }

@@ -38,7 +38,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // API, HLS-сессии и медиа не кешируем.
+  // Do not cache the API, HLS sessions and media.
   if (url.pathname.startsWith('/api/') || url.pathname.includes('/playback/')) {
     return
   }

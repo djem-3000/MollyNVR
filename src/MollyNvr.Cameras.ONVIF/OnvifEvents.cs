@@ -5,7 +5,7 @@ using MollyNvr.Cameras.Abstractions.Http;
 
 namespace MollyNvr.Cameras.ONVIF;
 
-/// <summary>События ONVIF: GetEventProperties + PullPoint-подписка.</summary>
+/// <summary>ONVIF events: GetEventProperties + PullPoint subscription.</summary>
 internal static class OnvifEvents
 {
     private const string GetEventPropertiesAction = "http://www.onvif.org/ver10/events/wsdl/GetEventProperties";
@@ -22,7 +22,7 @@ internal static class OnvifEvents
         "intrusion", "regionentrance", "regionexiting", "loitering", "tamper", "sound",
     ];
 
-    /// <summary>Ключи типов событий, которые умеет отдавать камера.</summary>
+        /// <summary>Event type keys the camera can report.</summary>
     public static async Task<IReadOnlyList<CameraEventType>> GetEventTypesAsync(
         CameraEndpoint endpoint,
         CameraCredentials credentials,
@@ -74,8 +74,8 @@ internal static class OnvifEvents
 
         if (keys.Count > 0)
         {
-            // Reolink и часть других прошивок присылают AI-события MyRuleDetector,
-            // не объявляя их в TopicSet — добавляем стандартный набор.
+                        // Reolink and some other firmware send MyRuleDetector AI events
+                        // without declaring them in TopicSet — add the standard set.
             keys.Add("face");
             keys.Add("person");
             keys.Add("vehicle");
@@ -92,14 +92,14 @@ internal static class OnvifEvents
             .ToList();
     }
 
-    /// <summary>Поток событий камеры через PullPoint-подписку.</summary>
+        /// <summary>Camera event stream through a PullPoint subscription.</summary>
     public static async IAsyncEnumerable<CameraEvent> WatchAsync(
         CameraEndpoint endpoint,
         CameraCredentials credentials,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var serviceUri = await ResolveServiceUriAsync(endpoint, credentials, cancellationToken)
-            ?? throw new CameraOperationNotSupportedException("ONVIF не сообщил сервис событий.");
+                        ?? throw new CameraOperationNotSupportedException("ONVIF did not report an event service.");
 
         using var client = CreateClient(serviceUri);
         var subscriptionUri = await CreateSubscriptionAsync(client, serviceUri, credentials, cancellationToken);
@@ -130,10 +130,10 @@ internal static class OnvifEvents
             {
                 if (OnvifClient.IsAuthorizationFault(fault))
                 {
-                    throw new CameraAuthenticationException("ONVIF отклонил учётные данные при подписке на события.");
+                                        throw new CameraAuthenticationException("ONVIF rejected the credentials when subscribing to events.");
                 }
 
-                // Подписка истекла или устройство её потеряло — создаём заново.
+                                // The subscription expired or the device lost it — create it again.
                 subscriptionUri = await CreateSubscriptionAsync(client, serviceUri, credentials, cancellationToken);
                 deadline = DateTimeOffset.UtcNow + SubscriptionLifetime;
                 continue;
@@ -189,8 +189,8 @@ internal static class OnvifEvents
         CameraCredentials credentials,
         CancellationToken cancellationToken)
     {
-        // Камеры по-разному относятся к InitialTerminationTime:
-        // одни ждут длительность, другие — момент времени, третьи не ждут поле вовсе.
+                // Cameras treat InitialTerminationTime differently:
+                // some expect a duration, others a point in time, and some do not expect the field at all.
         var attempts = new[]
         {
             new XElement(
@@ -238,14 +238,14 @@ internal static class OnvifEvents
         }
 
         throw new CameraOperationNotSupportedException(
-            $"ONVIF не создал подписку на события. Ответ: {Shorten(lastResponse)}");
+                        $"ONVIF did not create an event subscription. Response: {Shorten(lastResponse)}");
     }
 
     private static string Shorten(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return "пусто";
+                        return "empty";
         }
 
         try
@@ -257,7 +257,7 @@ internal static class OnvifEvents
         }
         catch (System.Xml.XmlException)
         {
-            // не XML — оставляем как есть
+                        // not XML — keep as is
         }
 
         var text = value.Trim().ReplaceLineEndings(" ");
@@ -349,7 +349,7 @@ internal static class OnvifEvents
         }
     }
 
-    /// <summary>Сопоставляет топик/тип события с ключом приложения.</summary>
+        /// <summary>Maps a topic/event type to an application key.</summary>
     internal static string? ToKey(string? topic)
     {
         if (string.IsNullOrWhiteSpace(topic))
@@ -418,16 +418,16 @@ internal static class OnvifEvents
 
     internal static CameraEventType CreateType(string key) => key switch
     {
-        "motion" => new CameraEventType(key, "Движение"),
-        "person" => new CameraEventType(key, "Человек"),
-        "vehicle" => new CameraEventType(key, "Транспорт"),
-        "animal" => new CameraEventType(key, "Животное"),
-        "face" => new CameraEventType(key, "Лицо"),
-        "tamper" => new CameraEventType(key, "Вандализм"),
-        "linecrossing" => new CameraEventType(key, "Пересечение линии"),
-        "intrusion" => new CameraEventType(key, "Вторжение в зону"),
-        "loitering" => new CameraEventType(key, "Задержка в зоне"),
-        "sound" => new CameraEventType(key, "Звук"),
+                "motion" => new CameraEventType(key, "Motion"),
+                "person" => new CameraEventType(key, "Person"),
+                "vehicle" => new CameraEventType(key, "Vehicle"),
+                "animal" => new CameraEventType(key, "Animal"),
+                "face" => new CameraEventType(key, "Face"),
+                "tamper" => new CameraEventType(key, "Tamper"),
+                "linecrossing" => new CameraEventType(key, "Line crossing"),
+                "intrusion" => new CameraEventType(key, "Intrusion"),
+                "loitering" => new CameraEventType(key, "Loitering"),
+                "sound" => new CameraEventType(key, "Sound"),
         _ => new CameraEventType(key, key),
     };
 

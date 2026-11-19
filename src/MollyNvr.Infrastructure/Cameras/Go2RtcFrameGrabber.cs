@@ -6,7 +6,7 @@ using MollyNvr.Infrastructure.Media;
 
 namespace MollyNvr.Infrastructure.Cameras;
 
-/// <summary>Получение JPEG-кадра через go2rtc (<c>/api/frame.jpeg</c>): работает для RTSP с любым кодеком.</summary>
+/// <summary>Getting a JPEG frame through go2rtc (<c>/api/frame.jpeg</c>): works for RTSP with any codec.</summary>
 public sealed class Go2RtcFrameGrabber(IHttpClientFactory httpClientFactory, IOptions<Go2RtcOptions> options) : IFrameGrabber
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(25);
@@ -30,13 +30,13 @@ public sealed class Go2RtcFrameGrabber(IHttpClientFactory httpClientFactory, IOp
         if (!response.IsSuccessStatusCode)
         {
             throw new CameraUnavailableException(
-                $"Медиа-ядро вернуло HTTP {(int)response.StatusCode} при запросе кадра.");
+                                $"The media engine returned HTTP {(int)response.StatusCode} when requesting a frame.");
         }
 
         var frame = await response.Content.ReadAsByteArrayAsync(timeout.Token);
         if (frame.Length < 2 || frame[0] != 0xFF || frame[1] != 0xD8)
         {
-            throw new CameraUnavailableException("Медиа-ядро вернуло не JPEG-кадр.");
+                        throw new CameraUnavailableException("The media engine returned a non-JPEG frame.");
         }
 
         return frame;

@@ -15,7 +15,7 @@ export type LivePreferences = {
   focusedTile: number | null
   stretch: boolean
   muted: boolean
-  /** Порядок камер в мобильном списке (только в браузере). */
+  /** Camera order in the mobile list (browser only). */
   mobileOrder: string[]
 }
 
@@ -157,7 +157,7 @@ export function createDefaultPreferences(): LivePreferences {
   }
 }
 
-/** Порядок камер: сначала сохранённый, затем новые в исходном порядке. */
+/** Camera order: saved ones first, then new ones in the original order. */
 export function orderCameras<T extends { id: string }>(cameras: T[], order: string[]): T[] {
   if (order.length === 0) {
     return cameras

@@ -4,21 +4,21 @@ using MollyNvr.Infrastructure.Storage;
 
 namespace MollyNvr.Infrastructure.Cameras;
 
-/// <summary>Настройки моста Reolink: HTTP-API и RTSP-сервер процесса neolink.net.</summary>
+/// <summary>Reolink bridge settings: HTTP API and RTSP server of the neolink.net process.</summary>
 public sealed class ReolinkOptions
 {
     public const string SectionName = "Reolink";
 
-    /// <summary>Базовый адрес HTTP-API моста (в compose — <c>http://reolink:8655</c>).</summary>
+        /// <summary>Base address of the bridge HTTP API (in compose — <c>http://reolink:8655</c>).</summary>
     public string ApiBaseUrl { get; set; } = "http://127.0.0.1:8655";
 
-    /// <summary>Базовый адрес RTSP моста (в compose — <c>rtsp://reolink:8654</c>).</summary>
+        /// <summary>Base RTSP address of the bridge (in compose — <c>rtsp://reolink:8654</c>).</summary>
     public string RtspBaseUrl { get; set; } = "rtsp://127.0.0.1:8654";
 
-    /// <summary>Файл конфигурации моста; по умолчанию <c>&lt;data&gt;/reolink/config.json</c>.</summary>
+        /// <summary>Bridge configuration file; <c>&lt;data&gt;/reolink/config.json</c> by default.</summary>
     public string? ConfigPath { get; set; }
 
-    /// <summary>Сколько ждать подключения камеры после перезапуска моста.</summary>
+        /// <summary>How long to wait for the camera connection after the bridge restarts.</summary>
     public int OnlineTimeoutSeconds { get; set; } = 35;
 
     public static ReolinkOptions Resolve(IConfiguration configuration)

@@ -6,7 +6,7 @@ using MollyNvr.Application.Discovery;
 
 namespace MollyNvr.Infrastructure.Discovery;
 
-/// <summary>mDNS/Bonjour: запросы PTR для _rtsp/_onvif/_http и разбор A-записей из ответов.</summary>
+/// <summary>mDNS/Bonjour: PTR queries for _rtsp/_onvif/_http and A record parsing from responses.</summary>
 public sealed class MdnsDiscoveryProtocol : IDiscoveryProtocol
 {
     private static readonly IPAddress MulticastAddress = IPAddress.Parse("224.0.0.251");

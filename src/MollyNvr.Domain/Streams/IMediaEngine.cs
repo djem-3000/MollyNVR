@@ -1,6 +1,6 @@
 namespace MollyNvr.Domain.Streams;
 
-/// <summary>Порт медиа-ядра: управление источниками и WebRTC-негоциация (WHEP).</summary>
+/// <summary>Media engine port: source management and WebRTC negotiation (WHEP).</summary>
 public interface IMediaEngine
 {
     Task<IReadOnlyList<string>> GetStreamIdsAsync(CancellationToken cancellationToken);

@@ -5,7 +5,7 @@ using MollyNvr.Application.Cameras;
 
 namespace MollyNvr.Infrastructure.Discovery;
 
-/// <summary>Сканирование типовых TCP-портов устройства при опросе камеры.</summary>
+/// <summary>Scanning of typical device TCP ports during a camera probe.</summary>
 public sealed class TcpPortScanner : IPortScanner
 {
     private const int MaxConcurrency = 16;
@@ -40,8 +40,8 @@ public sealed class TcpPortScanner : IPortScanner
     }
 
     /// <summary>
-    /// Камеры (особенно Reolink) иногда не отвечают на SYN — соединение не отклоняется,
-    /// а молча теряется. Такой таймаут повторяем один раз; явный отказ (RST) не повторяем.
+        /// Cameras (especially Reolink) sometimes do not answer SYN — the connection is not rejected
+        /// but silently dropped. Such a timeout is retried once; an explicit refusal (RST) is not retried.
     /// </summary>
     private static async Task<bool> IsPortOpenAsync(
         IPAddress host,

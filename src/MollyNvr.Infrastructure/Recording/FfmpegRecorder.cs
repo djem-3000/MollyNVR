@@ -3,7 +3,7 @@ using System.Text;
 
 namespace MollyNvr.Infrastructure.Recording;
 
-/// <summary>Процесс ffmpeg, пишущий поток камеры сегментами по 5 минут.</summary>
+/// <summary>ffmpeg process that records the camera stream in 5-minute segments.</summary>
 internal sealed class FfmpegRecorder
 {
     private const int MaxErrorLength = 4000;
@@ -101,7 +101,7 @@ internal sealed class FfmpegRecorder
         }
         catch (Exception exception) when (exception is IOException or ObjectDisposedException or InvalidOperationException)
         {
-            // процесс уже завершился
+                        // the process has already exited
         }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -119,7 +119,7 @@ internal sealed class FfmpegRecorder
             }
             catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
             {
-                // процесс уже завершился
+                                // the process has already exited
             }
         }
         finally
@@ -158,7 +158,7 @@ internal sealed class FfmpegRecorder
         "-map", "0:v:0",
         "-map", "0:a:0?",
         "-c:v", "copy",
-        // fMP4 не поддерживает G.711/PCM и часть других кодеков камер — аудио кодируем в AAC.
+                // fMP4 does not support G.711/PCM and some other camera codecs — audio is encoded to AAC.
         "-c:a", "aac",
         "-b:a", "128k",
         "-f", "segment",

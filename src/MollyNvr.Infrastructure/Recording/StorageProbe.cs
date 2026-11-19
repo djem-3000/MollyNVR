@@ -3,7 +3,7 @@ using MollyNvr.Application.Recording;
 
 namespace MollyNvr.Infrastructure.Recording;
 
-/// <summary>Проверка каталога и объёма тома для пула записей.</summary>
+/// <summary>Directory and volume checks for the recordings pool.</summary>
 public sealed class StorageProbe : IStorageProbe
 {
     public bool EnsureWritable(string path, out string? error)
@@ -21,7 +21,7 @@ public sealed class StorageProbe : IStorageProbe
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
         {
-            error = $"Каталог «{path}» недоступен для записи: {exception.Message}";
+                        error = $"Directory '{path}' is not writable: {exception.Message}";
             return false;
         }
     }
@@ -42,7 +42,7 @@ public sealed class StorageProbe : IStorageProbe
         }
     }
 
-    /// <summary>Ищет точку монтирования с самым длинным совпадением пути.</summary>
+        /// <summary>Finds the mount point with the longest path match.</summary>
     private static DriveInfo? FindVolume(string path)
     {
         var fullPath = Path.GetFullPath(path);
@@ -72,7 +72,7 @@ public sealed class StorageProbe : IStorageProbe
     }
 }
 
-/// <summary>Текущее состояние процессов записи по камерам.</summary>
+/// <summary>Current recording process state per camera.</summary>
 public sealed class RecordingStatusRegistry : IRecordingStatusRegistry
 {
     private readonly ConcurrentDictionary<Guid, (bool Recording, DateTimeOffset? StartedAt, string? Error)> _state = new();
